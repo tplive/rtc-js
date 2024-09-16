@@ -1,14 +1,30 @@
 <!DOCTYPE html>
 <html>
 <body>
+<script>
+window.onerror = function(errorMsg, url, lineNumber){
+    // any action you want goes here
+    // errorMsg is the error message itself.
+    // url should be the file presenting the error, though i have
+    //    found that it only presents to me the address of the site.
+    // lineNumber is the line number the error occoured on.
+    // here is an example of what you could do with it:
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+
 <h1>Test Runner</h1>
 
 <h2>Testing Tuple functions</h2>
 <ul id="test_list"></ul>
 
+<h2>Testing Color functions</h2>
+<ul id="colors_list"></ul>
+<p id="error"></ul>
+
 <script src="js/functions.js"></script>
 <script src="js/tests.js"></script>
-
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
 
@@ -42,8 +58,26 @@ function runTest(domId, callback) {
 runTest("test_list", test_tuple_function)
 runTest("test_list", test_vector_function)
 runTest("test_list", test_point_function)
+runTest("test_list", test_equal_function)
+runTest("test_list", test_equal_tuples_function)
+runTest("test_list", test_add_tuples_function)
+runTest("test_list", test_subtract_tuples_function)
+runTest("test_list", test_negate_tuple_function)
+runTest("test_list", test_multiply_vector_function)
+runTest("test_list", test_divide_vector_function)
+runTest("test_list", test_magnitude_function)
+runTest("test_list", test_normalize_function)
+runTest("test_list", test_dot_function)
+runTest("test_list", test_cross_function)
+
+runTest("colors_list", test_color_function)
+runTest("colors_list", test_add_colors_function)
+runTest("colors_list", test_subtract_colors_function)
+runTest("colors_list", test_multiply_color_function)
+runTest("colors_list", test_multiply_colors_function)
+
 </script>
 
-
 </body>
+
 </html>

@@ -8,35 +8,32 @@
 
 <script>
 // *** TESTS
-function test_tuple_function() {
-  // Constructing a tuple with x=1, y=2, z=3, w=1 should return a tuple object with matching values
+function test_equal_function() {
+  // Comparing floating point numbers for equivalence may, due to rounding errors, fail
+  // The function equal(a, b) will subtract a from b and compare the result to a small constant EPSILON.
+  // and if the difference is smaller, we will call them equal.
 
-  var t = tuple(1, 2, 3, 1)
-
-  return (t.x == 1 && t.y == 2 && t.z == 3 && t.w == 1)
+  return (equal(1.0, 1.0) && !(equal(12.009, 12.008)) && equal(123456.2345, 123456.234501))
 }
 
-function test_vector_function() {
-  // Constructing a vector with x=-3.5, y=2.211, z=0.001 should return a tuple object with matching values and w=0
+function test_add_tuples_function() {
 
-  var v = vector(-3.5, 2.211, 0.001)
+  var t = tuple(110.999, -23.11, 2, 0)
+  var v = vector(1.999, 23.11, 22.001)
+  var p = point(110.9990000001, -23.11, 2.00000001)
   
-
-  return (v.x == -3.5 && v.y == 2.211 && v.z == 0.001 && v.w == 0)
-}
-
-function test_point_function() {
-  // Constructing a point with x=143.556, y=-900.88, z=555.555 should return a tuple object with matching values and w=1
-
-  var v = point(143.556, -900.88, 555.555)
+  var tv = tuple(112.998, 0.0, 24.001, 1)
   
-
-  return (v.x == 143.556 && v.y == -900.88 && v.z == 555.555 && v.w == 1)
+  return (equal_tuples(add_tuples(t, v), tv))
 }
 </script>
 
 <script>
 // *** FUNCTION DEFINITIONS
+
+const PRECISION = 5
+const EPSILON = 1.0*10**(-PRECISION)
+
 function tuple(a, b, c, d) {
   return Object.freeze({ x:a, y:b, z:c, w:d })
 }
@@ -48,6 +45,27 @@ function vector(a,b,c) {
 function point(a,b,c) {
   return tuple(a,b,c,1)
 }
+
+function equal(a, b) {
+  // Comparing floating point numbers for equivalence may, due to rounding errors, fail.
+  // By subtract a from b and compareing the result to a small constant EPSILON, we
+  // can call them equal.
+  
+  return (Math.abs(a - b) < EPSILON.toFixed(PRECISION))
+}
+
+function equal_tuples(a, b) {
+  return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z))
+}
+
+function add_tuples(a, b) {
+  // Add two tuples together.
+  // A point (w=1) added to a vector (w=0) is a new point.
+  // A vector (w=0) added to another vector (w=0) is the resulting vector.
+  // Adding two points produces w=2 which doesn't make sense.
+  return tuple(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w)
+}
+
 </script>
 
 <script>
@@ -75,14 +93,14 @@ function runTest(domId, callback) {
   li.appendChild(li_result)
   var text = (result) ? "Test Passed!":"Test Failed!"
   var color = (result) ? "green":"red"
+  var v = vector(3, -2, 5, 1)
   li_result.innerHTML = text
   li_result.style.color = color
 
 }
 
-runTest("test_list", test_tuple_function)
-runTest("test_list", test_vector_function)
-runTest("test_list", test_point_function)
+runTest("test_list", test_add_tuples_function)
+
 </script>
 
 

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+window.onerror = function(errorMsg, url, lineNumber){
+    // any action you want goes here
+    // errorMsg is the error message itself.
+    // url should be the file presenting the error, though i have
+    //    found that it only presents to me the address of the site.
+    // lineNumber is the line number the error occoured on.
+    // here is an example of what you could do with it:
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+
+<h1>Test Runner</h1>
+
+<h2>Testing Tuple functions</h2>
+<ul id="test_list"></ul>
+<p id="error"></ul>
+
+<script>
+// *** FUNCTION DEFINITIONS
+
+const PRECISION = 5
+const EPSILON = 1.0*10**(-PRECISION)
+
+function display_msg(domId, msg) {
+  const para = document.createElement("p");
+  const node = document.createTextNode(msg);
+  para.appendChild(node);
+  const element = document.getElementById(domId);
+  element.appendChild(para);
+}
+
+function equal(a, b) {
+  // Comparing floating point numbers for equivalence may, due to rounding errors, fail.
+  // By subtract a from b and comparing the result to a small constant EPSILON, we
+  // can call them equal.
+  
+  return (Math.abs(a - b) < EPSILON.toFixed(PRECISION))
+}
+
+function equal_tuples(a, b) {
+  // Compare x, y, z coordinates of a tuple. JS does not distinguish these types of objects
+  // so a tuple == vector == point at this time.
+  return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z))
+}
+
+function display_tuple(a) {
+  return `x:${a.x} y:${a.y} z:${a.z} w:${a.w}`
+}
+
+function add_tuples(a, b) {
+  // Add two tuples together.
+  // A point (w=1) added to a vector (w=0) is a new point.
+  // A vector (w=0) added to another vector (w=0) is the resulting vector.
+  // Adding two points produces w=2 which doesn't make sense.
+  return tuple(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w)
+}
+
+function subtract_tuples(a, b) {
+  // Subtract values of tuple b from values of tuple a.
+  return tuple(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w)
+}
+
+function negate_tuple(t) {
+  // Return a tuple with x=-x, y=-y, z=-z coordinates
+  return tuple(t.x * -1, t.y * -1, t.z * -1, t.w * -1)
+}
+
+function multiply_vector(s, t) {
+  // Multiply each component of the tuple t by the scalar value s
+  return tuple(t.x * s, t.y * s, t.z * s, t.w * s)
+}
+
+function divide_vector(s, t) {
+  // Multiply each component of the tuple t by the scalar value s
+  return tuple(t.x / s, t.y / s, t.z / s, t.w / s)
+}
+
+function magnitude(v) {
+  // Calculate the magnitude of a vector
+  return Math.sqrt(v.x**2 + v.y**2 + v.z**2 + v.w**2)
+}
+
+function normalize(v) {
+  // Normalize a vector using its magnitude
+  var m = magnitude(v)
+  return tuple(v.x / m, v.y / m, v.z / m, v.w / m)
+}
+
+function dot(a, b) {
+  // Compute the dot product of two vectors
+  return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
+}
+
+function cross(a, b) {
+  // Compute the cross product of two vectors
+  // Order matters!
+  return vector(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
+}
+
+function tuple(a, b, c, d) {
+  return Object.freeze({ x:a, y:b, z:c, w:d })
+}
+
+function vector(a,b,c) {
+  return tuple(a,b,c,0)
+}
+
+function point(a,b,c) {
+  return tuple(a,b,c,1)
+}
+</script>
+<script>
+// *** TESTS
+function test_tuple_function() {
+  // Constructing a tuple with x=1, y=2, z=3, w=1 should return a tuple object with matching values
+
+  var t = tuple(1, 2, 3, 1)
+
+  return (t.x == 1 && t.y == 2 && t.z == 3 && t.w == 1)
+}
+
+function test_vector_function() {
+  // Constructing a vector with x=-3.5, y=2.211, z=0.001 should return a tuple object with matching values and w=0
+
+  var v = vector(-3.5, 2.211, 0.001)
+  
+
+  return (v.x == -3.5 && v.y == 2.211 && v.z == 0.001 && v.w == 0)
+}
+
+function test_point_function() {
+  // Constructing a point with x=143.556, y=-900.88, z=555.555 should return a tuple object with matching values and w=1
+
+  var v = point(143.556, -900.88, 555.555)
+  
+
+  return (v.x == 143.556 && v.y == -900.88 && v.z == 555.555 && v.w == 1)
+}
+
+function test_equal_function() {
+  // Comparing floating point numbers for equivalence may, due to rounding errors, fail
+  // The function equal(a, b) will subtract a from b and compare the result to a small constant EPSILON.
+  // and if the difference is smaller, we will call them equal.
+
+  return (equal(1.0, 1.0) && !(equal(12.009, 12.008)) && equal(123456.2345, 123456.234501))
+}
+
+function test_equal_tuples_function() {
+  // Test that tuple, vector and point coordinates are the same, even with slight diff outside PRECISION value
+
+  var t = tuple(110.999, -23.11, 2, 2)
+  var v = vector(110.999, -23.11, 2.0)
+  var p = point(110.9990000001, -23.11, 2.00000001)
+
+  return (equal_tuples(t, v) && equal_tuples(v, p) && equal_tuples(p, t))
+}
+
+function test_add_tuples_function() {
+
+  var t = tuple(110.999, -23.11, 2, 0)
+  var v = vector(1.999, 23.11, 22.001)
+  var p = point(110.9990000001, -23.11, 2.00000001)
+  
+  var result_tv = tuple(112.998, 0.0, 24.001, 1)
+
+  return (equal_tuples(add_tuples(t, v), result_tv))
+}
+
+function test_subtract_tuples_function() {
+
+  var t = tuple(-44.555, 345.123, 1.0, 0)
+  var v = vector(-33.44, 123.345, 0.0)
+
+  var subtracted_tv = subtract_tuples(t, v)
+  
+  return (equal_tuples(subtracted_tv, tuple(t.x - v.x, t.y - v.y, t.z - v.z, t.w - v.w)))
+}
+
+function test_negate_tuple_function() {
+  // Test that negate_tuple() returns a tuple with x=-x, y=-y, z=-z coordinates
+  
+  var n = negate_tuple(tuple(1, -2, 3, -4))
+  return (n.x == -1, n.y == 2, n.z == -3, n.w == 4 )
+}
+
+function test_multiply_vector_function() {
+  // Multiplying a tuple by a scalar
+  // Given t = tuple(1, -2, 3, -4)
+  // Then t * 3.5 = tuple(3.5, -7, 10.5, -14)
+  
+  var m = multiply_vector(3.5, tuple(1, -2, 3, -4))
+  return (equal(m.x, 3.5) && equal(m.y, -7) && equal(m.z, 10.5) && equal(m.w, -14))
+}
+
+function test_divide_vector_function() {
+  // Dividing a tuple by a scalar value
+  // Given t = tuple(1, -2, 3, -4)
+  // Then t / 2 = tuple(0.5, -1, 1.5, -2)
+  
+  var t = divide_vector(2, tuple(1, -2, 3, -4))
+  var t_result = (equal(t.x, 0.5) && equal(t.y, -1) && equal(t.z, 1.5) && equal(t.w, -2))
+    
+  return (t_result)
+}
+
+function test_magnitude_function() {
+  // Magnitude, or length of a vector is the distance from one end of a vector to the other.
+  // Given vector(x, y, z, 0), the magnitude is Math.sqrt(x**2 + y**2 + z**2 + w**2)
+  
+  var r = magnitude(vector(0, 1, 0))
+  var s = magnitude(vector(0, 0, 1))
+  var t = magnitude(vector(1, 2, 3))
+  var u = magnitude(vector(-1, -2, -3))
+  
+  return (equal(r, 1) && equal(s, 1), equal(t, Math.sqrt(14)) && equal(u, Math.sqrt(14)))
+}
+
+function test_normalize_function() {
+  // Normalizing a vector means taking an arbitrary vector and converting it into a unit vector.
+  // Normalizing vector(4, 0, 0) gives (1, 0, 0)
+  // Normalizing vector(1, 2, 3) gives vector(1/sqrt(14, 2/sqrt(14), 3/sqrt(14))
+  // The magnitude of a normalized vector is 1.
+  
+  var a = normalize(vector(4, 0, 0))
+  var b = normalize(vector(1, 2, 3))
+  
+  return (equal_tuples(a, vector(1, 0, 0)) && equal_tuples(b, vector(1/Math.sqrt(14), 2/Math.sqrt(14), 3/Math.sqrt(14))))
+  
+}
+
+function test_dot_function() {
+  // Compute the dot product (aka scalar product) of two vectors
+  // Given vector(1, 2, 3) and vector(2, 3, 4) the dot product is 20
+  
+  return (dot(vector(1, 2, 3), vector(2, 3, 4)) == 20)
+}
+
+function test_cross_function() {
+  // The cross product is the same as the dot product, only it returns a vector instead of a scalar value.
+  // Gives vector(1, 2, 3) and vector(2, 3, 4)
+  // Then cross(a, b) == vector(-1, 2, -1)
+  // and cross(b, a) == vector(1, -2, 1)
+  var u = vector(1, 2, 3)
+  var v = vector(2, 3, 4)
+  
+  var uv = cross(u, v)
+  var vu = cross(v, u)
+  
+  return (equal_tuples(uv, vector(-1, 2, -1)) && equal_tuples(vu, vector(1, -2, 1)))
+}
+</script>
+<script>
+// *** RUN TESTS, DISPLAY RESULTS
+
+function runTest(domId, callback) {
+  
+  // Get list and create a new list item
+  const ul = document.getElementById(domId)
+  const li = document.createElement("li")
+  
+  // Create placeholder inside list item
+  const li_text = document.createElement("span")
+  li_text.innerHTML = "Running " + callback.name + "(): "
+  
+  // Append list item to list
+  ul.appendChild(li);
+  // Append span to list item
+  li.appendChild(li_text)
+  
+  // Run test
+  var result = callback()
+  
+  const li_result = document.createElement("span")
+  li.appendChild(li_result)
+  var text = (result) ? "Test Passed!":"Test Failed!"
+  var color = (result) ? "green":"red"
+  li_result.innerHTML = text
+  li_result.style.color = color
+
+}
+
+runTest("test_list", test_tuple_function)
+runTest("test_list", test_vector_function)
+runTest("test_list", test_point_function)
+runTest("test_list", test_equal_function)
+runTest("test_list", test_equal_tuples_function)
+runTest("test_list", test_add_tuples_function)
+runTest("test_list", test_subtract_tuples_function)
+runTest("test_list", test_negate_tuple_function)
+runTest("test_list", test_multiply_vector_function)
+runTest("test_list", test_divide_vector_function)
+runTest("test_list", test_magnitude_function)
+runTest("test_list", test_normalize_function)
+runTest("test_list", test_dot_function)
+runTest("test_list", test_cross_function)
+
+</script>
+
+</body>
+
+</html>
