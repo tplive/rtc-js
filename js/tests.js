@@ -438,3 +438,76 @@ function test_canvas_to_ppm_function() {
   return (ppm === `P3\n4 4\n255\n1 1 1 2 2 2 0 0 0 0 0 0 3 3 3 4 4\n4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n0 0 0 0 0 0 0 0 0 0 0 0 0 0\n\n\n\n`)
   
 }
+
+function test_create_matrix_function() {
+  // Test create and verify matrices of 2x2, 3x3, 4x4, 3x5 and 5x3
+  // matrix[row][col], row and col are 0-based indexes.
+  
+  //const m4x4 = create_matrix(4, 4)
+  const m4x4 = matrix(4, 4)
+  
+  m4x4[0] = [1,2,3,4]
+  m4x4[1] = [5.5,6.5,7.5,8.5]
+  m4x4[2] = [9,10,11,12]
+  m4x4[3] = [13.5, 14.5, 15.5, 16.5]
+  
+  //log("error", m4x4.join("\n"))
+  const m1 = (m4x4[0][0] === 1 && m4x4[0][3] === 4 && m4x4[1][0] === 5.5 && m4x4[2][2] === 11 && m4x4[3][0] === 13.5 && m4x4[3][2] === 15.5)
+
+  const m2x2 = matrix(2, 2)
+  
+  m2x2[0] = [-3,5]
+  m2x2[1] = [1,-2]
+  
+  //log("error", m2x2)
+  const m2 = (m2x2[0][0] === -3 && m2x2[0][1] === 5 && m2x2[1][0] === 1 && m2x2[1][1] === -2)
+
+  const m3x3 = matrix(3, 3)
+  
+  m3x3[0] = [-3,5,0]
+  m3x3[1] = [1,-2,-7]
+  m3x3[2] = [0,1,1]
+  
+  //log("error", m3x3)
+  const m3 = (m3x3[0][0] === -3 && m3x3[1][1] === -2 && m3x3[2][2] === 1)
+
+  return (m1 && m2 && m3)
+}
+
+function test_matrix_equal_function() {
+  // Test the equality of two matrices.
+  // Consider very similar floating point values, as with tuples.
+  
+  const ma = matrix(4, 4)
+  const mb = matrix(4, 4)
+  
+  ma[0] = [1,2,3,4]
+  ma[1] = [5,6,7,8]
+  ma[2] = [9,8,7,6]
+  ma[3] = [5,4,3,2]
+  
+  mb[0] = [1,2,3,4]
+  mb[1] = [5,6,7,8]
+  mb[2] = [9,8,7,6]
+  mb[3] = [5,4,3,2]
+  
+  const is_equal = matrix_equal(ma, mb)
+  
+  // Some values not equal but within the PRECISION threshold
+  // Should still be equal
+  ma[0][1] = 1.999999999999
+  mb[1][0] = 5.000000000001
+  
+  const close_enough = matrix_equal(ma, mb)
+    
+  // Change some values, so they're not equal any more
+  mb[1][3] = 12
+  mb[3][1] = 1.34
+  ma[2][2] = 22
+  ma[0][0] = 3.1415
+  
+  const not_equal = matrix_equal(ma, mb)
+  
+  return (is_equal && close_enough && !not_equal)
+  
+}

@@ -14,18 +14,20 @@ window.onerror = function(errorMsg, url, lineNumber){
 }
 </script>
 
-<h1>Test Runner</h1>
-
-<h2>Projectile simulator</h2>
+<h1>Projectile simulator</h1>
 <ul id="test_list"></ul>
-
-<pre><p id="error"></ul></pre>
+<p id="error"></ul>
 
 <script>
 // *** FUNCTION DEFINITIONS
 
+
+// *** CONSTANTS
+
 const PRECISION = 5
 const EPSILON = 1.0*10**(-PRECISION)
+
+// *** HELPER FUNCTIONS
 
 function log(domId, msg) {
   const para = document.createElement("p");
@@ -34,6 +36,19 @@ function log(domId, msg) {
   const element = document.getElementById(domId);
   element.appendChild(para);
 }
+
+function downloadPPMfile(ppm_data, name) {
+  // Download PPM file. Does NOT check that input data is valid PPM.
+  
+  var dataStr = "data:text/ppm;charset=utf-8," + encodeURIComponent(ppm_data)
+  var downloadAnchorNode = document.createElement("a")
+  downloadAnchorNode.innerHTML = "Click here to download file " + name + ".ppm"
+  downloadAnchorNode.setAttribute("href",     dataStr)
+  downloadAnchorNode.setAttribute("download", name + ".ppm")
+  document.getElementById("error").appendChild(downloadAnchorNode)
+}
+
+// *** VECTOR FUNCTIONS
 
 function equal(a, b) {
   // Comparing floating point numbers for equivalence may, due to rounding errors, fail.
@@ -102,7 +117,7 @@ function cross(a, b) {
 function tuple(a, b, c, d) {
   return Object.freeze({ 
     x:a,
-  	y:b,
+    y:b,
     z:c,
     w:d,
     toString: function() { return `x:${this.x} y:${this.y} z:${this.z} w:${this.w}`}})
@@ -190,6 +205,8 @@ function html_canvas_to_ppm(canvas) {
   // P3
   // 80 40
   // 255
+  
+  // DELETE ME
   
   var str = `P3
 ${canvas.width} ${canvas.height}
@@ -294,11 +311,11 @@ ${split.join("")}
 // An environment has gravity (vector) and wind (vector).
 // A tick represents a unit of time. Each tick yields a new projectile with new position and velocity, based on environment.
 
-var ticks = 30
-var env = {gravity: vector(0, -0.1, 0), wind: vector(-0.01, 0, 0)}
+var ticks = 300
+var env = {gravity: vector(0, -0.01, 0), wind: vector(-0.001, 0, 0)}
 log("test_list", `Gravity: ${env.gravity.toString()}, Wind: ${env.wind.toString()}`)
 
-var proj = {position: point(0, 1, 0), velocity: vector(1, 1, 0)}
+var proj = {position: point(0, 1, 0), velocity: vector(1.5, 1, 0)}
 log("test_list", `Projectile start position: ${proj.position.toString()}, Start velocity: ${proj.velocity.toString()}`)
 
 const can = canvas(300, 300)
@@ -317,22 +334,24 @@ while (ticks>=1) {
   proj = {position: add_tuples(proj.position, proj.velocity), velocity: add_tuples(add_tuples(proj.velocity, env.gravity), env.wind)}
   //log("test_list", proj.position.toString())
   
-  let x = Math.round(proj.position.x * 1000 / can.width)
-  let y = can.width - Math.abs(Math.round(proj.position.y * 1000 / can.height))
-  const c = color(1, 1, 1)
-  //can.write_pixel(x, y, scale_color(c))
-  context.fillRect(x, y, 1, 1)
+  let x = Math.round(proj.position.x )
+  let y = can.width - Math.round(proj.position.y * 1000 / can.height)
+  const c = color(0.95, 0.6, 0.75)
+  if (x <= can.width -1 && y <= can.height -1) {
+    const s = scale_color(c)
+    
+    can.write_pixel(x, y, s)
+    context.fillStyle = `rgb(${s.red}, ${s.green}, ${s.blue}`
+    context.fillRect(x, y, 2, 2)
+  }
+
 
 }
 
-
-var imageData = context.getImageData(0, 0, can.width, can.height-1);
-can.data = imageData.data;
-
-
 const ppm = canvas_to_ppm(can)
 // Show canvas
-log("error", ppm)
+//log("error", ppm)
+downloadPPMfile(ppm, "plot")
 
 </script>
 

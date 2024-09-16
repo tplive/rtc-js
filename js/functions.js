@@ -173,25 +173,9 @@ function html_canvas(parent, width, height) {
   can.setAttribute("width", width)
   can.setAttribute("height", height)
   can.setAttribute("id", parent + "_canvas")
-  document.body.appendChild(can)
+  document.getElementById(parent).appendChild(can)
   
   return can
-}
-
-function html_canvas_to_ppm(canvas) {
-  // Take a canvas object and return a PPM file header
-  // The header should look like this, where 80 40 is W and H:
-  // P3
-  // 80 40
-  // 255
-  
-  // DELETE ME
-  
-  var str = `P3
-${canvas.width} ${canvas.height}
-255
-`
-  return str
 }
 
 function canvas(w, h) {
@@ -279,4 +263,37 @@ ${canvas.width} ${canvas.height}
 ${split.join("")}
 `
   return str
+}
+
+// *** MATRIX FUNCTIONS
+
+function matrix(rows, cols) {
+  
+  const columns = Array(cols).fill(0)
+  const array = Array(rows).fill(columns)
+  
+  return array
+}
+
+function matrix_equal(ma, mb) {
+  // Test equality. A === B if Arows == Brows and Acols == Bcols
+  
+  const masize = ma.length * ma[0].length
+  const mbsize = mb.length * mb[0].length
+  if ( masize === mbsize && masize / ma[0].length === mbsize / mb[0].length ) {
+    
+    //log("error", `masize (${masize}) / ma[0].length (${ma[0].length}) === mbsize (${mbsize}) / mb[0].length (${mb[0].length})`)
+    
+    for (let r in ma) {
+      //log("error", ma[r])
+      //log("error", mb[r])
+      for (let c in ma[r]) {
+        //log("error", `${ma[r][c]} === ${mb[r][c]}`)
+        if (!(equal(ma[r][c], mb[r][c]))) {
+          return false
+        }
+      }
+    }
+  }
+  return true
 }

@@ -157,6 +157,34 @@ a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bi
 <p><img src="projectile_plot2.png"/></p>
 
 <p>Og med litt "applied magic" så har jeg en link som lar meg lagre PPM fila med å klikke på en link. Nice. &#128170;</p>
+
+<h3>&#128055; Kapittel 3, Matrices</h3>
+
+<p>Matriser. Hva er en matrise i denne sammenhengen? Det er et objekt med tall, lagt ut i rader og kolonner på en slik måte at de kan håndteres som en enhet. For eksempel en matrise med 3x5 tall:</p>
+<pre>
+| 3 4 3 8 2 |
+| 2 1 2 1 2 |
+| 7 0 9 9 9 |
+</pre>
+<p>I denne utfordringen skal vi primært håndtere matriser på 4x4, men for sikkerhets skyld må koden håndtere andre formater. Dette er relativt enkel håndtering, jeg lager matrisene med <code>matrix(4, 4)</code> som så lager et array på 4 rader, hver med et array på 4 tall inni. Da kan vi aksessere hvert enkelt element slik:</p>
+<pre>
+const m = matrix(4, 4)
+m[2][3] = 1.3424
+const m23 = m[2][3]
+</pre>
+<p>(Note to self: Jeg tror array med subarray er ganske optimalt oppsett her, men det finner vi ikke ut før vi begynner å rendre...)</p>
+
+<p>Så følger det en spesifikasjon for å sammenligne matriser, her velger jeg å først sjekke at de er like store <var>(4x4=16)</var>, og at de har samme dimensjoner (<var>3x5 &#8800; 5x3</var>) før vi bryter løs på å sammenligne element for element. Dette for å avdekke åpenbare forskjeller først, og spare "masse tungregning" i tilfelle de er strukturelt ulike matriser. Jeg benytter <code>equal(a, b)</code> som utviklet tidligere, for å ta høyde for flyttall som er "nært" <var>(&#916; &lt; &plusmn; EPSILON)</var> men likevel forskjellig.</p>
+
+<p>Multiplisering av matriser. Puh. Her er det så klart ikke bare A*B, det er skalarproduktet. Prikkproduktet. Dot product. Som for tupler. Definisjon iht boka:</p>
+<blockquote>"Matrix multiplication computes the dot product of every row-column combination in the matrix.</blockquote>
+
+<p>Heldigvis ser det ut for at jeg kan bruke noe av den samme koden som for sammenligning av matrisene.</p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
 <p></p>
 <p></p>
 <p></p>

@@ -25,13 +25,21 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>Testing Canvas functions</h2>
 <ul id="canvas_list"></ul>
 
+<h2>Testing Matrix functions</h2>
+<ul id="matrix_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <script>
 // *** FUNCTION DEFINITIONS
 
+
+// *** CONSTANTS
+
 const PRECISION = 5
 const EPSILON = 1.0*10**(-PRECISION)
+
+// *** HELPER FUNCTIONS
 
 function log(domId, msg) {
   const para = document.createElement("p");
@@ -40,6 +48,19 @@ function log(domId, msg) {
   const element = document.getElementById(domId);
   element.appendChild(para);
 }
+
+function downloadPPMfile(ppm_data, name) {
+  // Download PPM file. Does NOT check that input data is valid PPM.
+  
+  var dataStr = "data:text/ppm;charset=utf-8," + encodeURIComponent(ppm_data)
+  var downloadAnchorNode = document.createElement("a")
+  downloadAnchorNode.innerHTML = "Click here to download file " + name + ".ppm"
+  downloadAnchorNode.setAttribute("href",     dataStr)
+  downloadAnchorNode.setAttribute("download", name + ".ppm")
+  document.getElementById("error").appendChild(downloadAnchorNode)
+}
+
+// *** VECTOR FUNCTIONS
 
 function equal(a, b) {
   // Comparing floating point numbers for equivalence may, due to rounding errors, fail.
@@ -53,10 +74,6 @@ function equal_tuples(a, b) {
   // Compare x, y, z coordinates of a tuple. JS does not distinguish these types of objects
   // so a tuple == vector == point at this time.
   return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z))
-}
-
-function display_tuple(a) {
-  return `x:${a.x} y:${a.y} z:${a.z} w:${a.w}`
 }
 
 function add_tuples(a, b) {
@@ -110,7 +127,12 @@ function cross(a, b) {
 }
 
 function tuple(a, b, c, d) {
-  return Object.freeze({ x:a, y:b, z:c, w:d })
+  return Object.freeze({ 
+    x:a,
+    y:b,
+    z:c,
+    w:d,
+    toString: function() { return `x:${this.x} y:${this.y} z:${this.z} w:${this.w}`}})
 }
 
 function vector(a,b,c) {
@@ -184,24 +206,12 @@ function html_canvas(parent, width, height) {
   can.setAttribute("width", width)
   can.setAttribute("height", height)
   can.setAttribute("id", parent + "_canvas")
-  document.body.appendChild(can)
+  document.getElementById(parent).appendChild(can)
   
   return can
 }
 
-function html_canvas_to_ppm(canvas) {
-  // Take a canvas object and return a PPM file header
-  // The header should look like this, where 80 40 is W and H:
-  // P3
-  // 80 40
-  // 255
-  
-  var str = `P3
-${canvas.width} ${canvas.height}
-255
-`
-  return str
-}
+
 
 function canvas(w, h) {
   // Create a canvas abstraction object. It has a width and a height and a pixel array.
@@ -288,6 +298,39 @@ ${canvas.width} ${canvas.height}
 ${split.join("")}
 `
   return str
+}
+
+// *** MATRIX FUNCTIONS
+
+function matrix(rows, cols) {
+  
+  const columns = Array(cols).fill(0)
+  const array = Array(rows).fill(columns)
+  
+  return array
+}
+
+function matrix_equal(ma, mb) {
+  // Test equality. A === B if Arows == Brows and Acols == Bcols
+  
+  const masize = ma.length * ma[0].length
+  const mbsize = mb.length * mb[0].length
+  if ( masize === mbsize && masize / ma[0].length === mbsize / mb[0].length ) {
+    
+    //log("error", `masize (${masize}) / ma[0].length (${ma[0].length}) === mbsize (${mbsize}) / mb[0].length (${mb[0].length})`)
+    
+    for (let r in ma) {
+      //log("error", ma[r])
+      //log("error", mb[r])
+      for (let c in ma[r]) {
+        //log("error", `${ma[r][c]} === ${mb[r][c]}`)
+        if (!(equal(ma[r][c], mb[r][c]))) {
+          return false
+        }
+      }
+    }
+  }
+  return true
 }
 
 </script>
@@ -537,19 +580,6 @@ function test_html_get_pixel_color_function() {
   return (c1.red == c2.red && c1.green == c2.green && c1.blue == c2.blue)
 }
 
-function test_html_canvas_to_ppm_function() {
-  // Will convert canvas data to a valid ppm file header.
-  // Given a canvas of 80x40 pixels, the header should look like this:
-  // P3
-  // 80 40
-  // 255
-  
-  const can = html_canvas("body", 80, 40)
-  const ppm = html_canvas_to_ppm(can)
-  
-  return (ppm === `P3\n80 40\n255\n`)
-}
-
 function test_canvas_function() {
   // This is a test for a canvas function that is pure data, not the HTML element called canvas.
   // A canvas is an object with width, height and a data array for pixel values.
@@ -730,8 +760,82 @@ function test_canvas_to_ppm_function() {
   
   //log("error", ppm)
   return (ppm === `P3\n4 4\n255\n1 1 1 2 2 2 0 0 0 0 0 0 3 3 3 4 4\n4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n0 0 0 0 0 0 0 0 0 0 0 0 0 0\n\n\n\n`)
+
+}
+
+function test_create_matrix_function() {
+  // Test create and verify matrices of 2x2, 3x3, 4x4, 3x5 and 5x3
+  // matrix[row][col], row and col are 0-based indexes.
+  
+  //const m4x4 = create_matrix(4, 4)
+  const m4x4 = matrix(4, 4)
+  
+  m4x4[0] = [1,2,3,4]
+  m4x4[1] = [5.5,6.5,7.5,8.5]
+  m4x4[2] = [9,10,11,12]
+  m4x4[3] = [13.5, 14.5, 15.5, 16.5]
+  
+  //log("error", m4x4.join("\n"))
+  const m1 = (m4x4[0][0] === 1 && m4x4[0][3] === 4 && m4x4[1][0] === 5.5 && m4x4[2][2] === 11 && m4x4[3][0] === 13.5 && m4x4[3][2] === 15.5)
+
+  const m2x2 = matrix(2, 2)
+  
+  m2x2[0] = [-3,5]
+  m2x2[1] = [1,-2]
+  
+  //log("error", m2x2)
+  const m2 = (m2x2[0][0] === -3 && m2x2[0][1] === 5 && m2x2[1][0] === 1 && m2x2[1][1] === -2)
+
+  const m3x3 = matrix(3, 3)
+  
+  m3x3[0] = [-3,5,0]
+  m3x3[1] = [1,-2,-7]
+  m3x3[2] = [0,1,1]
+  
+  //log("error", m3x3)
+  const m3 = (m3x3[0][0] === -3 && m3x3[1][1] === -2 && m3x3[2][2] === 1)
+
+  return (m1 && m2 && m3)
+}
+
+function test_matrix_equal_function() {
+  // Test the equality of two matrices.
+  // Consider very similar floating point values, as with tuples.
+  
+  const ma = matrix(4, 4)
+  const mb = matrix(4, 4)
+  
+  ma[0] = [1,2,3,4]
+  ma[1] = [5,6,7,8]
+  ma[2] = [9,8,7,6]
+  ma[3] = [5,4,3,2]
+  
+  mb[0] = [1,2,3,4]
+  mb[1] = [5,6,7,8]
+  mb[2] = [9,8,7,6]
+  mb[3] = [5,4,3,2]
+  
+  const is_equal = matrix_equal(ma, mb)
+  
+  // Some values not equal but within the PRECISION threshold
+  // Should still be equal
+  ma[0][1] = 1.999999999999
+  mb[1][0] = 5.000000000001
+  
+  const close_enough = matrix_equal(ma, mb)
+    
+  // Change some values, so they're not equal any more
+  mb[1][3] = 12
+  mb[3][1] = 1.34
+  ma[2][2] = 22
+  ma[0][0] = 3.1415
+  
+  const not_equal = matrix_equal(ma, mb)
+  
+  return (is_equal && close_enough && !not_equal)
   
 }
+
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -786,11 +890,15 @@ runTest("colors_list", test_multiply_colors_function)
 runTest("colors_list", test_scale_color_function)
 
 runTest("canvas_list", test_canvas_function)
+runTest("canvas_list", test_html_canvas_function)
 runTest("canvas_list", test_write_pixel_function)
 runTest("canvas_list", test_catch_canvas_out_of_bounds)
 runTest("canvas_list", test_constructing_ppm_header)
 runTest("canvas_list", test_ppm_pixel_data)
 runTest("canvas_list", test_canvas_to_ppm_function)
+
+runTest("matrix_list", test_create_matrix_function)
+runTest("matrix_list", test_matrix_equal_function)
 
 </script>
 

@@ -30,6 +30,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>Testing Canvas functions</h2>
 <ul id="canvas_list"></ul>
 
+<h2>Testing Matrix functions</h2>
+<ul id="matrix_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <script src="js/functions.js"></script>
@@ -87,11 +90,15 @@ runTest("colors_list", test_multiply_colors_function)
 runTest("colors_list", test_scale_color_function)
 
 runTest("canvas_list", test_canvas_function)
+runTest("canvas_list", test_html_canvas_function)
 runTest("canvas_list", test_write_pixel_function)
 runTest("canvas_list", test_catch_canvas_out_of_bounds)
 runTest("canvas_list", test_constructing_ppm_header)
 runTest("canvas_list", test_ppm_pixel_data)
 runTest("canvas_list", test_canvas_to_ppm_function)
+
+runTest("matrix_list", test_create_matrix_function)
+runTest("matrix_list", test_matrix_equal_function)
 
 </script>
 
