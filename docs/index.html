@@ -2,6 +2,11 @@
 <html>
 <head>
 <style>
+body {
+  margin-left: 5rem;
+  margin-right: 3rem;
+  font-family: sans-serif;
+}
 code {
   background-color: lightgrey;
   font-weight: bold;
@@ -24,9 +29,6 @@ pre {
     word-wrap: break-word;
 }
 
-h1, h2, h3, h4, h5, p {
-    font-family: sans-serif;
-}
 </style>
 <title>Dokumentasjon</title>
 </head>
@@ -179,12 +181,15 @@ const m23 = m[2][3]
 <p>Multiplisering av matriser. Puh. Her er det så klart ikke bare A*B, det er skalarproduktet. Prikkproduktet. Dot product. Som for tupler. Definisjon iht boka:</p>
 <blockquote>"Matrix multiplication computes the dot product of every row-column combination in the matrix.</blockquote>
 
-<p>Heldigvis ser det ut for at jeg kan bruke noe av den samme koden som for sammenligning av matrisene.</p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
+<p>Heldigvis ser det ut for at jeg kan bruke noe av den samme koden som for sammenligning av matrisene. Støter på et pussig problem. Jeg har to matriser, laget med <code>matrix(4, 4)</code>. Når jeg multipliserer dem, blir resultatet i hver celle korrekt, men resultat-matrisen blir en gjentakelse av den siste matrisen, omtrent sånn:</p>
+<pre>[[12,34,45,56],[12,34,45,56],[12,34,45,56],[12,34,45,56]]</pre>
+<p>Hvis jeg endrer èn av verdiene, endres den i alle radene, slik:</p>
+<pre>
+ma = [[12,34,45,56],[12,34,45,56],[12,34,45,56],[12,34,45,56]]
+ma[0][2] = 99
+[[12,34,99,56],[12,34,99,56],[12,34,99,56],[12,34,99,56]]</pre>
+<p>Ser ut som hver eneste rad peker til samme posisjoner i minnet. Jeg vet ikke hvordan jeg lager et array med rader som peker til unike minneposisjoner, og jeg er redd dette kan komme tilbake og bite meg senere... Men for now dokumenterer jeg det her, og oppretter arrayet helt manuelt, slik:</p>
+<pre>const m = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]</pre>
 <p></p>
 <p></p>
 <p></p>

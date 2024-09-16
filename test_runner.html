@@ -21,6 +21,7 @@ window.onerror = function(errorMsg, url, lineNumber){
 
 <h1>Test Runner</h1>
 
+<p id="perf"></p>
 <h2>Testing Tuple functions</h2>
 <ul id="test_list"></ul>
 
@@ -39,6 +40,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <script src="js/tests.js"></script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
+
+const start = performance.now()
+
 
 function runTest(domId, callback) {
   
@@ -99,7 +103,14 @@ runTest("canvas_list", test_canvas_to_ppm_function)
 
 runTest("matrix_list", test_create_matrix_function)
 runTest("matrix_list", test_matrix_equal_function)
+runTest("matrix_list", test_multiply_matrices_function)
+runTest("matrix_list", test_multiply_matrix_by_tuple_function)
+runTest("matrix_list", test_multiply_by_identity_matrix_function)
 
+const end = performance.now()
+const elapsed = end - start
+
+log("perf", "Tests running time: " + Math.round(elapsed) + " ms.")
 </script>
 
 </body>

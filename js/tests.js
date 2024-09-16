@@ -511,3 +511,73 @@ function test_matrix_equal_function() {
   return (is_equal && close_enough && !not_equal)
   
 }
+
+function test_multiply_matrices_function() {
+  // Multiplying two matrices
+  // Only 4x4 matrices.
+  
+  let ma = matrix(4, 4)
+  let mb = matrix(4, 4)
+  let mc = matrix(4, 4)
+  
+  ma = [
+    [1,2,3,4],
+    [5,6,7,8],
+    [9,8,7,6],
+    [5,4,3,2]
+  ]
+  
+  mb = [
+    [-2,1,2,3],
+    [3,2,1,-1],
+    [4,3,6,5 ],
+    [1,2,7,8 ]
+  ]
+  
+  mc = [
+    [20,22,50,48],
+    [44,54,114,108],
+    [40,58,110,102],
+    [16,26,46,42]
+  ]
+  
+  return (matrix_equal(mc, multiply_matrices(ma, mb)))
+}
+
+function test_multiply_matrix_by_tuple_function() {
+  // Multiply matrix by tuple.
+  // Similar to multiply_matrices, but this time "matrix B" is a tuple, treated as a one column matrix.
+  
+  let ma = matrix(4, 4)
+  let t = tuple(1,2,3,1)
+  
+  ma = [
+    [1,2,3,4],
+    [2,4,4,2],
+    [8,6,4,1],
+    [0,0,0,1]
+  ]
+  
+  const r = tuple(18,24,33,1)
+  
+  return (equal_tuples(r, multiply_matrix_by_tuple(ma, t)))
+  
+  log("error", t)
+  
+  return false
+}
+
+function test_multiply_by_identity_matrix_function() {
+  // Multiplying any number by 1 gives the same number back. The number 1 is for this reason called the
+  // "multiplicative identity". There also exists an "identity matrix", and this test
+  // demonstrates the "non-effect" of multiplying matrix and tuple by the identity matrix.
+  
+  const ma = [[7,9,3,5],[2,2,0,8],[2,6,2,9],[2,2,2,2]]
+  const t = tuple(7, 6, 5, 4)
+  
+  // This is the multiplicative identity for matrices:
+  const id_matrix = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+  
+  return (equal_tuples(t, multiply_matrix_by_tuple(id_matrix, t)) && matrix_equal(ma, multiply_matrices(ma, id_matrix)))
+  
+}

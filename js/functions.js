@@ -297,3 +297,52 @@ function matrix_equal(ma, mb) {
   }
   return true
 }
+
+function multiply_matrices(a, b) {
+  // Multiply matrices.
+  // Only supports 4x4 matrices.
+  
+  // For SOME reason, using matrix(4, 4) here yields a matrix where the rows all point to the same array in memory! :O
+  const m = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+  
+  for (let r = 0; r <= 3; r++) {
+    //log("error", "r: " + r)
+    for (let c = 0; c <= 3; c++) {
+     //log("error", "    c: " + c)
+     m[r][c] = 
+       a[r][0] * b[0][c] + 
+       a[r][1] * b[1][c] + 
+       a[r][2] * b[2][c] + 
+       a[r][3] * b[3][c]
+     
+     
+     //log("error", `m[${r}][${c}] =  ${a[r][0] * b[0][c] + a[r][1] * b[1][c] + a[r][2] * b[2][c] + a[r][3] * b[3][c]}`)
+    }
+  }
+  
+  //log("error", a.join("\n"))
+  //log("error", b.join("\n"))
+  //log("error", m.join("\n"))
+  
+  return m
+}
+
+function multiply_matrix_by_tuple(ma, t) {
+  // Multiply matrix by tuple.
+  // Returns a tuple.
+  
+  let result = [0,0,0,0]
+  
+  for (let r = 0; r <= 3; r++) {
+    result[r] = 
+     ma[r][0] * t.x + 
+     ma[r][1] * t.y + 
+     ma[r][2] * t.z + 
+     ma[r][3] * t.w
+  }
+  
+  //log("error", ma.join("\n"))
+  //log("error", t)
+  //log("error", result)
+  return tuple(result[0], result[1], result[2], result[3])
+}
