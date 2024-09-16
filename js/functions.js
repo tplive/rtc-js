@@ -119,14 +119,59 @@ function multiply_colors(c1, c2) {
 
 // *** CANVAS FUNCTIONS
 
-function canvas(parent, width, height) {
+function html_canvas(parent, width, height) {
   // Creates a canvas element as a child of parent, dimensions specified by width and height.
   // Returns the canvas context.
   
   const can = document.createElement("canvas")
+  can.setAttribute("width", width)
+  can.setAttribute("height", height)
   can.setAttribute("id", parent + "_canvas")
   document.body.appendChild(can)
   
-  const context = can.getContext("2d")
-  return context
+  return can
+}
+
+function html_canvas_to_ppm(canvas) {
+  // Take a canvas object and return a PPM file header
+  // The header should look like this, where 80 40 is W and H:
+  // P3
+  // 80 40
+  // 255
+  
+  var str = `P3
+${canvas.width} ${canvas.height}
+255
+`
+  return str
+}
+
+function canvas(w, h) {
+  // Create a canvas abstraction object. It has a width and a height and a pixel array.
+  // Each pixel is defined by three values, r, g, b.
+  // The format is an array with subarrays of three values.
+  // To make the array as efficient as possible, we make it a const and pre-initialize length.
+  
+  const d = Array(w * h).fill([0, 0, 0])
+  //var d = []
+  
+  return Object.freeze({ width:w, height:h, data:d})
+}
+
+
+
+function write_pixel(canvas, x, y, color) {
+  // Given a canvas, write a color value to the pixel at position x, y.
+  
+  const index = (canvas.w * y) + x
+  canvas.data[index] = [color.red, color.green, color.blue]
+    
+  return canvas
+}
+
+function pixel_at(canvas, x, y) {
+  // Given a canvas, return a color() representing the value of the pixel at x, y.
+  const index = (canvas.w * y) + x
+  
+  return color(canvas.data[index][0], canvas.data[index][1], canvas.data[index][2])
 }

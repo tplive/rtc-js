@@ -186,7 +186,7 @@ function test_multiply_colors_function() {
   return (c3.red == c1.red * c2.red && c3.blue == c1.blue * c2.blue && c3.green == c1.green * c2.green) 
 }
 
-function test_canvas_function() {
+function test_html_canvas_function() {
   // Creates a canvas initialized to all black pixels.
   // ID of canvas element is that of its parent, suffixed with "_canvas"
   
@@ -194,30 +194,69 @@ function test_canvas_function() {
   var w = 10
   var h = 20
   
-  var context = canvas(parent , w, h)
+  const can = html_canvas(parent, w, h)
+  const context = can.getContext("2d")
   context.fillStyle = "black"
   context.fillRect(0, 0, w, h)
+  
+  
   
   return !!document.getElementById(parent + "_canvas")
 }
 
-function test_get_pixel_color_function() {
+function test_html_get_pixel_color_function() {
   // Create canvas, set a pixel to a given color value.
   // Read color value, compare.
   
-  var parent = "canvas_list"
-  var w = 10
-  var h = 20
+  const parent = "canvas_list"
+  const w = 10
+  const h = 20
   
-  var ctx = canvas(parent, w, h)
+  const can = html_canvas(parent, w, h)
+  const ctx = can.getContext("2d")
   ctx.fillStyle = "black"
   ctx.fillRect(0, 0, w, h)
   ctx.fillStyle = "red"
   ctx.fillRect(2, 2, 3, 3)
   
-  var imgData = ctx.getImageData(2, 2, 1, 1)
-  var c1 = color(255, 0,0)
-  var c2 = color(imgData.data[0], imgData.data[1], imgData.data[2])
+  const imgData = ctx.getImageData(2, 2, 1, 1)
+  const c1 = color(255, 0,0)
+  const c2 = color(imgData.data[0], imgData.data[1], imgData.data[2])
   
   return (c1.red == c2.red && c1.green == c2.green && c1.blue == c2.blue)
+}
+
+function test_html_canvas_to_ppm_function() {
+  // Will convert canvas data to a valid ppm file header.
+  // Given a canvas of 80x40 pixels, the header should look like this:
+  // P3
+  // 80 40
+  // 255
+  
+  const can = html_canvas("body", 80, 40)
+  const ppm = html_canvas_to_ppm(can)
+  
+  return (ppm === `P3\n80 40\n255\n`)
+}
+
+function test_canvas_function() {
+  // This is a test for a canvas function that is pure data, not the HTML element called canvas.
+  // A canvas is an object with width, height and a data array for pixel values.
+  const w = 80
+  const h = 80
+  var can = canvas(w, h)
+  can.data[11] = [255, 123, 234]
+   
+  return (can.width === w && can.height === h && can.data[11][0] === 255 && can.data[11][1] === 123 && can.data[11][2] === 234)
+}
+
+function test_write_pixel_function() {
+  // Given a canvas, write a color to a pixel at desired coordinates and test reading the value.
+
+  var can = canvas(40, 50)
+  var c1 = color(123, 234, 255)
+  can = write_pixel(can, 2, 3, c1)
+  var pixel = pixel_at(can, 2, 3)
+  
+  return (pixel.red === c1.red && pixel.green === c1.green && pixel.blue === c1.blue) 
 }

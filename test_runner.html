@@ -1,5 +1,10 @@
 <!DOCTYPE html>
 <html>
+<style>
+pre {
+  background-color: lightgrey;
+}
+</style>
 <body>
 <script>
 window.onerror = function(errorMsg, url, lineNumber){
@@ -25,7 +30,7 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>Testing Canvas functions</h2>
 <ul id="canvas_list"></ul>
 
-<p id="error"></ul>
+<pre><code id="error"></code></pre>
 
 <script src="js/functions.js"></script>
 <script src="js/tests.js"></script>
@@ -80,8 +85,12 @@ runTest("colors_list", test_subtract_colors_function)
 runTest("colors_list", test_multiply_color_function)
 runTest("colors_list", test_multiply_colors_function)
 
+runTest("canvas_list", test_html_canvas_function)
+runTest("canvas_list", test_html_get_pixel_color_function)
+runTest("canvas_list", test_html_canvas_to_ppm_function)
+
 runTest("canvas_list", test_canvas_function)
-runTest("canvas_list", test_get_pixel_color_function)
+runTest("canvas_list", test_write_pixel_function)
 
 
 </script>

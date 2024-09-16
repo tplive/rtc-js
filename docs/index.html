@@ -126,7 +126,8 @@ a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bi
 <p><code>fillrect(x, y, w, h)</code> skriver et rektangel på posisjon <code>(x, y)</code> og størrelse <code>(w, h)</code>.</p>
 <p>Dette fungerer. Canvasen ser slik ut:</p>
 <p><img src="canvas_element.png"/></p>
-<p></p>
+
+<p>Dette canvas opplegget ble bare tull. Jeg finner ut at det slett ikke er nødvendig med noen HTML-canvas, i boka er canvas bare en abstraksjon for et lerret som har bredd og høyde, og en fargeverdi for hver pixel. Jeg krangler mye før jeg skjønner hva som må til - et canvas har w * h pixler og hver pixel er et array med tre verdier. Så et array med subarray. Yey! :D Og indexverdien for et x,y koordinat er gitt ved: (w * y) + x.</p>
 <p></p>
 <p></p>
 
