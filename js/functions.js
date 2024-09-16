@@ -94,7 +94,11 @@ function point(a,b,c) {
 // *** COLOR FUNCTIONS
 
 function color(r, g, b) {
-  return Object.freeze({ red:r, green:g, blue:b})
+  return Object.freeze({ 
+    red:r, 
+    green:g, 
+    blue:b,
+    toString: function() { return `red: ${this.red}, green: ${this.green}, blue: ${this.blue}`}})
 }
 
 function add_colors(c1, c2) {
@@ -115,6 +119,29 @@ function multiply_color(s, c1) {
 function multiply_colors(c1, c2) {
   // Multiply r, g, b components of two colors by each other
   return color(c1.red * c2.red, c1.green * c2.green, c1.blue * c2.blue)
+}
+
+function scale_color(c) {
+  // Scale the value of a color between 0-255
+  // > 1.0 = 255
+  //   1.0 = 255
+  //   0.5 = 128
+  //   0.0 = 0
+  // < 0.0 = 0
+  
+  let red = 255 * c.red
+  red = red > 255 ? 255 : red && red < 0 ? 0 : red
+  
+  let grn = 255 * c.green
+  grn = grn > 255 ? 255 : grn && grn < 0 ? 0 : grn
+  
+  let blu = 255 * c.blue
+  blu = blu > 255 ? 255 : grn && blu < 0 ? 0 : blu
+    
+  //display_msg("error", color(red, grn, blu).toString())
+  
+  return color(Math.round(red), Math.round(grn), Math.round(blu))
+  
 }
 
 // *** CANVAS FUNCTIONS
@@ -149,27 +176,57 @@ ${canvas.width} ${canvas.height}
 function canvas(w, h) {
   // Create a canvas abstraction object. It has a width and a height and a pixel array.
   // Each pixel is defined by three values, r, g, b.
-  // The format is an array with subarrays of three values.
+  // The format is a single array or bit stream.
   // To make the array as efficient as possible, we make it a const and pre-initialize length.
+  // The RTC book assumes all x and y values are 0-based.
+  // So 0 < x < w - 1, and 0 < y < h - 1
   
-  const d = Array(w * h).fill([0, 0, 0])
+  const b = 3 // Bits per pixel. rgb = 3. rgba = 4.
+  const d = Array(w * h * b).fill(0)
+  //display_msg("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
   
   return {
-    width:w, 
-    height:h, 
+    width:w,
+    height:h,
     data:d,
     pixel_at: function(x, y) {
-      const i = (this.w * y) + x
+      // Make sure pixels are within the canvas.
+      if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
+        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+      }
+      
+      const i = (w * y + x) * b
   
-      return color(this.data[i][0], this.data[i][1], this.data[i][2])
+      return color(this.data[i], this.data[i+1], this.data[i+2])
     },
     write_pixel: function(x, y, color) {
-      const i = (w * y) + x
+    // Make sure pixels are within the canvas.
+      if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
+        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+      }
+      const i = (w * y + x) * b
       // For debugging
-      //display_msg("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${display_color(color)} `)
+      //display_msg("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
       
-      this.data[i] = [color.red, color.green, color.blue]
-      //display_msg("error", "write_pixel:" + this.data[i])
+      this.data[i]   = color.red
+      this.data[i+1] = color.green
+      this.data[i+2] = color.blue
+      //display_msg("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
     }
     }
+}
+
+function canvas_to_ppm(canvas) {
+  // Take a canvas object and return a PPM file.
+  // The header should look like this, where 80 40 is W and H:
+  // P3
+  // 80 40
+  // 255
+  
+  var str = `P3
+${canvas.width} ${canvas.height}
+255
+${canvas.data.join(" ")}
+`
+  return str
 }

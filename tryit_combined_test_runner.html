@@ -18,7 +18,14 @@ window.onerror = function(errorMsg, url, lineNumber){
 
 <h2>Testing Tuple functions</h2>
 <ul id="test_list"></ul>
-<p id="error"></ul>
+
+<h2>Testing Color functions</h2>
+<ul id="colors_list"></ul>
+
+<h2>Testing Canvas functions</h2>
+<ul id="canvas_list"></ul>
+
+<pre><code id="error"></code></pre>
 
 <script>
 // *** FUNCTION DEFINITIONS
@@ -113,6 +120,162 @@ function vector(a,b,c) {
 function point(a,b,c) {
   return tuple(a,b,c,1)
 }
+
+// *** COLOR FUNCTIONS
+
+function color(r, g, b) {
+  return Object.freeze({ 
+    red:r, 
+    green:g, 
+    blue:b,
+    toString: function() { return `red: ${this.red}, green: ${this.green}, blue: ${this.blue}`}})
+}
+
+function add_colors(c1, c2) {
+  // Adding two colors by simple addition
+  return color(c1.red + c2.red, c1.green + c2.green, c1.blue + c2.blue)
+}
+
+function subtract_colors(c1, c2) {
+  // Subtracting two colors by simple subtraction
+  return color(c1.red - c2.red, c1.green - c2.green, c1.blue - c2.blue)
+}
+
+function multiply_color(s, c1) {
+  // Multiply scalar value by r, g, b components
+  return color(s * c1.red, s * c1.green, s * c1.blue)
+}
+
+function multiply_colors(c1, c2) {
+  // Multiply r, g, b components of two colors by each other
+  return color(c1.red * c2.red, c1.green * c2.green, c1.blue * c2.blue)
+}
+
+function scale_color(c) {
+  // Scale the value of a color between 0-255
+  // > 1.0 = 255
+  //   1.0 = 255
+  //   0.5 = 128
+  //   0.0 = 0
+  // < 0.0 = 0
+  
+  let red = 255 * c.red
+  red = red > 255 ? 255 : red && red < 0 ? 0 : red
+  
+  let grn = 255 * c.green
+  grn = grn > 255 ? 255 : grn && grn < 0 ? 0 : grn
+  
+  let blu = 255 * c.blue
+  blu = blu > 255 ? 255 : grn && blu < 0 ? 0 : blu
+    
+  //display_msg("error", color(red, grn, blu).toString())
+  
+  return color(Math.round(red), Math.round(grn), Math.round(blu))
+  
+}
+
+// *** CANVAS FUNCTIONS
+
+function html_canvas(parent, width, height) {
+  // Creates a canvas element as a child of parent, dimensions specified by width and height.
+  // Returns the canvas context.
+  
+  const can = document.createElement("canvas")
+  can.setAttribute("width", width)
+  can.setAttribute("height", height)
+  can.setAttribute("id", parent + "_canvas")
+  document.body.appendChild(can)
+  
+  return can
+}
+
+function html_canvas_to_ppm(canvas) {
+  // Take a canvas object and return a PPM file header
+  // The header should look like this, where 80 40 is W and H:
+  // P3
+  // 80 40
+  // 255
+  
+  var str = `P3
+${canvas.width} ${canvas.height}
+255
+`
+  return str
+}
+
+function canvas(w, h) {
+  // Create a canvas abstraction object. It has a width and a height and a pixel array.
+  // Each pixel is defined by three values, r, g, b.
+  // The format is a single array or bit stream.
+  // To make the array as efficient as possible, we make it a const and pre-initialize length.
+  // The RTC book assumes all x and y values are 0-based.
+  // So 0 < x < w - 1, and 0 < y < h - 1
+  
+  const b = 3 // Bits per pixel. rgb = 3. rgba = 4.
+  const d = Array(w * h * b).fill(0)
+  //display_msg("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
+  
+  return {
+    width:w,
+    height:h,
+    data:d,
+    bits:b,
+    pixel_at: function(x, y) {
+      // Make sure pixels are within the canvas.
+      if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
+        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+      }
+      
+      const i = (w * y + x) * b
+  
+      return color(this.data[i], this.data[i+1], this.data[i+2])
+    },
+    write_pixel: function(x, y, color) {
+    // Make sure pixels are within the canvas.
+      if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
+        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+      }
+      const i = (w * y + x) * b
+      // For debugging
+      //display_msg("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
+      
+      this.data[i]   = color.red
+      this.data[i+1] = color.green
+      this.data[i+2] = color.blue
+      //display_msg("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
+    }
+    }
+}
+
+function canvas_to_ppm(canvas) {
+  // Take a canvas object and return a PPM file.
+  // The header should look like this, where 80 40 is W and H:
+  // P3
+  // 80 40
+  // 255
+  
+  const pixels = Math.floor(canvas.width * canvas.height )
+  const max_ppm_width = 70
+  const elements_per_line = Math.floor(max_ppm_width / canvas.bits)
+  const lines = Math.floor(pixels / elements_per_line)
+  
+  display_msg("error", "Lines: " + lines)
+  display_msg("error", "Pixels per line: " + elements_per_line)
+  
+  for (let k in canvas.data) {
+    if ( k % elements_per_line === 0) {
+      canvas.data.splice( k, 0, `\n`)
+    }
+  }
+  
+  var str = `P3
+${canvas.width} ${canvas.height}
+255
+${canvas.data.join(" ")}
+`
+  return str
+}
+
 </script>
 <script>
 // *** TESTS
@@ -253,6 +416,256 @@ function test_cross_function() {
   
   return (equal_tuples(uv, vector(-1, 2, -1)) && equal_tuples(vu, vector(1, -2, 1)))
 }
+
+// *** COLOR TESTS
+
+function test_color_function() {
+  // Colors are tuples too!
+  // Test creating a color(r, g, b) object
+  var c = color(-0.5, 0.4, 1.7)
+  return (c.red == -0.5 && c.green == 0.4 && c.blue == 1.7)
+}
+
+function test_add_colors_function() {
+  // Adding two colors means simple addition of their r, g and b values.
+  
+  var c1 = color(0.9, 0.6, 0.75)
+  var c2 = color(0.7, 0.1, 0.25)
+  
+  var c3 = add_colors(c1, c2)
+  return (c3.red == c1.red + c2.red && c3.blue == c1.blue + c2.blue && c3.green == c1.green + c2.green) 
+}
+
+function test_subtract_colors_function() {
+  // Subtracting two colors means simple subtraction of their r, g and b values.
+  
+  var c1 = color(0.9, 0.6, 0.75)
+  var c2 = color(0.7, 0.1, 0.25)
+  
+  var c3 = subtract_colors(c1, c2)
+  return (c3.red == c1.red - c2.red && c3.blue == c1.blue - c2.blue && c3.green == c1.green - c2.green) 
+}
+
+function test_multiply_color_function() {
+  // Multiply r, g and b values by a scalar value.
+  
+  var c1 = color(0.9, 0.6, 0.75)
+  var scalar = 1.5
+  
+  var c3 = multiply_color(scalar, c1)
+  return (c3.red == c1.red * scalar && c3.blue == c1.blue * scalar && c3.green == c1.green * scalar) 
+}
+
+function test_multiply_colors_function() {
+  // Multiply r, g and b values of two colors by each other.
+  
+  var c1 = color(0.9, 0.6, 0.75)
+  var c2 = color(0.7, 0.1, 0.25)
+    
+  var c3 = multiply_colors(c1, c2)
+  return (c3.red == c1.red * c2.red && c3.blue == c1.blue * c2.blue && c3.green == c1.green * c2.green) 
+}
+
+function test_scale_color_function() {
+  // Scale color to value suitable for PPM file.
+  // min = 0
+  // max = 255
+  // color = color object to be scaled.
+  // return a new color object
+  
+  const min = 0   // Minimum scaled value
+  const max = 255 // Maximum scaled value
+  
+  const c1 = color(0.9, -1.5, 2)
+  const s1 = scale_color(c1)
+  
+  return (s1.red === 230 && s1.green === 0 && s1.blue === 255)
+  
+}
+
+function test_html_canvas_function() {
+  // Creates a canvas initialized to all black pixels.
+  // ID of canvas element is that of its parent, suffixed with "_canvas"
+  
+  var parent = "canvas_list"
+  var w = 10
+  var h = 20
+  
+  const can = html_canvas(parent, w, h)
+  const context = can.getContext("2d")
+  context.fillStyle = "black"
+  context.fillRect(0, 0, w, h)
+  
+  
+  
+  return !!document.getElementById(parent + "_canvas")
+}
+
+function test_html_get_pixel_color_function() {
+  // Create canvas, set a pixel to a given color value.
+  // Read color value, compare.
+  
+  const parent = "canvas_list"
+  const w = 10
+  const h = 20
+  
+  const can = html_canvas(parent, w, h)
+  const ctx = can.getContext("2d")
+  ctx.fillStyle = "black"
+  ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = "red"
+  ctx.fillRect(2, 2, 3, 3)
+  
+  const imgData = ctx.getImageData(2, 2, 1, 1)
+  const c1 = color(255, 0,0)
+  const c2 = color(imgData.data[0], imgData.data[1], imgData.data[2])
+  
+  return (c1.red == c2.red && c1.green == c2.green && c1.blue == c2.blue)
+}
+
+function test_html_canvas_to_ppm_function() {
+  // Will convert canvas data to a valid ppm file header.
+  // Given a canvas of 80x40 pixels, the header should look like this:
+  // P3
+  // 80 40
+  // 255
+  
+  const can = html_canvas("body", 80, 40)
+  const ppm = html_canvas_to_ppm(can)
+  
+  return (ppm === `P3\n80 40\n255\n`)
+}
+
+function test_canvas_function() {
+  // This is a test for a canvas function that is pure data, not the HTML element called canvas.
+  // A canvas is an object with width, height and a data array for pixel values.
+  const w = 12
+  const h = 12
+  var can = canvas(w, h)
+  
+  // Test all values are 0.
+  let sum = 0
+  for (let key in can.data) {
+    sum += can.data[key];
+  }
+  const valzero = sum === 0
+    
+  const i = 11
+  can.data[11] = 255
+  can.data[11+1] = 123
+  can.data[11+2] = 234
+  //display_msg("error", "at i=11: " + can.data[11])
+  return (can.width === w && can.height === h && can.data[11] === 255 && can.data[11+1] === 123 && can.data[11+2] === 234 && can.data[1] == 0 && valzero)
+}
+
+function test_write_pixel_function() {
+  // Given a canvas, write a color to a pixel at desired coordinates and test reading the value.
+  // To get pixel index value: w * y + x * b
+  const w = 8
+  const h = 8
+  const can = canvas(w, h)
+  const c1 = color(11, 22, 33)
+  const len = can.data.length
+  
+  can.write_pixel(2, 2, c1)
+
+  if(can.data.length > len) {
+    display_msg("error", "Array has been lengthened! Was: " + len + " and now: " + can.data.length )
+    return false
+  }
+  const p1 = can.pixel_at(2, 2)
+  
+  //display_msg("error", `p1index: ${p1index} +1: ${p1index+1} +2x: ${p1index+2}`)
+  //display_msg("error", `p1index: ${can.data[p1index]} +1: ${can.data[p1index+1]} +2x: ${can.data[p1index+2]}`)
+  return (p1.red === c1.red && p1.green === c1.green && p1.blue === c1.blue) 
+}
+
+function test_catch_canvas_out_of_bounds() {
+  // Given a canvas, test that writing pixels or reading outside bounds will throw an exception.
+  const w = 7
+  const h = 6
+  const can = canvas(w, h)
+  const c1 = color(110, 220, 330) // Color values are unbounded for calculations, but cannot exceed 255 in display.
+  
+  var errors = [] // An array of errors from tests below
+  
+  var t1, t2, t3, t4, t5 = false
+  try {
+    can.write_pixel(4, 5, c1) // Should not fail
+    can.pixel_at(4, 5, c1) // Should not fail
+  } catch (err) {
+    errors.push(err)
+    t1 = true
+  }
+  
+  try {
+    can.write_pixel(-1, 1) // -1 is out of bounds
+  } catch (err) {
+    errors.push(err)
+    t2 = true
+  }
+      
+  try {
+      can.write_pixel(1, -1) // -1 is out of bounds
+  } catch (err) {
+    errors.push(err)
+    t3 = true
+  }
+  
+  try {
+    can.write_pixel(w, h + 1) // y > h is out of bounds
+  } catch (err) {
+    errors.push(err)
+    t4 = true
+  }
+  
+  try {
+    can.write_pixel(w + 1, h) // x > w is out of bounds
+  } catch (err) {
+    errors.push(err)
+    t5 = true
+  }
+  
+  //display_msg("error", "Failed tests: " + errors.join("\n"))
+    
+  return ( !t1 && t2 && t3 && t4 && t5 ) 
+}
+
+function test_constructing_ppm_header() {
+  // PPM header test
+  // The header should look like this, where 80 40 is W and H:
+  // P3
+  // 80 40
+  // 255
+  
+  const w = 80
+  const h = 40
+  const c = canvas(w, h)
+  
+  c.data = []
+  ppm = canvas_to_ppm(c)
+  //display_msg("error", ppm)
+  
+  return (ppm === `P3\n80 40\n255\n\n`)
+}
+
+function test_canvas_to_ppm_function() {
+  // Test function for making a ppm file from a canvas.
+  const w = 4
+  const h = 4
+  const can = canvas(w, h)
+  
+  can.write_pixel(0,0, color(1, 1, 1))
+  can.write_pixel(1,0, color(2, 2, 2))
+  can.write_pixel(0,1, color(3, 3, 3))
+  can.write_pixel(1,1, color(4, 4, 4))
+  
+  const ppm = canvas_to_ppm(can)
+  
+  //display_msg("error", ppm)
+  return (ppm === `P3\n4 4\n255\n1 1 1 2 2 2 0 0 0 0 0 0 3 3 3 4 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n`)
+  
+}
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -284,6 +697,32 @@ function runTest(domId, callback) {
 
 }
 
+function test_ppm_pixel_data() {
+  // Test pixel data is valid.
+  // File should end with newline.
+  // No line should exceed 70 characters, and must not split a color in two.
+  // Colors must be scaled to values between 0 and 255.
+  
+  const w = 24
+  const h = 11
+  const can = canvas(w, h)
+  const c1 = color(1.0, 0.55432, 0.4)
+  
+  const scaled_color = scale_color(c1)
+    
+  for (let x = 0; x < w; x++) {
+    for (let y = 0; y < h; y++) {
+      can.write_pixel(x, y, scale_color(c1))
+    }
+  }
+  
+  const ppm = canvas_to_ppm(can)
+  display_msg("error", ppm)
+ 
+  return false
+  
+}
+
 runTest("test_list", test_tuple_function)
 runTest("test_list", test_vector_function)
 runTest("test_list", test_point_function)
@@ -298,6 +737,20 @@ runTest("test_list", test_magnitude_function)
 runTest("test_list", test_normalize_function)
 runTest("test_list", test_dot_function)
 runTest("test_list", test_cross_function)
+
+runTest("colors_list", test_color_function)
+runTest("colors_list", test_add_colors_function)
+runTest("colors_list", test_subtract_colors_function)
+runTest("colors_list", test_multiply_color_function)
+runTest("colors_list", test_multiply_colors_function)
+runTest("colors_list", test_scale_color_function)
+
+runTest("canvas_list", test_canvas_function)
+runTest("canvas_list", test_write_pixel_function)
+runTest("canvas_list", test_catch_canvas_out_of_bounds)
+runTest("canvas_list", test_constructing_ppm_header)
+runTest("canvas_list", test_ppm_pixel_data)
+runTest("canvas_list", test_canvas_to_ppm_function)
 
 </script>
 

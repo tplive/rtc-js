@@ -186,6 +186,23 @@ function test_multiply_colors_function() {
   return (c3.red == c1.red * c2.red && c3.blue == c1.blue * c2.blue && c3.green == c1.green * c2.green) 
 }
 
+function test_scale_color_function() {
+  // Scale color to value suitable for PPM file.
+  // min = 0
+  // max = 255
+  // color = color object to be scaled.
+  // return a new color object
+  
+  const min = 0   // Minimum scaled value
+  const max = 255 // Maximum scaled value
+  
+  const c1 = color(0.9, -1.5, 2)
+  const s1 = scale_color(c1)
+  
+  return (s1.red === 230 && s1.green === 0 && s1.blue === 255)
+  
+}
+
 function test_html_canvas_function() {
   // Creates a canvas initialized to all black pixels.
   // ID of canvas element is that of its parent, suffixed with "_canvas"
@@ -245,23 +262,119 @@ function test_canvas_function() {
   const w = 12
   const h = 12
   var can = canvas(w, h)
-  can.data[11] = [255, 123, 234]
-   
-  return (can.width === w && can.height === h && can.data[11][0] === 255 && can.data[11][1] === 123 && can.data[11][2] === 234 && can.data[1][1] == 0)
+  const i = 11
+  can.data[11] = 255
+  can.data[11+1] = 123
+  can.data[11+2] = 234
+  //display_msg("error", "at i=11: " + can.data[11])
+  return (can.width === w && can.height === h && can.data[11] === 255 && can.data[11+1] === 123 && can.data[11+2] === 234 && can.data[1] == 0)
 }
 
 function test_write_pixel_function() {
   // Given a canvas, write a color to a pixel at desired coordinates and test reading the value.
-  // To get pixel index value: (w * y) + x
+  // To get pixel index value: w * y + x * b
   const w = 8
   const h = 8
   const can = canvas(w, h)
   const c1 = color(11, 22, 33)
+  const len = can.data.length
   
   can.write_pixel(2, 2, c1)
+
+  if(can.data.length > len) {
+    display_msg("error", "Array has been lengthened! Was: " + len + " and now: " + can.data.length )
+    return false
+  }
+  const p1 = can.pixel_at(2, 2)
   
-  const p1 = color(can.data[(8 * 2) + 2][0], can.data[(8 * 2) + 2][1], can.data[(8 * 2) + 2][2])
-  
-  //display_msg("error", "p1:" + display_color(p1))  
+  //display_msg("error", `p1index: ${p1index} +1: ${p1index+1} +2x: ${p1index+2}`)
+  //display_msg("error", `p1index: ${can.data[p1index]} +1: ${can.data[p1index+1]} +2x: ${can.data[p1index+2]}`)
   return (p1.red === c1.red && p1.green === c1.green && p1.blue === c1.blue) 
+}
+
+function test_catch_canvas_out_of_bounds() {
+  // Given a canvas, test that writing pixels or reading outside bounds will throw an exception.
+  const w = 7
+  const h = 6
+  const can = canvas(w, h)
+  const c1 = color(110, 220, 330) // Color values are unbounded for calculations, but cannot exceed 255 in display.
+  
+  var errors = [] // An array of errors from tests below
+  
+  var t1, t2, t3, t4, t5 = false
+  try {
+    can.write_pixel(4, 5, c1) // Should not fail
+    can.pixel_at(4, 5, c1) // Should not fail
+  } catch (err) {
+    errors.push(err)
+    t1 = true
+  }
+  
+  try {
+    can.write_pixel(-1, 1) // -1 is out of bounds
+  } catch (err) {
+    errors.push(err)
+    t2 = true
+  }
+      
+  try {
+      can.write_pixel(1, -1) // -1 is out of bounds
+  } catch (err) {
+    errors.push(err)
+    t3 = true
+  }
+  
+  try {
+    can.write_pixel(w, h + 1) // y > h is out of bounds
+  } catch (err) {
+    errors.push(err)
+    t4 = true
+  }
+  
+  try {
+    can.write_pixel(w + 1, h) // x > w is out of bounds
+  } catch (err) {
+    errors.push(err)
+    t5 = true
+  }
+  
+  //display_msg("error", "Failed tests: " + errors.join("\n"))
+    
+  return ( !t1 && t2 && t3 && t4 && t5 ) 
+}
+
+function test_constructing_ppm_header() {
+  // PPM header test
+  // The header should look like this, where 80 40 is W and H:
+  // P3
+  // 80 40
+  // 255
+  
+  const w = 80
+  const h = 40
+  const c = canvas(w, h)
+  
+  c.data = []
+  ppm = canvas_to_ppm(c)
+  //display_msg("error", ppm)
+  
+  return (ppm === `P3\n80 40\n255\n\n`)
+}
+
+function test_canvas_to_ppm_function() {
+  // Test function for making a ppm file from a canvas.
+  const w = 4
+  const h = 4
+  const can = canvas(w, h)
+  
+  can.write_pixel(0,0, color(1, 1, 1))
+  can.write_pixel(1,0, color(2, 2, 2))
+  can.write_pixel(0,1, color(3, 3, 3))
+  can.write_pixel(1,1, color(4, 4, 4))
+  
+  const ppm = canvas_to_ppm(can)
+  
+  //display_msg("error", ppm)
+  return (ppm === `P3\n4 4\n255\n1 1 1 2 2 2 0 0 0 0 0 0 3 3 3 4 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n`)
+  
 }
