@@ -18,7 +18,8 @@ window.onerror = function(errorMsg, url, lineNumber){
 
 <h2>Projectile simulator</h2>
 <ul id="test_list"></ul>
-<p id="error"></ul>
+
+<pre><p id="error"></ul></pre>
 
 <script>
 // *** FUNCTION DEFINITIONS
@@ -26,7 +27,7 @@ window.onerror = function(errorMsg, url, lineNumber){
 const PRECISION = 5
 const EPSILON = 1.0*10**(-PRECISION)
 
-function display_msg(domId, msg) {
+function log(domId, msg) {
   const para = document.createElement("p");
   const node = document.createTextNode(msg);
   para.appendChild(node);
@@ -46,10 +47,6 @@ function equal_tuples(a, b) {
   // Compare x, y, z coordinates of a tuple. JS does not distinguish these types of objects
   // so a tuple == vector == point at this time.
   return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z))
-}
-
-function display_tuple(a) {
-  return `x:${a.x} y:${a.y} z:${a.z} w:${a.w}`
 }
 
 function add_tuples(a, b) {
@@ -103,7 +100,12 @@ function cross(a, b) {
 }
 
 function tuple(a, b, c, d) {
-  return Object.freeze({ x:a, y:b, z:c, w:d })
+  return Object.freeze({ 
+    x:a,
+  	y:b,
+    z:c,
+    w:d,
+    toString: function() { return `x:${this.x} y:${this.y} z:${this.z} w:${this.w}`}})
 }
 
 function vector(a,b,c) {
@@ -113,6 +115,176 @@ function vector(a,b,c) {
 function point(a,b,c) {
   return tuple(a,b,c,1)
 }
+
+// *** COLOR FUNCTIONS
+
+function color(r, g, b) {
+  return Object.freeze({ 
+    red:r, 
+    green:g, 
+    blue:b,
+    toString: function() { return `red: ${this.red}, green: ${this.green}, blue: ${this.blue}`}})
+}
+
+function add_colors(c1, c2) {
+  // Adding two colors by simple addition
+  return color(c1.red + c2.red, c1.green + c2.green, c1.blue + c2.blue)
+}
+
+function subtract_colors(c1, c2) {
+  // Subtracting two colors by simple subtraction
+  return color(c1.red - c2.red, c1.green - c2.green, c1.blue - c2.blue)
+}
+
+function multiply_color(s, c1) {
+  // Multiply scalar value by r, g, b components
+  return color(s * c1.red, s * c1.green, s * c1.blue)
+}
+
+function multiply_colors(c1, c2) {
+  // Multiply r, g, b components of two colors by each other
+  return color(c1.red * c2.red, c1.green * c2.green, c1.blue * c2.blue)
+}
+
+function scale_color(c) {
+  // Scale the value of a color between 0-255
+  // > 1.0 = 255
+  //   1.0 = 255
+  //   0.5 = 128
+  //   0.0 = 0
+  // < 0.0 = 0
+  
+  let red = 255 * c.red
+  red = red > 255 ? 255 : red && red < 0 ? 0 : red
+  
+  let grn = 255 * c.green
+  grn = grn > 255 ? 255 : grn && grn < 0 ? 0 : grn
+  
+  let blu = 255 * c.blue
+  blu = blu > 255 ? 255 : grn && blu < 0 ? 0 : blu
+    
+  //log("error", color(red, grn, blu).toString())
+  
+  return color(Math.round(red), Math.round(grn), Math.round(blu))
+  
+}
+
+// *** CANVAS FUNCTIONS
+
+function html_canvas(parent, width, height) {
+  // Creates a canvas element as a child of parent, dimensions specified by width and height.
+  // Returns the canvas context.
+  
+  const can = document.createElement("canvas")
+  can.setAttribute("width", width)
+  can.setAttribute("height", height)
+  can.setAttribute("id", parent + "_canvas")
+  document.body.appendChild(can)
+  
+  return can
+}
+
+function html_canvas_to_ppm(canvas) {
+  // Take a canvas object and return a PPM file header
+  // The header should look like this, where 80 40 is W and H:
+  // P3
+  // 80 40
+  // 255
+  
+  var str = `P3
+${canvas.width} ${canvas.height}
+255
+`
+  return str
+}
+
+function canvas(w, h) {
+  // Create a canvas abstraction object. It has a width and a height and a pixel array.
+  // Each pixel is defined by three values, r, g, b.
+  // The format is a single array or bit stream.
+  // To make the array as efficient as possible, we make it a const and pre-initialize length.
+  // The RTC book assumes all x and y values are 0-based.
+  // So 0 < x < w - 1, and 0 < y < h - 1
+  
+  const b = 3 // Bits per pixel. rgb = 3. rgba = 4.
+  const d = Array(w * h * b).fill(0)
+  //log("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
+  
+  return {
+    width:w,
+    height:h,
+    data:d,
+    bits:b,
+    pixel_at: function(x, y) {
+      // Make sure pixels are within the canvas.
+      if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
+        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+      }
+      
+      const i = (w * y + x) * b
+  
+      return color(this.data[i], this.data[i+1], this.data[i+2])
+    },
+    write_pixel: function(x, y, color) {
+    // Make sure pixels are within the canvas.
+      if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
+        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+      }
+      const i = (w * y + x) * b
+      // For debugging
+      //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
+      
+      this.data[i]   = color.red
+      this.data[i+1] = color.green
+      this.data[i+2] = color.blue
+      //log("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
+    }
+    }
+}
+
+function canvas_to_ppm(canvas) {
+  // Take a canvas object and return a PPM file.
+  // The header should look like this, where 80 40 is W and H:
+  // P3
+  // 80 40
+  // 255
+  
+  let ppm_array = []
+  let counter = 0
+  const bytes = canvas.width * canvas.height * canvas.bits
+  const bytes_per_line = Math.floor(70 / (canvas.bits + 1))
+  //log("error", "Bytes per line: " + bytes_per_line)
+  //log("error", "Bytes: " + bytes)
+  
+  for (let k in canvas.data) {
+    ppm_array.push(canvas.data[k])
+    counter++
+    if ( counter === bytes_per_line) {
+      //log("error", `k: ${k}, ${k % bytes_per_line}`)
+      ppm_array.push(`\n`)
+      counter = 0
+    }
+  }
+  // End file with a newline
+  ppm_array.push(`\n\n`)
+  
+  // Trim whitespace from each line
+  let split = ppm_array.join(" ")
+  split = split.split("\n")
+  
+  for (let i in split) {
+    split[i] = split[i].trim()
+    split[i] = split[i] + "\n"
+  }
+  //log("error", split)
+  var str = `P3
+${canvas.width} ${canvas.height}
+255
+${split.join("")}
+`
+  return str
+}
+
 </script>
 
 <script>
@@ -124,20 +296,43 @@ function point(a,b,c) {
 
 var ticks = 30
 var env = {gravity: vector(0, -0.1, 0), wind: vector(-0.01, 0, 0)}
-display_msg("test_list", `Gravity: ${display_tuple(env.gravity)}, Wind: ${display_tuple(env.wind)}`)
+log("test_list", `Gravity: ${env.gravity.toString()}, Wind: ${env.wind.toString()}`)
 
 var proj = {position: point(0, 1, 0), velocity: vector(1, 1, 0)}
-display_msg("test_list", `Projectile start position: ${display_tuple(proj.position)}, Start velocity: ${display_tuple(proj.velocity)}`)
+log("test_list", `Projectile start position: ${proj.position.toString()}, Start velocity: ${proj.velocity.toString()}`)
+
+const can = canvas(300, 300)
+const c1 = color(1, 1, 1)
+
+const html_can = html_canvas("error", can.width, can.height)
+var context = html_can.getContext("2d")
+context.fillStyle = "black"
+context.fillRect(0, 0, can.width, can.height)
+context.fillStyle = "white"
 
 // Loop
 while (ticks>=1) {
   ticks--
 
   proj = {position: add_tuples(proj.position, proj.velocity), velocity: add_tuples(add_tuples(proj.velocity, env.gravity), env.wind)}
-  display_msg("test_list", display_tuple(proj.position))
+  //log("test_list", proj.position.toString())
+  
+  let x = Math.round(proj.position.x * 1000 / can.width)
+  let y = can.width - Math.abs(Math.round(proj.position.y * 1000 / can.height))
+  const c = color(1, 1, 1)
+  //can.write_pixel(x, y, scale_color(c))
+  context.fillRect(x, y, 1, 1)
+
 }
 
 
+var imageData = context.getImageData(0, 0, can.width, can.height-1);
+can.data = imageData.data;
+
+
+const ppm = canvas_to_ppm(can)
+// Show canvas
+log("error", ppm)
 
 </script>
 

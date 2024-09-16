@@ -33,7 +33,7 @@ window.onerror = function(errorMsg, url, lineNumber){
 const PRECISION = 5
 const EPSILON = 1.0*10**(-PRECISION)
 
-function display_msg(domId, msg) {
+function log(domId, msg) {
   const para = document.createElement("p");
   const node = document.createTextNode(msg);
   para.appendChild(node);
@@ -168,7 +168,7 @@ function scale_color(c) {
   let blu = 255 * c.blue
   blu = blu > 255 ? 255 : grn && blu < 0 ? 0 : blu
     
-  //display_msg("error", color(red, grn, blu).toString())
+  //log("error", color(red, grn, blu).toString())
   
   return color(Math.round(red), Math.round(grn), Math.round(blu))
   
@@ -213,7 +213,7 @@ function canvas(w, h) {
   
   const b = 3 // Bits per pixel. rgb = 3. rgba = 4.
   const d = Array(w * h * b).fill(0)
-  //display_msg("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
+  //log("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
   
   return {
     width:w,
@@ -237,12 +237,12 @@ function canvas(w, h) {
       }
       const i = (w * y + x) * b
       // For debugging
-      //display_msg("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
+      //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
       
       this.data[i]   = color.red
       this.data[i+1] = color.green
       this.data[i+2] = color.blue
-      //display_msg("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
+      //log("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
     }
     }
 }
@@ -254,24 +254,38 @@ function canvas_to_ppm(canvas) {
   // 80 40
   // 255
   
-  const pixels = Math.floor(canvas.width * canvas.height )
-  const max_ppm_width = 70
-  const elements_per_line = Math.floor(max_ppm_width / canvas.bits)
-  const lines = Math.floor(pixels / elements_per_line)
-  
-  display_msg("error", "Lines: " + lines)
-  display_msg("error", "Pixels per line: " + elements_per_line)
+  let ppm_array = []
+  let counter = 0
+  const bytes = canvas.width * canvas.height * canvas.bits
+  const bytes_per_line = Math.floor(70 / (canvas.bits + 1))
+  //log("error", "Bytes per line: " + bytes_per_line)
+  //log("error", "Bytes: " + bytes)
   
   for (let k in canvas.data) {
-    if ( k % elements_per_line === 0) {
-      canvas.data.splice( k, 0, `\n`)
+    ppm_array.push(canvas.data[k])
+    counter++
+    if ( counter === bytes_per_line) {
+      //log("error", `k: ${k}, ${k % bytes_per_line}`)
+      ppm_array.push(`\n`)
+      counter = 0
     }
   }
+  // End file with a newline
+  ppm_array.push(`\n\n`)
   
+  // Trim whitespace from each line
+  let split = ppm_array.join(" ")
+  split = split.split("\n")
+  
+  for (let i in split) {
+    split[i] = split[i].trim()
+    split[i] = split[i] + "\n"
+  }
+  //log("error", split)
   var str = `P3
 ${canvas.width} ${canvas.height}
 255
-${canvas.data.join(" ")}
+${split.join("")}
 `
   return str
 }
@@ -554,7 +568,7 @@ function test_canvas_function() {
   can.data[11] = 255
   can.data[11+1] = 123
   can.data[11+2] = 234
-  //display_msg("error", "at i=11: " + can.data[11])
+  //log("error", "at i=11: " + can.data[11])
   return (can.width === w && can.height === h && can.data[11] === 255 && can.data[11+1] === 123 && can.data[11+2] === 234 && can.data[1] == 0 && valzero)
 }
 
@@ -570,13 +584,13 @@ function test_write_pixel_function() {
   can.write_pixel(2, 2, c1)
 
   if(can.data.length > len) {
-    display_msg("error", "Array has been lengthened! Was: " + len + " and now: " + can.data.length )
+    log("error", "Array has been lengthened! Was: " + len + " and now: " + can.data.length )
     return false
   }
   const p1 = can.pixel_at(2, 2)
   
-  //display_msg("error", `p1index: ${p1index} +1: ${p1index+1} +2x: ${p1index+2}`)
-  //display_msg("error", `p1index: ${can.data[p1index]} +1: ${can.data[p1index+1]} +2x: ${can.data[p1index+2]}`)
+  //log("error", `p1index: ${p1index} +1: ${p1index+1} +2x: ${p1index+2}`)
+  //log("error", `p1index: ${can.data[p1index]} +1: ${can.data[p1index+1]} +2x: ${can.data[p1index+2]}`)
   return (p1.red === c1.red && p1.green === c1.green && p1.blue === c1.blue) 
 }
 
@@ -626,7 +640,7 @@ function test_catch_canvas_out_of_bounds() {
     t5 = true
   }
   
-  //display_msg("error", "Failed tests: " + errors.join("\n"))
+  //log("error", "Failed tests: " + errors.join("\n"))
     
   return ( !t1 && t2 && t3 && t4 && t5 ) 
 }
@@ -642,11 +656,63 @@ function test_constructing_ppm_header() {
   const h = 40
   const c = canvas(w, h)
   
-  c.data = []
   ppm = canvas_to_ppm(c)
-  //display_msg("error", ppm)
+  //log("error", ppm.slice(0, 13))
   
-  return (ppm === `P3\n80 40\n255\n\n`)
+  return (ppm.slice(0, 13) === `P3\n${w} ${h}\n255\n`)
+}
+
+function test_ppm_pixel_data() {
+  // Test pixel data is valid.
+  // File should end with newline.
+  // No line should exceed 70 characters, and must not split a color in two.
+  // Colors must be scaled to values between 0 and 255.
+  
+  const w = 10
+  const h = 10
+  const can = canvas(w, h)
+  const c1 = color(1.0, 0.55432, 0.4)
+  
+  const scaled_color = scale_color(c1)
+  
+  // Fill all pixels with color value c1, scaled to 0-255
+  // This is part of the canvas_to_ppm function
+  for (let x = 0; x < w; x++) {
+    for (let y = 0; y < h; y++) {
+      can.write_pixel(x, y, scale_color(c1))
+    }
+  }
+  
+  let ppm = canvas_to_ppm(can)
+  //log("error", ppm)
+    
+  ppm = ppm.split("\n")
+    
+  let width_exceeded, starts_ws, ends_ws = false
+  let last_is_newline = true
+  
+  for (let i = 0; i < ppm.length; i++) {
+    if (ppm[i].length > 70) {
+      width_exceeded = true
+      log("error", "line " + (i + 1) + " exceeds 70 characters")
+    }
+    if(ppm[i][0] === " ") {
+      starts_ws = true
+      log("error", "line " + (i + 1) + " starts with whitespace")
+    }
+    if(ppm[i][ppm[i].length-1] === " ") {
+      ends_ws = true
+      log("error", "line " + (i + 1) + " ends with whitespace")
+    }
+  }
+  
+  if(ppm[ppm.length-1] != "") {
+    last_is_newline = false
+    log("error", "the last character is not a newline.")
+  }
+   
+  return (!width_exceeded && !starts_ws && !ends_ws && last_is_newline)
+  
 }
 
 function test_canvas_to_ppm_function() {
@@ -662,8 +728,8 @@ function test_canvas_to_ppm_function() {
   
   const ppm = canvas_to_ppm(can)
   
-  //display_msg("error", ppm)
-  return (ppm === `P3\n4 4\n255\n1 1 1 2 2 2 0 0 0 0 0 0 3 3 3 4 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n`)
+  //log("error", ppm)
+  return (ppm === `P3\n4 4\n255\n1 1 1 2 2 2 0 0 0 0 0 0 3 3 3 4 4\n4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n0 0 0 0 0 0 0 0 0 0 0 0 0 0\n\n\n\n`)
   
 }
 </script>
@@ -695,32 +761,6 @@ function runTest(domId, callback) {
   li_result.innerHTML = text
   li_result.style.color = color
 
-}
-
-function test_ppm_pixel_data() {
-  // Test pixel data is valid.
-  // File should end with newline.
-  // No line should exceed 70 characters, and must not split a color in two.
-  // Colors must be scaled to values between 0 and 255.
-  
-  const w = 24
-  const h = 11
-  const can = canvas(w, h)
-  const c1 = color(1.0, 0.55432, 0.4)
-  
-  const scaled_color = scale_color(c1)
-    
-  for (let x = 0; x < w; x++) {
-    for (let y = 0; y < h; y++) {
-      can.write_pixel(x, y, scale_color(c1))
-    }
-  }
-  
-  const ppm = canvas_to_ppm(can)
-  display_msg("error", ppm)
- 
-  return false
-  
 }
 
 runTest("test_list", test_tuple_function)

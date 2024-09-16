@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+window.onerror = function(errorMsg, url, lineNumber){
+    // any action you want goes here
+    // errorMsg is the error message itself.
+    // url should be the file presenting the error, though i have
+    //    found that it only presents to me the address of the site.
+    // lineNumber is the line number the error occoured on.
+    // here is an example of what you could do with it:
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+
+<h1>Test Runner</h1>
+
+<h2>Projectile simulator</h2>
+<ul id="test_list"></ul>
+<p id="error"></ul>
+
+<script src="js/functions.js"></script>
+
+<script>
+// *** RUN PROJECTILE SIMULATION
+
+// A projectile has a position (point) and a velocity (vector).
+// An environment has gravity (vector) and wind (vector).
+// A tick represents a unit of time. Each tick yields a new projectile with new position and velocity, based on environment.
+
+var ticks = 10
+var env = {gravity: vector(0, -0.1, 0), wind: vector(-0.01, 0, 0)}
+log("test_list", `Gravity: ${env.gravity.toString()}, Wind: ${env.wind.toString()}`)
+
+var proj = {position: point(0, 1, 0), velocity: vector(1, 1, 0)}
+log("test_list", `Projectile start position: ${proj.position.toString()}, Start velocity: ${proj.velocity.toString()}`)
+
+// Loop
+while (ticks>=1) {
+  ticks--
+
+  proj = {position: add_tuples(proj.position, proj.velocity), velocity: add_tuples(add_tuples(proj.velocity, env.gravity), env.wind)}
+  log("test_list", proj.position.toString())
+}
+
+
+
+
+</script>
+
+</body>
+
+</html>

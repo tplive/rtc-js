@@ -262,12 +262,20 @@ function test_canvas_function() {
   const w = 12
   const h = 12
   var can = canvas(w, h)
+  
+  // Test all values are 0.
+  let sum = 0
+  for (let key in can.data) {
+    sum += can.data[key];
+  }
+  const valzero = sum === 0
+    
   const i = 11
   can.data[11] = 255
   can.data[11+1] = 123
   can.data[11+2] = 234
-  //display_msg("error", "at i=11: " + can.data[11])
-  return (can.width === w && can.height === h && can.data[11] === 255 && can.data[11+1] === 123 && can.data[11+2] === 234 && can.data[1] == 0)
+  //log("error", "at i=11: " + can.data[11])
+  return (can.width === w && can.height === h && can.data[11] === 255 && can.data[11+1] === 123 && can.data[11+2] === 234 && can.data[1] == 0 && valzero)
 }
 
 function test_write_pixel_function() {
@@ -282,13 +290,13 @@ function test_write_pixel_function() {
   can.write_pixel(2, 2, c1)
 
   if(can.data.length > len) {
-    display_msg("error", "Array has been lengthened! Was: " + len + " and now: " + can.data.length )
+    log("error", "Array has been lengthened! Was: " + len + " and now: " + can.data.length )
     return false
   }
   const p1 = can.pixel_at(2, 2)
   
-  //display_msg("error", `p1index: ${p1index} +1: ${p1index+1} +2x: ${p1index+2}`)
-  //display_msg("error", `p1index: ${can.data[p1index]} +1: ${can.data[p1index+1]} +2x: ${can.data[p1index+2]}`)
+  //log("error", `p1index: ${p1index} +1: ${p1index+1} +2x: ${p1index+2}`)
+  //log("error", `p1index: ${can.data[p1index]} +1: ${can.data[p1index+1]} +2x: ${can.data[p1index+2]}`)
   return (p1.red === c1.red && p1.green === c1.green && p1.blue === c1.blue) 
 }
 
@@ -338,7 +346,7 @@ function test_catch_canvas_out_of_bounds() {
     t5 = true
   }
   
-  //display_msg("error", "Failed tests: " + errors.join("\n"))
+  //log("error", "Failed tests: " + errors.join("\n"))
     
   return ( !t1 && t2 && t3 && t4 && t5 ) 
 }
@@ -354,11 +362,63 @@ function test_constructing_ppm_header() {
   const h = 40
   const c = canvas(w, h)
   
-  c.data = []
   ppm = canvas_to_ppm(c)
-  //display_msg("error", ppm)
+  //log("error", ppm.slice(0, 13))
   
-  return (ppm === `P3\n80 40\n255\n\n`)
+  return (ppm.slice(0, 13) === `P3\n${w} ${h}\n255\n`)
+}
+
+function test_ppm_pixel_data() {
+  // Test pixel data is valid.
+  // File should end with newline.
+  // No line should exceed 70 characters, and must not split a color in two.
+  // Colors must be scaled to values between 0 and 255.
+  
+  const w = 10
+  const h = 10
+  const can = canvas(w, h)
+  const c1 = color(1.0, 0.55432, 0.4)
+  
+  const scaled_color = scale_color(c1)
+  
+  // Fill all pixels with color value c1, scaled to 0-255
+  // This is part of the canvas_to_ppm function
+  for (let x = 0; x < w; x++) {
+    for (let y = 0; y < h; y++) {
+      can.write_pixel(x, y, scale_color(c1))
+    }
+  }
+  
+  let ppm = canvas_to_ppm(can)
+  //log("error", ppm)
+    
+  ppm = ppm.split("\n")
+    
+  let width_exceeded, starts_ws, ends_ws = false
+  let last_is_newline = true
+  
+  for (let i = 0; i < ppm.length; i++) {
+    if (ppm[i].length > 70) {
+      width_exceeded = true
+      log("error", "line " + (i + 1) + " exceeds 70 characters")
+    }
+    if(ppm[i][0] === " ") {
+      starts_ws = true
+      log("error", "line " + (i + 1) + " starts with whitespace")
+    }
+    if(ppm[i][ppm[i].length-1] === " ") {
+      ends_ws = true
+      log("error", "line " + (i + 1) + " ends with whitespace")
+    }
+  }
+  
+  if(ppm[ppm.length-1] != "") {
+    last_is_newline = false
+    log("error", "the last character is not a newline.")
+  }
+   
+  return (!width_exceeded && !starts_ws && !ends_ws && last_is_newline)
+  
 }
 
 function test_canvas_to_ppm_function() {
@@ -374,7 +434,7 @@ function test_canvas_to_ppm_function() {
   
   const ppm = canvas_to_ppm(can)
   
-  //display_msg("error", ppm)
-  return (ppm === `P3\n4 4\n255\n1 1 1 2 2 2 0 0 0 0 0 0 3 3 3 4 4 4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n`)
+  //log("error", ppm)
+  return (ppm === `P3\n4 4\n255\n1 1 1 2 2 2 0 0 0 0 0 0 3 3 3 4 4\n4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n0 0 0 0 0 0 0 0 0 0 0 0 0 0\n\n\n\n`)
   
 }

@@ -1,15 +1,33 @@
 // *** FUNCTION DEFINITIONS
 
+
+// *** CONSTANTS
+
 const PRECISION = 5
 const EPSILON = 1.0*10**(-PRECISION)
 
-function display_msg(domId, msg) {
+// *** HELPER FUNCTIONS
+
+function log(domId, msg) {
   const para = document.createElement("p");
   const node = document.createTextNode(msg);
   para.appendChild(node);
   const element = document.getElementById(domId);
   element.appendChild(para);
 }
+
+function downloadPPMfile(ppm_data, name) {
+  // Download PPM file. Does NOT check that input data is valid PPM.
+  
+  var dataStr = "data:text/ppm;charset=utf-8," + encodeURIComponent(ppm_data)
+  var downloadAnchorNode = document.createElement("a")
+  downloadAnchorNode.innerHTML = "Click here to download file " + name + ".ppm"
+  downloadAnchorNode.setAttribute("href",     dataStr)
+  downloadAnchorNode.setAttribute("download", name + ".ppm")
+  document.getElementById("error").appendChild(downloadAnchorNode)
+}
+
+// *** VECTOR FUNCTIONS
 
 function equal(a, b) {
   // Comparing floating point numbers for equivalence may, due to rounding errors, fail.
@@ -23,10 +41,6 @@ function equal_tuples(a, b) {
   // Compare x, y, z coordinates of a tuple. JS does not distinguish these types of objects
   // so a tuple == vector == point at this time.
   return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z))
-}
-
-function display_tuple(a) {
-  return `x:${a.x} y:${a.y} z:${a.z} w:${a.w}`
 }
 
 function add_tuples(a, b) {
@@ -80,7 +94,12 @@ function cross(a, b) {
 }
 
 function tuple(a, b, c, d) {
-  return Object.freeze({ x:a, y:b, z:c, w:d })
+  return Object.freeze({ 
+    x:a,
+    y:b,
+    z:c,
+    w:d,
+    toString: function() { return `x:${this.x} y:${this.y} z:${this.z} w:${this.w}`}})
 }
 
 function vector(a,b,c) {
@@ -138,7 +157,7 @@ function scale_color(c) {
   let blu = 255 * c.blue
   blu = blu > 255 ? 255 : grn && blu < 0 ? 0 : blu
     
-  //display_msg("error", color(red, grn, blu).toString())
+  //log("error", color(red, grn, blu).toString())
   
   return color(Math.round(red), Math.round(grn), Math.round(blu))
   
@@ -166,6 +185,8 @@ function html_canvas_to_ppm(canvas) {
   // 80 40
   // 255
   
+  // DELETE ME
+  
   var str = `P3
 ${canvas.width} ${canvas.height}
 255
@@ -183,12 +204,13 @@ function canvas(w, h) {
   
   const b = 3 // Bits per pixel. rgb = 3. rgba = 4.
   const d = Array(w * h * b).fill(0)
-  //display_msg("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
+  //log("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
   
   return {
     width:w,
     height:h,
     data:d,
+    bits:b,
     pixel_at: function(x, y) {
       // Make sure pixels are within the canvas.
       if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
@@ -206,12 +228,12 @@ function canvas(w, h) {
       }
       const i = (w * y + x) * b
       // For debugging
-      //display_msg("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
+      //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
       
       this.data[i]   = color.red
       this.data[i+1] = color.green
       this.data[i+2] = color.blue
-      //display_msg("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
+      //log("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
     }
     }
 }
@@ -223,10 +245,38 @@ function canvas_to_ppm(canvas) {
   // 80 40
   // 255
   
+  let ppm_array = []
+  let counter = 0
+  const bytes = canvas.width * canvas.height * canvas.bits
+  const bytes_per_line = Math.floor(70 / (canvas.bits + 1))
+  //log("error", "Bytes per line: " + bytes_per_line)
+  //log("error", "Bytes: " + bytes)
+  
+  for (let k in canvas.data) {
+    ppm_array.push(canvas.data[k])
+    counter++
+    if ( counter === bytes_per_line) {
+      //log("error", `k: ${k}, ${k % bytes_per_line}`)
+      ppm_array.push(`\n`)
+      counter = 0
+    }
+  }
+  // End file with a newline
+  ppm_array.push(`\n\n`)
+  
+  // Trim whitespace from each line
+  let split = ppm_array.join(" ")
+  split = split.split("\n")
+  
+  for (let i in split) {
+    split[i] = split[i].trim()
+    split[i] = split[i] + "\n"
+  }
+  //log("error", split)
   var str = `P3
 ${canvas.width} ${canvas.height}
 255
-${canvas.data.join(" ")}
+${split.join("")}
 `
   return str
 }

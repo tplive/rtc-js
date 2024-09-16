@@ -23,19 +23,23 @@ pre {
     display: block;
     word-wrap: break-word;
 }
+
+h1, h2, h3, h4, h5, p {
+    font-family: sans-serif;
+}
 </style>
 <title>Dokumentasjon</title>
 </head>
 <body>
 
-<h1>The Ray Tracer Challenge</h1>
+<h1>&#128302; The Ray Tracer Challenge &#128302;</h1>
 <p>"En strålesporingsutfording".</p>
 <p>Dette er en øvelse i minimalisme. Jeg er vant til å ha full tilgang til Internett, til nedlasting av programvare; utallige artikler og videoer om alle tenkelige emner, rik programvare med tusenvis av hjelpemidler som gjør mye av jobben for meg. Jeg skal utdype disse begrensningene og hva jeg gjør for å komme rundt dem.</p>
 
-<h2>Utfordringen</h2>
+<h2>&#128170; Utfordringen</h2>
 <p>Utfordringen kommer i form av en bok, "The Ray Tracer Challenge" av Jamis Buck, utgitt 2019 på The Pragmatic Programmers. Denne boken tar leseren gjennom alle stegene for å lage en "3D Renderer", en programvare som lager bilder av 3D-modeller, ved beregne hvordan lys reflekteres og brytes når det treffer de ulike 3D objektene som utgjør modellen. Dette skal man lage selv – boken har ingen ferdig kode, kun "pseudokode" som beskriver omtrentlig hva de ulike funksjonene skal gjøre, og så er det opp til leseren å implementere dette i sitt valgte programmeringsspråk. I tillegg er fremgangsmåten TDD (Test-Driven Development), som jeg skal redegjøre for lenger ned i dette dokumentet.</p>
 
-<h2>Miljøet</h2>
+<h2>&#128644; Miljøet</h2>
 
 <p>Gitt begrensningene har jeg kun funnet èn mulig tilnærming til denne utfordringen, og det er med HTML, CSS og JS i nettleser. Ingen webserver, ingen API, ingenting annet enn lokale filer som kjører i Google Chrome. </p>
 
@@ -43,7 +47,7 @@ pre {
 
 <p>Backup tas ved å kopiere hele <code>/html</code> strukturen til et eget område (<code>/Backup/ÅÅÅÅMMDD/</code>) for hver dag. Dette er på ingen måte sammenlignbart med versjonskontroll, men der det beste jeg kan komme på.</p>
 
-<h2>Test-dreven utvikling</h2>
+<h2>&#128163; Test-drevet utvikling</h2>
 <p>Boken baserer seg som nevnt på TDD, som jeg lenge har hatt lyst til å praktisere. Metoden er som følger:
 <ol>
   <li>For hver ny funksjon man skal lage, lager man først en test som verifiserer at funksjonen gjør det den skal. </li>
@@ -85,14 +89,14 @@ function test_hypotenuse_function() {
 
 <p>13.04.2024: Finner <a href="https://stackoverflow.com/questions/14481381/how-to-catch-all-javascript-warnings-and-errors-to-an-output-div#33321914">en funksjon som kan vise feilkoder i HTML her</a>… &#128512;</p>
 
-<h2>Prosjektet</h2>
+<h2>&#128221; Prosjektet</h2>
 <p>Jeg starter i begynnelsen av April 2024 med dette prosjektet. Jeg leser noen kapitler og tester litt miljøet jeg kan programmere i. Det er ikke vits å starte på noe dersom jeg for eksempel ikke kan kjøre JS i eksterne filer, eller ikke kan bruke HTML canvas elementet. Heldigvis ser det ikke ut til at det ikke er restriksjoner her.</p>
 
 <p>Rammeverket for testing blir sakte til mens jeg går. Jeg starter med manipulering av "hardkodede" HTML-elementer, men kommer fort på bedre tanker og lar hver test kjøre som en egen funksjon <code>runTest()</code> som både kjører testen og viser navnet på test-funksjonen og resultatet av testen i rød eller grønn tekst. Foreløpig holder dette.</p>
 
 <p><code>test_runner.html</code> laster JS-skriptene <code>js/functions.js</code> og <code>js/tests.js</code> som inneholder hhv funksjonene som skal testes og testene som benyttes.</p>
 
-<h3>Kapittel 1, Tuples, Points and Vectors</h3>
+<h3>&#128640; Kapittel 1, Tuples, Points and Vectors</h3>
 <p>Det første kapitlet handler om de mest grunnleggende byggesteinene i dette systemet. En <code>tuple</code> er en datatype med x, y og z koordinater, samt en verdi w som forteller om dette er en vektor (w=0) eller et punkt (w=1). I første implementasjon er en vektor bare en tuple med w=0 og et punkt er bare en tuple med w=1. Det er ingen restriksjoner mellom de ulike datatypene. Dette kan det bli nødvendig å endre senere, men inntil videre er distinksjonen kun for egen klarhet.</p>
 
 <p>Jeg lager en funksjon <code>equal(a, b)</code> for å sammenligne to flyttall med "slingringsmonn", siden man ellers vil få problemer grunnet avrunding. Dette er et generelt problem i programmering, siden flyttall ikke kan gjengis helt nøyaktig. Denne brukes også i funksjonen <code>equal_tuples()</code> som sammenligner om to tupler er like. </p>
@@ -110,12 +114,12 @@ a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bi
 
 <p>Her går jeg for første gang på en Out Of Memory krasj, på grunn av en evig loop. Jeg får funksjonen til å regne posisjoner helt fint, og lagrer forsøket i <code>./projectile.html</code>.</p>
 
-<h3>Kapittel 2, Drawing on a Canvas</h3>
+<h3>&#128640; Kapittel 2, Drawing on a Canvas</h3>
 <p>Her starter vi med litt farge-teori, og noterer at fargenes r,g,b verdier til forveksling ligner på tuples! &#129321; Jeg ser at boka vil at vi skal lage PPM filer, som er et tekstbasert grafikk-format. De anbefaler at man bruker GIMP til å se disse på Windows, og jeg får sjekket at GIMP er installert på maskinen. Yey!</p>
 
 <p>Jeg starter kodingen med å implementere (test av , og) <code>color(r, g, b)</code> datatypen, og funksjoner for å legge sammen og multiplisere farge med skalarverdi og to farger med hverandre.</p>
 
-<p>Deretter en metode som lager et spesifisert canvas-objekt og tester at det blir laget korrekt, og deretter skrive en fargeverdi til en spesifisert pixel og lese den ut.</p>
+<del><p>Deretter en metode som lager et spesifisert canvas-objekt og tester at det blir laget korrekt, og deretter skrive en fargeverdi til en spesifisert pixel og lese den ut.</p>
 
 <p>Jeg undersøker hvilke metoder vi har tilgjengelig; kan jeg for eksempel lese ut <var>width</var> og <var>height</var> fra det canvas-elementet jeg nettopp har laget?  Finner ikke ut av det, og nøyer meg med å teste at det finnes et element med spesifisert id. (Senere ser jeg at canvas-elementet HAR disse verdiene, men jeg prøvde å finne dem på tilhørende context-objekt.</p>
 
@@ -126,13 +130,39 @@ a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bi
 <p><code>fillrect(x, y, w, h)</code> skriver et rektangel på posisjon <code>(x, y)</code> og størrelse <code>(w, h)</code>.</p>
 <p>Dette fungerer. Canvasen ser slik ut:</p>
 <p><img src="canvas_element.png"/></p>
+</del>
 
-<p>Dette canvas opplegget ble bare tull. Jeg finner ut at det slett ikke er nødvendig med noen HTML-canvas, i boka er canvas bare en abstraksjon for et lerret som har bredde og høyde, og en fargeverdi for hver pixel. Jeg krangler mye før jeg skjønner hva som må til: Et canvas har w * h og et array med verdier for hver pixel.</p>
+<p>Dette canvas opplegget ble bare tull. Jeg finner ut at det slett ikke er nødvendig med noen HTML-canvas. I boka er canvas bare en abstraksjon for et lerret som har bredde og høyde, og en fargeverdi for hver pixel. Jeg krangler mye før jeg skjønner hva som må til: Et canvas har w * h og et array med verdier for hver pixel. That's it. &#128513;</p>
 
-<p>Indexverdien for et x,y koordinat på canvas med størrelse (w * h) er gitt ved: <var>(w * y) + x</var>. I indexverdien lagrer vi et subarray på formatet <code>[123, 128, 0]</code> for fargeverdiene r, g, b.</p>
+<p>Indexverdien for et x,y koordinat på canvas med størrelse (w * h) og antall bytes pr farge-komponent b er gitt ved: <var>(w * y + x) * b</var>. Nå brukes 3 byte pr farge, men dersom jeg senere skal benytte transparens (alpha), kan det utvides.</p>
 
-<p>Jeg strever lenge før jeg får koden til å gjøre det den skal. I mellomtiden lærer jeg mer JS! Istedet for å lage en egen funksjon <code>write_pixel(can, x, y, color)</code> legger jeg den til som en metode på canvas-objektet. Refererer til canvas-objektets data med <code>this</code>, feks. <code>this.w</code> for bredden.</p>
-<p>Jeg finner også ut underveis at jeg må skrive mer kode for å treffe riktige indexverdier, og ikke overstige <var>(x * y) - 1</var>, for i et canvas på 8x8, skal indexverdiene gå fra 0 - 63, mens (8 * 8) + 8 = 72. Jeg skal også skrive om noen funksjoner, som display_tuple og display_color, som metoder på tilhørende funksjoner.</p>
+<p>Det blir litt jobb før koden gjør som den skal. Ser stor nytte av test-dreven metode, og jeg lærer jeg masse JS.</p>
+
+<p>I stedet for å lage en egen funksjon <code>write_pixel(can, x, y, color)</code> legger jeg den til som en metode på canvas-objektet. Refererer til canvas-objektets data med <code>this</code>, feks. <code>this.w</code> for bredden.</p>
+
+<p>Boka sier at x og y forventes å har 0-basert index. Greit.</p>
+
+<p>Så skal data over til et filformat, her benyttes tekstbasert PPM-fil. Jeg skriver tester for å lage header og formattere pixeldata. Mye jobb, men det må gjøres ordentlig.. &#129308;&#129307; Resultatet er en fint formattert PPM-fil.</p>
+
+<p>Neste steg er å gjøre det samme eksperimentet som i slutten av kapittel 1, men faktisk plotte på canvas og vise. Jeg har tenkt en stund på at det vil være lurt å bruke HTML canvas til dette, siden jeg kan (?) plotte pixel for pixel på skjerm mens det rendrer... tror jeg? &#129320;</p>
+
+<p>Dette er et av de aller første synlige resultatene...</p>
+
+<p><img src="./projectile_plot1.png"/></p>
+
+<p>Jeg forsøker å hente data fra html_canvas til mitt canvas-objekt:</p>
+<p><img src="imagedata_fail.png"/></p>
+<p>...ehh? Joda, imagedata har jo alpha-verdien med, så da blir det sånn! Men så begynner jeg å tenke litt. Jeg skriver en og en pixel til imagedata, så hvorfor kan jeg ikke gjøre det samme med canvas-data? Det blir to strukturer i minnet, men det må gå greit. Inntil videre i hvert fall.. &#128517;</p>
+<p>Men, med litt tweaking ser det da etter hvert omtrent ut som i boka:</p>
+<p><img src="projectile_plot2.png"/></p>
+
+<p>Og med litt "applied magic" så har jeg en link som lar meg lagre PPM fila med å klikke på en link. Nice. &#128170;</p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
 <p></p>
 <p></p>
 <p></p>
