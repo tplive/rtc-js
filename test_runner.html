@@ -21,6 +21,10 @@ window.onerror = function(errorMsg, url, lineNumber){
 
 <h2>Testing Color functions</h2>
 <ul id="colors_list"></ul>
+
+<h2>Testing Canvas functions</h2>
+<ul id="canvas_list"></ul>
+
 <p id="error"></ul>
 
 <script src="js/functions.js"></script>
@@ -75,6 +79,10 @@ runTest("colors_list", test_add_colors_function)
 runTest("colors_list", test_subtract_colors_function)
 runTest("colors_list", test_multiply_color_function)
 runTest("colors_list", test_multiply_colors_function)
+
+runTest("canvas_list", test_canvas_function)
+runTest("canvas_list", test_get_pixel_color_function)
+
 
 </script>
 

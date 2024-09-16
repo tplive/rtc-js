@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+code {
+  background-color: lightgrey;
+  font-weight: bold;
+}
+
+pre {
+    background: #f4f4f4;
+    border: 1px solid #ddd;
+    border-left: 3px solid #f36d33;
+    color: #666;
+    page-break-inside: avoid;
+    font-family: monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    margin-bottom: 1.6em;
+    max-width: 100%;
+    overflow: auto;
+    padding: 1em 1.5em;
+    display: block;
+    word-wrap: break-word;
+}
+</style>
+<title>Dokumentasjon</title>
+</head>
+<body>
+
+<h1>The Ray Tracer Challenge</h1>
+<p>"En strålesporingsutfording".</p>
+<p>Dette er en øvelse i minimalisme. Jeg er vant til å ha full tilgang til Internett, til nedlasting av programvare; utallige artikler og videoer om alle tenkelige emner, rik programvare med tusenvis av hjelpemidler som gjør mye av jobben for meg. Jeg skal utdype disse begrensningene og hva jeg gjør for å komme rundt dem.</p>
+
+<h2>Utfordringen</h2>
+<p>Utfordringen kommer i form av en bok, "The Ray Tracer Challenge" av Jamis Buck, utgitt 2019 på The Pragmatic Programmers. Denne boken tar leseren gjennom alle stegene for å lage en "3D Renderer", en programvare som lager bilder av 3D-modeller, ved beregne hvordan lys reflekteres og brytes når det treffer de ulike 3D objektene som utgjør modellen. Dette skal man lage selv – boken har ingen ferdig kode, kun "pseudokode" som beskriver omtrentlig hva de ulike funksjonene skal gjøre, og så er det opp til leseren å implementere dette i sitt valgte programmeringsspråk. I tillegg er fremgangsmåten TDD (Test-Driven Development), som jeg skal redegjøre for lenger ned i dette dokumentet.</p>
+
+<h2>Miljøet</h2>
+
+<p>Gitt begrensningene har jeg kun funnet èn mulig tilnærming til denne utfordringen, og det er med HTML, CSS og JS i nettleser. Ingen webserver, ingen API, ingenting annet enn lokale filer som kjører i Google Chrome. </p>
+
+<p>Filstrukturen som etter hvert har dukket opp er en rot-katalog (<code>/html</code>) som inneholder alle html-filer, og underkataloger for js-filer (<code>/js</code>) og etter hvert for css (<code>/css</code>). I tillegg ligger dette dokumentet under en dokumentasjonskatalog (<code>/docs</code>), der jeg også vil lagre skjermbilder etc. Strukturen blir til mens vi går.</p>
+
+<p>Backup tas ved å kopiere hele <code>/html</code> strukturen til et eget område (<code>/Backup/ÅÅÅÅMMDD/</code>) for hver dag. Dette er på ingen måte sammenlignbart med versjonskontroll, men der det beste jeg kan komme på.</p>
+
+<h2>Test-dreven utvikling</h2>
+<p>Boken baserer seg som nevnt på TDD, som jeg lenge har hatt lyst til å praktisere. Metoden er som følger:
+<ol>
+  <li>For hver ny funksjon man skal lage, lager man først en test som verifiserer at funksjonen gjør det den skal. </li>
+  <li>Så kjører man testen, som forventet vil feile, siden man ikke enda har implementert funksjonen som testes.</li>
+  <li>Så skriver man funksjonen og kjører testen til den verifiseres korrekt.</li> 
+</ol>
+Et "litt ikke-trivielt" eksempel: Jeg trenger en funksjon som, gitt to sider av en trekant, representert ved tallene a og b, returnerer lengden på hypotenusen, altså <var><span>&#8730;</span><span  style="border-top: 1px solid black">a<sup>2</sup> + b<sup>2</sup></span></var>.
+</p>
+
+<p>Først lager jeg en test som kjører denne ikke-eksisterende funksjonen, gir den to kjente tall u og v og sjekker hva funksjonen svarer, mot det forventede resultat som jeg har sjekket på kalkulatoren min <var><span>&#8730;</span><span  style="border-top: 1px solid black">5<sup>2</sup> + 3<sup>2</sup></span> = 5,830951895</var> og returnerer <var>true</var> eller <var>false</var> avhengig av resultatet av testen:</p>
+
+<pre>
+function test_hypotenuse_function() {
+  var u = 5
+  var v = 3
+  return (hypotenuse(u, v) == 5.830951895)
+}
+</pre>
+
+<p>Siden funksjonen ikke finnes, vil testen feile. Så lager jeg funksjonen, men uten å gjøre den ferdig:</p>
+
+<pre>function hypotenuse(a, b) {
+  return 0
+}
+</pre>
+
+<p>Kjører testen på nytt, den feiler igjen. Jeg implementerer funksjonen ferdig:</p>
+
+<pre>function hypotenuse(a, b) {
+  return Math.sqrt(a**2 + b**2)
+}
+</pre>
+
+<p>Og kjører testen igjen. Denne gang skal den vel returnere true? Eller?</p>
+
+<p>Det er her elegansen i denne fremgangsmåten blir synlig. På grunn av forskjell i presisjon mellom JS og min kalkulator vil testen fortsatt feile. JS gir svaret <var>5.830951894845301</var>. At testen nå feiler er dens eneste mening og skal reise et rødt flagg hos meg, hvor jeg må gå grundigere inn i årsaken til at testen feiler. Hvis jeg sammenligner med kvadratroten av 34, så passerer testen som den skal.</p>
+
+<p>Dette kan ved første øyekast virke tungrodd og masse ekstra kode for å teste EN kodelinje, men dette er bare det grunnleggende, og det virker jo unødvendig å sammenligne <code>1 == 1</code>… Når jeg senere tester sammensatte funksjoner som feiler uventet, eller jeg gjør endringer som får tester til å feile som tidligere har fungert fint, vil jeg kunne avdekke slike subtile feil som avrunding etc. som ellers kunne gått ubemerket hen i lang tid før den senere skaper problemer helt andre steder i koden. Mikser vi inn et team av utviklere som gjør mer eller mindre tilfeldige endringer i hele kodebasen samtidig, mangedobles verdien av å ha gode grundige tester som sikkerhetsnett.</p>
+
+<p>13.04.2024: Finner <a href="https://stackoverflow.com/questions/14481381/how-to-catch-all-javascript-warnings-and-errors-to-an-output-div#33321914">en funksjon som kan vise feilkoder i HTML her</a>… &#128512;</p>
+
+<h2>Prosjektet</h2>
+<p>Jeg starter i begynnelsen av April 2024 med dette prosjektet. Jeg leser noen kapitler og tester litt miljøet jeg kan programmere i. Det er ikke vits å starte på noe dersom jeg for eksempel ikke kan kjøre JS i eksterne filer, eller ikke kan bruke HTML canvas elementet. Heldigvis ser det ikke ut til at det ikke er restriksjoner her.</p>
+
+<p>Rammeverket for testing blir sakte til mens jeg går. Jeg starter med manipulering av "hardkodede" HTML-elementer, men kommer fort på bedre tanker og lar hver test kjøre som en egen funksjon <code>runTest()</code> som både kjører testen og viser navnet på test-funksjonen og resultatet av testen i rød eller grønn tekst. Foreløpig holder dette.</p>
+
+<p><code>test_runner.html</code> laster JS-skriptene <code>js/functions.js</code> og <code>js/tests.js</code> som inneholder hhv funksjonene som skal testes og testene som benyttes.</p>
+
+<h3>Kapittel 1, Tuples, Points and Vectors</h3>
+<p>Det første kapitlet handler om de mest grunnleggende byggesteinene i dette systemet. En <code>tuple</code> er en datatype med x, y og z koordinater, samt en verdi w som forteller om dette er en vektor (w=0) eller et punkt (w=1). I første implementasjon er en vektor bare en tuple med w=0 og et punkt er bare en tuple med w=1. Det er ingen restriksjoner mellom de ulike datatypene. Dette kan det bli nødvendig å endre senere, men inntil videre er distinksjonen kun for egen klarhet.</p>
+
+<p>Jeg lager en funksjon <code>equal(a, b)</code> for å sammenligne to flyttall med "slingringsmonn", siden man ellers vil få problemer grunnet avrunding. Dette er et generelt problem i programmering, siden flyttall ikke kan gjengis helt nøyaktig. Denne brukes også i funksjonen <code>equal_tuples()</code> som sammenligner om to tupler er like. </p>
+
+<p>Videre oppretter jeg en konstant <code>PRECISION = 5</code> som brukes til å angi presisjonen i avrundingsoperasjoner med <code>.toFixed(PRECISION)</code> der det blir nødvendig i koden, og til å angi konstanten <code>EPSILON = 1.0*10**(-PRECISION)</code> som er sammenligningsverdien som brukes i <code>equal()</code>-funksjonen. Dersom <var>a - b &gt; EPSILON</var> er tallene ansett som like. Når <var>PRECISION = 5</var> er <var>EPSILON = 1*10<sup>-5</sup></var>. Dette må jeg sannsynligvis justere senere, dersom det skaper problemer.</p>
+
+<p>Funksjoner for å legge samme og trekke vektorer fra hverandre er neste. Her kommer w-verdien til sin rett, for hvis man legger sammen et punkt (w=1) og en vektor (w=0) får man et nytt punkt (w=1). Og dersom man legger sammen to punkt får man w=2, som ikke er verken punkt eller vektor. Dersom man legger samme to vektorer får man fortsatt w=0, som er en ny vektor. Helt riktig! &#128513;</p>
+
+<p>13.04.2024: Jeg jobber med å legge sammen og trekke fra tupler, og så sammenligne resultatene etterpå. Dette må fungere bra, ellers blir det trøbbel down the line. Men det er ikke så enkelt! &#128517;</p>
+
+<blockquote>På et tidspunkt virker det som at <code>tests.js</code> ikke lenger blir importert – funksjonen <code>test_tuple_function()</code> er ikke definert. Men i Tryit editor fungerer det (tilsynelatende). Her blir det en del feilsøking før jeg lærer to viktige ting: 
+a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bindestrek (–) i navnet.</blockquote>
+
+<p>Jeg fortsetter å implementere tuple-funksjoner og –tester til jeg er gjennom kapittel 1. På slutten av kapitlet er det en liten øvelse for å teste ting, der man skal lage en virtuell "kanon", og skyte prosjektiler. Prosjektilet har en posisjon og en hastighetsvektor. Miljøet har gravitasjon (vektor) og vind (vektor) som skal regnes med.</p>
+
+<p>Her går jeg for første gang på en Out Of Memory krasj, på grunn av en evig loop. Jeg får funksjonen til å regne posisjoner helt fint, og lagrer forsøket i <code>./projectile.html</code>.</p>
+
+<h3>Kapittel 2, Drawing on a Canvas</h3>
+<p>Her starter vi med litt farge-teori, og noterer at fargenes r,g,b verdier til forveksling ligner på tuples! &#129321; Jeg ser at boka vil at vi skal lage PPM filer, som er et tekstbasert grafikk-format. De anbefaler at man bruker GIMP til å se disse på Windows, og jeg får sjekket at GIMP er installert på maskinen. Yey!</p>
+
+<p>Jeg starter kodingen med å implementere (test av , og) <code>color(r, g, b)</code> datatypen, og funksjoner for å legge sammen og multiplisere farge med skalarverdi og to farger med hverandre.</p>
+
+<p>Deretter en metode som lager et spesifisert canvas-objekt og tester at det blir laget korrekt, og deretter skrive en fargeverdi til en spesifisert pixel og lese den ut.</p>
+
+<p>Jeg undersøker hvilke metoder vi har tilgjengelig; kan jeg for eksempel lese ut <var>width</var> og <var>height</var> fra det canvas-elementet jeg nettopp har laget?  Finner ikke ut av det, og nøyer meg med å teste at det finnes et element med spesifisert id. (Senere ser jeg at canvas-elementet HAR disse verdiene, men jeg prøvde å finne dem på tilhørende context-objekt.</p>
+
+<p>For å skrive til canvas, henter man ut konteksten med <code>canvas.getContext(2d)</code> og skriver til den. (Ja, det skal være 2d, for raytraceren skal bare kalkulere fargeverdier på pixler.)</p>
+
+<blockquote>Kan jeg så lese ut fargeverdien til en gitt pixel? Ja, med <code>getImageData()</code>. </blockquote>
+
+<p><code>fillrect(x, y, w, h)</code> skriver et rektangel på posisjon <code>(x, y)</code> og størrelse <code>(w, h)</code>.</p>
+<p>Dette fungerer. Canvasen ser slik ut:</p>
+<p><img src="canvas_element.png"/></p>
+<p></p>
+<p></p>
+<p></p>
+
+</body>
+</html>
+
+

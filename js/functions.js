@@ -116,3 +116,17 @@ function multiply_colors(c1, c2) {
   // Multiply r, g, b components of two colors by each other
   return color(c1.red * c2.red, c1.green * c2.green, c1.blue * c2.blue)
 }
+
+// *** CANVAS FUNCTIONS
+
+function canvas(parent, width, height) {
+  // Creates a canvas element as a child of parent, dimensions specified by width and height.
+  // Returns the canvas context.
+  
+  const can = document.createElement("canvas")
+  can.setAttribute("id", parent + "_canvas")
+  document.body.appendChild(can)
+  
+  const context = can.getContext("2d")
+  return context
+}

@@ -185,3 +185,39 @@ function test_multiply_colors_function() {
   var c3 = multiply_colors(c1, c2)
   return (c3.red == c1.red * c2.red && c3.blue == c1.blue * c2.blue && c3.green == c1.green * c2.green) 
 }
+
+function test_canvas_function() {
+  // Creates a canvas initialized to all black pixels.
+  // ID of canvas element is that of its parent, suffixed with "_canvas"
+  
+  var parent = "canvas_list"
+  var w = 10
+  var h = 20
+  
+  var context = canvas(parent , w, h)
+  context.fillStyle = "black"
+  context.fillRect(0, 0, w, h)
+  
+  return !!document.getElementById(parent + "_canvas")
+}
+
+function test_get_pixel_color_function() {
+  // Create canvas, set a pixel to a given color value.
+  // Read color value, compare.
+  
+  var parent = "canvas_list"
+  var w = 10
+  var h = 20
+  
+  var ctx = canvas(parent, w, h)
+  ctx.fillStyle = "black"
+  ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = "red"
+  ctx.fillRect(2, 2, 3, 3)
+  
+  var imgData = ctx.getImageData(2, 2, 1, 1)
+  var c1 = color(255, 0,0)
+  var c2 = color(imgData.data[0], imgData.data[1], imgData.data[2])
+  
+  return (c1.red == c2.red && c1.green == c2.green && c1.blue == c2.blue)
+}
