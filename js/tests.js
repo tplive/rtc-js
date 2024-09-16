@@ -242,21 +242,26 @@ function test_html_canvas_to_ppm_function() {
 function test_canvas_function() {
   // This is a test for a canvas function that is pure data, not the HTML element called canvas.
   // A canvas is an object with width, height and a data array for pixel values.
-  const w = 80
-  const h = 80
+  const w = 12
+  const h = 12
   var can = canvas(w, h)
   can.data[11] = [255, 123, 234]
    
-  return (can.width === w && can.height === h && can.data[11][0] === 255 && can.data[11][1] === 123 && can.data[11][2] === 234)
+  return (can.width === w && can.height === h && can.data[11][0] === 255 && can.data[11][1] === 123 && can.data[11][2] === 234 && can.data[1][1] == 0)
 }
 
 function test_write_pixel_function() {
   // Given a canvas, write a color to a pixel at desired coordinates and test reading the value.
-
-  var can = canvas(40, 50)
-  var c1 = color(123, 234, 255)
-  can = write_pixel(can, 2, 3, c1)
-  var pixel = pixel_at(can, 2, 3)
+  // To get pixel index value: (w * y) + x
+  const w = 8
+  const h = 8
+  const can = canvas(w, h)
+  const c1 = color(11, 22, 33)
   
-  return (pixel.red === c1.red && pixel.green === c1.green && pixel.blue === c1.blue) 
+  can.write_pixel(2, 2, c1)
+  
+  const p1 = color(can.data[(8 * 2) + 2][0], can.data[(8 * 2) + 2][1], can.data[(8 * 2) + 2][2])
+  
+  //display_msg("error", "p1:" + display_color(p1))  
+  return (p1.red === c1.red && p1.green === c1.green && p1.blue === c1.blue) 
 }

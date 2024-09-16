@@ -153,25 +153,23 @@ function canvas(w, h) {
   // To make the array as efficient as possible, we make it a const and pre-initialize length.
   
   const d = Array(w * h).fill([0, 0, 0])
-  //var d = []
   
-  return Object.freeze({ width:w, height:h, data:d})
-}
-
-
-
-function write_pixel(canvas, x, y, color) {
-  // Given a canvas, write a color value to the pixel at position x, y.
+  return {
+    width:w, 
+    height:h, 
+    data:d,
+    pixel_at: function(x, y) {
+      const i = (this.w * y) + x
   
-  const index = (canvas.w * y) + x
-  canvas.data[index] = [color.red, color.green, color.blue]
-    
-  return canvas
-}
-
-function pixel_at(canvas, x, y) {
-  // Given a canvas, return a color() representing the value of the pixel at x, y.
-  const index = (canvas.w * y) + x
-  
-  return color(canvas.data[index][0], canvas.data[index][1], canvas.data[index][2])
+      return color(this.data[i][0], this.data[i][1], this.data[i][2])
+    },
+    write_pixel: function(x, y, color) {
+      const i = (w * y) + x
+      // For debugging
+      //display_msg("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${display_color(color)} `)
+      
+      this.data[i] = [color.red, color.green, color.blue]
+      //display_msg("error", "write_pixel:" + this.data[i])
+    }
+    }
 }

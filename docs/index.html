@@ -127,7 +127,16 @@ a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bi
 <p>Dette fungerer. Canvasen ser slik ut:</p>
 <p><img src="canvas_element.png"/></p>
 
-<p>Dette canvas opplegget ble bare tull. Jeg finner ut at det slett ikke er nødvendig med noen HTML-canvas, i boka er canvas bare en abstraksjon for et lerret som har bredd og høyde, og en fargeverdi for hver pixel. Jeg krangler mye før jeg skjønner hva som må til - et canvas har w * h pixler og hver pixel er et array med tre verdier. Så et array med subarray. Yey! :D Og indexverdien for et x,y koordinat er gitt ved: (w * y) + x.</p>
+<p>Dette canvas opplegget ble bare tull. Jeg finner ut at det slett ikke er nødvendig med noen HTML-canvas, i boka er canvas bare en abstraksjon for et lerret som har bredde og høyde, og en fargeverdi for hver pixel. Jeg krangler mye før jeg skjønner hva som må til: Et canvas har w * h og et array med verdier for hver pixel.</p>
+
+<p>Indexverdien for et x,y koordinat på canvas med størrelse (w * h) er gitt ved: <var>(w * y) + x</var>. I indexverdien lagrer vi et subarray på formatet <code>[123, 128, 0]</code> for fargeverdiene r, g, b.</p>
+
+<p>Jeg strever lenge før jeg får koden til å gjøre det den skal. I mellomtiden lærer jeg mer JS! Istedet for å lage en egen funksjon <code>write_pixel(can, x, y, color)</code> legger jeg den til som en metode på canvas-objektet. Refererer til canvas-objektets data med <code>this</code>, feks. <code>this.w</code> for bredden.</p>
+<p>Jeg finner også ut underveis at jeg må skrive mer kode for å treffe riktige indexverdier, og ikke overstige <var>(x * y) - 1</var>, for i et canvas på 8x8, skal indexverdiene gå fra 0 - 63, mens (8 * 8) + 8 = 72. Jeg skal også skrive om noen funksjoner, som display_tuple og display_color, som metoder på tilhørende funksjoner.</p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
 <p></p>
 <p></p>
 
