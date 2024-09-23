@@ -5,12 +5,14 @@ class AbstractShape {
   constructor() {
     this._id = C.unique_id()
     this._transform = idmatrix()
+    this._transform_inverse = idmatrix()
     this._material = material()
     if (this.constructor == AbstractShape) { throw new TypeError("Cannot instantiate an abstract class.") }
   }
   
   get id() { return this._id }
   get transform() { return this._transform }
+  get transform_inverse() { return this._transform_inverse }
   get material() { return this._material }
   get saved_ray() { return this._saved_ray }
   
@@ -18,7 +20,7 @@ class AbstractShape {
     if (value.d != undefined) {
       this._transform = value
       // Check if this is more expensive:
-      //this._transform_inverse = value.inverse()
+      this._transform_inverse = value.inverse()
     }
   }
   
@@ -29,14 +31,13 @@ class AbstractShape {
   }
   
   intersect(ray) {
-    this._saved_ray = ray.transform(this._transform.inverse())
+    this._saved_ray = ray.transform(this._transform_inverse)
     
     return this._intersect(this._saved_ray)
   }
   
   normalAt(world_point) {
     
-    this._transform_inverse = this._transform.inverse()
     return this._normal_at(this._transform_inverse.times_tuple(world_point))
   }
   

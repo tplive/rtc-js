@@ -1019,7 +1019,7 @@ return _intersections.sort( function(a, b) {
   <p>Vi skal lage mønster på objektene! Her møter jeg igjen en "gammel" kjenning fra matematikken: parameterframstilling!</p>
   <h4>StripePattern</h4>
   <p>Funksjonen for å lage et stripemønster langs x-aksen, er gitt ved:
-$$color(point, c_a, c_b) = \begin{cases}c_a:   \texttt{if floor(point_x) % 2 == 0}
+$$color(point, c_a, c_b) = \begin{cases}c_a:   if floor(point_x) mod 2 == 0
 \\ c_b:   otherwise 
 \end{cases}$$
   </p>
@@ -1030,6 +1030,39 @@ $$color(point, c_a, c_b) = \begin{cases}c_a:   \texttt{if floor(point_x) % 2 == 
 <p>For implementasjon av flere patterns, er det lurt å refaktorere med abstrakt klasse. AbstractPattern og alle arvingene blir flyttet til egen fil <code>patterns.js</code>. <code>stripe_at</code> og <code>stripe_at_object</code> blir til en "privat" metode <code>pattern._stripe_at</code> som får data fra en public metode <code>atShape()</code> implementert i <code>AbstractPattern</code>, etter samme mønster som for <code>AbstractShapes</code>. Jeg lager en testklasse <code>RandomPattern</code> som bare svarer med en tilfeldig farge for hver pixel, den fungerer på første forsøk, og gir et snurrig resultat. <code>TestPattern</code> bruker punktets x, y z koordinater til fargeverdier, og brukes for å teste klassenes funksjon. Jeg får noen ideer til andre mønstre, men skal først implementere forslagene i boka.</p>
 
 <h4>GradientPattern</h4>
+<p>Formelen er:
+$$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
+</p>
+<p>Dette mønsteret blir det litt tricky å få til. Testen passerer ganske fort, men når jeg skal teste funksjonen, er det sånn at overgangen bare løper over halve kula, og det er jo ikke ideelt. Jeg får det til med litt eksperimentering, men her er det en bug i koden i boka som burde utbedres.</p>
+<p>Før:<br/> <img src="./gradient_pattern_bug.png" /></p>
+<p>Etter:<br/> <img src="./gradient_pattern_debugged.png" /></p>
+<p>Ny formel blir da: $ color(p, c_a, c_b) = c_a + (c_b - c_a) * p_x $</p>
+
+<h4>RingPattern</h4>
+<p>Nå blir det spennende! Et ring-mønster er som stripe, men i to retninger, x og z. Resultatet blir konsentriske sirkler. Benytter seg av gode gamle pytagoras:</p>
+<p>$$color(p, c_a, c_b) = \begin{cases}c_a:   if floor(\sqrt{p_x^2 + p_z^2}) mod 2 == 0
+\\ c_b:   otherwise 
+\end{cases}$$</p>
+<p>Det går smooth, bortsett fra at jeg klarer å skrive $p_y$ istedet for $p_z$... Oh well..</p>
+
+<h4>ChequeredPattern</h4>
+<p>Som et sjakkmønster, men denne fungerer i alle tre dimensjoner.</p>
+
+<p>$$color(p, c_a, c_b) = \begin{cases}c_a:   if (floor(p_x) + floor(p_y) + floor(p_z) ) mod 2 == 0
+\\ c_b:   otherwise 
+\end{cases}$$</p>
+<p>Dette blir rett så stilig, men som boka også nevner, her må man benytte en annen teknikk (uv-mapping) hvis man vil at en kule feks skal få et "normalt" sjakkmønster. Out of scope.</p>
+
+<h3>&#9203; Optimaliseringsdigresjonen, del II</h3>
+<p>Jeg har slitt med eksponensielt økende rendering-tid, og med telemetrien fant jeg ut at det var matriseoperasjoner som holdt på å ta knekken på hele systemet. Jeg fant videre ut at <code>.inverse()</code> laget 81 matriser for hver eneste invers. Hvor mange ganger inverseres transformasjonsmatrisene da? ..tenkte jeg. Og - kan det lønne seg å kalkulere dem på forhånd, feks hver gang man setter en <code>.transform</code>? Eller vil det bare bli verre, altså FLERE unødvendige matriseoperasjoner? Time to find out! Jeg starter med å rendre et bilde i 800x600, 1 sphere(), 1 plane() og med sjakk-mønster på kula, og ringmønster på planet. Bildet ser sånn ut:</p>
+<p><img src="./chapter10_checquered_and_ring_pattern_800x600.png" /></p>
+<p>Det rendrer på 4,7 minutter, og gjør 281040385 (281M!) matriseoperasjoner. Eller 586 matriser pr pixel, for å sette det i en forståelig størrelse.</p>
+<p>Så endrer jeg så Pattern-funksjonene prekalkulerer <code>transform_inverse</code>. For det første settes <code>this._transform_inverse = idmatrix()</code> i constructor, og så kalkuleres den for hver <code>set transform =</code> operasjon, og til slutt får de en <code>get transform_inverse</code> metode. Jeg endrer også alle kall i koden til å bruke prekalkulert <code>transform_inverse</code>.</p>
+<p>Nå blir det "bare" 249M matriser, på 4,3 minutter. Ikke såå stor forskjell.</p>
+<p>Jeg gjentar dette for Shape, og HER skjer det ting! 42M matriser, på 44 sekunder! 87 per pixel.</p>
+<p>Oppildnet av suksessen gjentar jeg det en gang til på Camera og da kommer bildet tilbake på 4,1 sekund! Fortsatt 2,7M matriser, eller 6 matriser per pixel. OMG for en forskjell! &#129327; Det er en reduksjonsfaktor på 103:1 fra første til siste endring. Nesten merkelig at boka ikke nevner dette. Ikke enda i hvert fall. </p>
+
+<p></p>
 <p></p>
 <p></p>
 <p></p>

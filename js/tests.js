@@ -2239,3 +2239,65 @@ function test_pattern_has_inherited_from_abstract_class() {
       && res3
       && res4
 }
+
+function test_gradient_pattern_function() {
+  // Test GradientPattern class
+  const white = color(1, 1, 1)
+  const black = color(0, 0, 0)
+  
+  const pattern = gradient_pattern(white, black)
+  
+  // Only call ._at from the outside for testing!
+  const res1 = pattern._at(point(0, 0, 0)).equals(white)
+            && pattern._at(point(0.25, 0, 0)).equals(color(0.75, 0.75, 0.75))
+            && pattern._at(point(0.5, 0, 0)).equals(color(0.5, 0.5, 0.5))
+            && pattern._at(point(0.75, 0, 0)).equals(color(0.25, 0.25, 0.25))
+  
+  return res1
+}
+
+function test_ring_pattern_function() {
+  // Test RingPattern class
+  
+  const white = color(1, 1, 1)
+  const black = color(0, 0, 0)
+  
+  const pattern = ring_pattern(white, black)
+  
+  // Only call ._at from the outside for testing!
+  const res1 = pattern._at(point(0, 0, 0)).equals(white)
+            && pattern._at(point(1, 0, 0)).equals(black)
+            && pattern._at(point(0, 0, 1)).equals(black)
+            && pattern._at(point(0.708, 0, 0.708)).equals(black)
+  
+  return res1
+}
+
+function test_chequered_pattern_function() {
+  // Test ChequeredPattern class
+  
+  const white = color(1, 1, 1)
+  const black = color(0, 0, 0)
+  
+  const pattern = chequered_pattern(white, black)
+  
+  // Chequers should repeat in x
+  // Only call ._at from the outside for testing!
+  const res1 = pattern._at(point(0, 0, 0)).equals(white)
+            && pattern._at(point(0.99, 0, 0)).equals(white)
+            && pattern._at(point(1.01, 0, 0)).equals(black)
+  
+  // Chequers should repeat in y
+  // Only call ._at from the outside for testing!
+  const res2 = pattern._at(point(0, 0, 0)).equals(white)
+            && pattern._at(point(0, 0.99, 0)).equals(white)
+            && pattern._at(point(0, 1.01, 0)).equals(black)
+  
+  // Chequers should repeat in z
+  // Only call ._at from the outside for testing!
+  const res3 = pattern._at(point(0, 0, 0)).equals(white)
+            && pattern._at(point(0, 0, 0.99)).equals(white)
+            && pattern._at(point(0, 0, 1.01)).equals(black)
+  
+  return res1 && res2 && res3
+}

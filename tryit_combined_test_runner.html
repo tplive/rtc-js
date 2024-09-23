@@ -65,16 +65,18 @@ class AbstractPattern {
   constructor() {
     this._id = C.unique_id()
     this._transform = idmatrix()
+    this._transform_inverse = idmatrix()
   }
   
   get id() { return this._id }
   get transform() { return this._transform }
+  get transform_inverse() { return this._transform_inverse }
   
   set transform(value) {
     if (value.d != undefined) {
       this._transform = value
       // Check if this is more expensive:
-      //this._transform_inverse = value.inverse()
+      this._transform_inverse = value.inverse()
     }
   }
   
@@ -85,8 +87,8 @@ class AbstractPattern {
     //    pattern's transform to convert that point into pattern space.
     // 3. Pass the resulting point to _pattern_at() and return this result.
   
-    const object_point = shape.transform.inverse().times_tuple(world_point)
-    const pattern_point = this.transform.inverse().times_tuple(object_point)
+    const object_point = shape.transform_inverse.times_tuple(world_point)
+    const pattern_point = this.transform_inverse.times_tuple(object_point)
   
     return this._at(pattern_point)
   }
@@ -147,6 +149,93 @@ class StripePattern extends AbstractPattern {
   }
 }
 
+class GradientPattern extends AbstractPattern {
+  // A gradient pattern smoothly transitions from one color to anotherin one dimension.
+  // c1 and c2 are the two colors.
+  
+  constructor(g1, g2) {
+    super()
+    
+    if (g1.isColor && g2.isColor) {
+      this._gradient1 = g1
+      this._gradient2 = g2
+    } else {
+      throw new Error("GradientPattern() wants two colors as input")
+    }
+    
+    if (this.constructor == AbstractPattern) { throw new TypeError("Cannot instantiate an abstract class.") }
+  }
+  
+  get a() { return this._gradient1 }
+  get b() { return this._gradient2 }
+  
+  _at(point) {
+    // This function returns an intermediate color depending on the x-coordinate of the point.
+    
+    const distance = this._gradient2.minus(this._gradient1)
+    const fraction = point.x // The gradient covers the entire shape if we omit: "- Math.floor(point.x)" from the calculation
+    //log("error", `Point.x: ${point.x}, Math.floor(point.x): ${Math.floor(point.x)}, fraction: ${fraction}`)
+    
+    return distance.by_scalar(fraction).plus(this._gradient1)
+  }
+}
+
+class RingPattern extends AbstractPattern {
+  // A ring pattern alternates between two colors in x and z dimensions,
+  // resulting in concentric circles.
+  // c1 and c2 are the two colors.
+  
+  constructor(c1, c2) {
+    super()
+    
+    if (c1.isColor && c2.isColor) {  
+      this._color1 = c1
+      this._color2 = c2
+    } else {
+      throw new Error("stripe_pattern() wants two colors as input")
+    }
+    
+    if (this.constructor == AbstractPattern) { throw new TypeError("Cannot instantiate an abstract class.") }
+  }
+  
+  get a() { return this._color1 }
+  get b() { return this._color2 }
+  
+  _at(point) {
+    // This function returns alternating colors depending on the x-coordinate of the point.
+  
+    return Math.floor(Math.sqrt(point.x**2 + point.z**2)) % 2 === 0 ? this._color1 : this._color2
+  }
+}
+
+class ChequeredPattern extends AbstractPattern {
+  // A chequered pattern alternates between two colors in all three dimensions.
+  // c1 and c2 are the two colors.
+  
+  constructor(c1, c2) {
+    super()
+    
+    if (c1.isColor && c2.isColor) {  
+      this._color1 = c1
+      this._color2 = c2
+    } else {
+      throw new Error("stripe_pattern() wants two colors as input")
+    }
+    
+    if (this.constructor == AbstractPattern) { throw new TypeError("Cannot instantiate an abstract class.") }
+  }
+  
+  get a() { return this._color1 }
+  get b() { return this._color2 }
+  
+  _at(point) {
+    // This function returns alternating colors depending on the x, y and z coordinates of the point.
+  
+    return (Math.floor(point.x) + Math.floor(point.y) + Math.floor(point.z)) % 2 === 0 ? this._color1 : this._color2
+
+  }
+}
+
 </script>
 <!--<script src="./js/shapes.js"></script>-->
 <script>
@@ -157,12 +246,14 @@ class AbstractShape {
   constructor() {
     this._id = C.unique_id()
     this._transform = idmatrix()
+    this._transform_inverse = idmatrix()
     this._material = material()
     if (this.constructor == AbstractShape) { throw new TypeError("Cannot instantiate an abstract class.") }
   }
   
   get id() { return this._id }
   get transform() { return this._transform }
+  get transform_inverse() { return this._transform_inverse }
   get material() { return this._material }
   get saved_ray() { return this._saved_ray }
   
@@ -170,7 +261,7 @@ class AbstractShape {
     if (value.d != undefined) {
       this._transform = value
       // Check if this is more expensive:
-      //this._transform_inverse = value.inverse()
+      this._transform_inverse = value.inverse()
     }
   }
   
@@ -181,14 +272,13 @@ class AbstractShape {
   }
   
   intersect(ray) {
-    this._saved_ray = ray.transform(this._transform.inverse())
+    this._saved_ray = ray.transform(this._transform_inverse)
     
     return this._intersect(this._saved_ray)
   }
   
   normalAt(world_point) {
     
-    this._transform_inverse = this._transform.inverse()
     return this._normal_at(this._transform_inverse.times_tuple(world_point))
   }
   
@@ -313,9 +403,15 @@ class Plane extends AbstractShape {
       // Return empty intersection array
       
       return []
+    }
+    
+    const t = local_ray.origin.negate().y / local_ray.direction.y
+    
+    if (t < C.EPSILON) {
+    
+      return []
     } else {
-      const t = -local_ray.origin.y / local_ray.direction.y
-      
+    
       return [intersection(t, this)]
     }
   }
@@ -324,6 +420,7 @@ class Plane extends AbstractShape {
   
   get toString() { return `Plane(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
+
 
 </script>
 
@@ -1351,7 +1448,7 @@ function intersect(s, ra) {
   // Remember: The shape is centered at the world origin (0, 0, 0)
   throw new Error(`intersect(s, ra) has been deprecated. Use s.intersect(ra) instead.`)
 
-  const r = ra.transform(s.transform.inverse()) // Ray passed to intersect should be transformed by the inversed transformation matrix
+  const r = ra.transform(s.transform_inverse) // Ray passed to intersect should be transformed by the inversed transformation matrix
   const shape_to_ray = r.origin.minus(point(0, 0, 0))
   const a = r.direction.dot(r.direction)
   const b = 2 * r.direction.dot(shape_to_ray)
@@ -1402,19 +1499,7 @@ function hit(list_of_intersections) {
 
 // *** SHADING FUNCTIONS
 
-function normal_at(obj, world_point) {
-  // This function takes an object and a point and returns the point's normal (perpendicular) vector.
-  // This is an upgraded version of normal_at(), and will replace that function when done.
-  
-  throw new Error(`normal_at(obj, world_point) has been deprecated. Use obj.normalAt(world_point) instead.`)
 
-  const inv_obj_transform = obj.transform.inverse()
-  const object_point = inv_obj_transform.times_tuple(world_point)
-  const object_normal = object_point.minus(point(0, 0, 0))
-  const world_normal = inv_obj_transform.transpose().times_tuple(object_normal)
-  
-  return vector(world_normal.x, world_normal.y, world_normal.z).normalize()
-}
 
 function reflect(v_in, normal) {
   // Reflecting a vector around an incoming in vector and a normal
@@ -1794,6 +1879,7 @@ class Camera {
     this._v = v
     this._f = fov
     this._transform = idmatrix()
+    this._transform_inverse = idmatrix()
     
     const half_view = Math.tan(fov / 2 )
     const aspect = this._h / this._v
@@ -1811,12 +1897,14 @@ class Camera {
   get vsize() { return this._v }
   get fov() { return this._f }
   get transform() { return this._transform }
+  get transform_inverse() { return this._transform_inverse }
   get half_width() { return this._half_width }
   get half_height() { return this._half_height }
   
   set transform(value) {
     if (value.d != undefined) {
-      this._transform = this._transform.times_matrix(value)
+      this._transform = value
+      this._transform_inverse = value.inverse()
     }
   }
   
@@ -1848,11 +1936,10 @@ function ray_for_pixel(cam, px, py) {
   // Using the camera matrix, transform the canvas point and the origin,
   // and then compute the ray's direction vector
   // (remember that the canvas is at z=-1)
-  const cam_inverse = cam.transform.inverse()
   
-  const pixel = cam_inverse.times_tuple(point(worldx, worldy, -1))
+  const pixel = cam.transform_inverse.times_tuple(point(worldx, worldy, -1))
   
-  const origin = cam_inverse.times_tuple(point(0, 0, 0))
+  const origin = cam.transform_inverse.times_tuple(point(0, 0, 0))
   const direction = pixel.minus(origin)
     
   return ray(origin, direction.normalize())
@@ -1933,26 +2020,27 @@ function test_pattern() {
   return new TestPattern()
 }
 
-function stripe_at(pattern, point) {
-  // This function returns alternating colors depending on the x-coordinate of the point.
-  throw new Error(`stripe_at(pattern, point) has been deprecated. Use pattern.atShape(obj, world_point) instead.`)
+function gradient_pattern(g1, g2) {
+  // Factory function for GradientPattern
+  // Class is implemented in patterns.js
   
-  return Math.floor(point.x) % 2 === 0 ? pattern.a : pattern.b
+  return new GradientPattern(g1, g2)
 }
 
-function stripe_at_object(pattern, obj, world_point) {
-  // 1. Convert point coordinates to object space by multiplying 
-  //    by the inverse of the object's transform.
-  // 2. Multiply the object space point by the inverse of the 
-  //    pattern's transform to convert that point into pattern space.
-  // 3. Pass the resulting point to stripe_at and return this result.
-  throw new Error(`stripe_at_object(pattern, obj, world_point) has been deprecated. Use pattern.atShape(obj, world_point) instead.`)
+function ring_pattern(c1, c2) {
+  // Factory function for RingPattern
+  // Class is implemented in patterns.js
   
-  const object_point = obj.transform.inverse().times_tuple(world_point)
-  const pattern_point = pattern.transform.inverse().times_tuple(object_point)
-  
-  return stripe_at(pattern, pattern_point)  
+  return new RingPattern(c1, c2)
 }
+
+function chequered_pattern(c1, c2) {
+  // Factory function for ChecqueredPattern
+  // Class is implemented in patterns.js
+  
+  return new ChequeredPattern(c1, c2)
+}
+
 
 </script>
 <script>
@@ -4158,8 +4246,6 @@ function test_pattern_has_inherited_from_abstract_class() {
   // Test to see that a pattern has inherited the AbstractPattern's
   // functionality.
   
-  
-  
   // Check that transform and id are inherited and applied from AbstractPattern
   const s1 = sphere()
   const p1 = test_pattern()
@@ -4190,8 +4276,8 @@ function test_pattern_has_inherited_from_abstract_class() {
   const p4 = test_pattern()
   p4.transform = translation(0.5, 1, 1.5)
   c4 = p4.atShape(s4, point(2.5, 3, 3.5))
-  const res4 = c4.equals(0.75, 0.5, 0.25)
-  
+  const res4 = c4.equals(color(0.75, 0.5, 0.25))
+    
   return p_has_transform 
       && p_has_id
       && p_can_transform
@@ -4200,6 +4286,67 @@ function test_pattern_has_inherited_from_abstract_class() {
       && res4
 }
 
+function test_gradient_pattern_function() {
+  // Test GradientPattern class
+  const white = color(1, 1, 1)
+  const black = color(0, 0, 0)
+  
+  const pattern = gradient_pattern(white, black)
+  
+  // Only call ._at from the outside for testing!
+  const res1 = pattern._at(point(0, 0, 0)).equals(white)
+            && pattern._at(point(0.25, 0, 0)).equals(color(0.75, 0.75, 0.75))
+            && pattern._at(point(0.5, 0, 0)).equals(color(0.5, 0.5, 0.5))
+            && pattern._at(point(0.75, 0, 0)).equals(color(0.25, 0.25, 0.25))
+  
+  return res1
+}
+
+function test_ring_pattern_function() {
+  // Test RingPattern class
+  
+  const white = color(1, 1, 1)
+  const black = color(0, 0, 0)
+  
+  const pattern = ring_pattern(white, black)
+  
+  // Only call ._at from the outside for testing!
+  const res1 = pattern._at(point(0, 0, 0)).equals(white)
+            && pattern._at(point(1, 0, 0)).equals(black)
+            && pattern._at(point(0, 0, 1)).equals(black)
+            && pattern._at(point(0.708, 0, 0.708)).equals(black)
+  
+  return res1
+}
+
+function test_chequered_pattern_function() {
+  // Test ChequeredPattern class
+  
+  const white = color(1, 1, 1)
+  const black = color(0, 0, 0)
+  
+  const pattern = chequered_pattern(white, black)
+  
+  // Chequers should repeat in x
+  // Only call ._at from the outside for testing!
+  const res1 = pattern._at(point(0, 0, 0)).equals(white)
+            && pattern._at(point(0.99, 0, 0)).equals(white)
+            && pattern._at(point(1.01, 0, 0)).equals(black)
+  
+  // Chequers should repeat in y
+  // Only call ._at from the outside for testing!
+  const res2 = pattern._at(point(0, 0, 0)).equals(white)
+            && pattern._at(point(0, 0.99, 0)).equals(white)
+            && pattern._at(point(0, 1.01, 0)).equals(black)
+  
+  // Chequers should repeat in z
+  // Only call ._at from the outside for testing!
+  const res3 = pattern._at(point(0, 0, 0)).equals(white)
+            && pattern._at(point(0, 0, 0.99)).equals(white)
+            && pattern._at(point(0, 0, 1.01)).equals(black)
+  
+  return res1 && res2 && res3
+}
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -4342,6 +4489,10 @@ runTest("pattern_list", test_stripe_at_function)
 runTest("pattern_list", test_lighting_has_stripe_pattern)
 runTest("pattern_list", test_stripe_at_object_function)
 runTest("pattern_list", test_pattern_has_inherited_from_abstract_class)
+runTest("pattern_list", test_gradient_pattern_function)
+runTest("pattern_list", test_ring_pattern_function)
+runTest("pattern_list", test_chequered_pattern_function)
+
 
 
 

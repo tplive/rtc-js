@@ -1,3 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width">
+<style>
+pre {
+  background-color: lightgrey;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 3rem;
+}
+</style>
+<title>The Raytracer Challenge - Chapter 9: Planes</title>
+</head>
+<body>
+<script>
+window.onerror = function(errorMsg, url, lineNumber){
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+
+<h1><h2>&#127937; PATTERNS</h1>
+<p id="perf"></p>
+<div id="kansas"></div>
+<pre id="error"></pre>
+
+
+<!--<script src="./js/patterns.js"></script>-->
+<script>
+// *** PATTERN CLASSES
+
+class AbstractPattern {
+  
+  constructor() {
+    this._id = C.unique_id()
+    this._transform = idmatrix()
+    this._transform_inverse = idmatrix()
+  }
+  
+  get id() { return this._id }
+  get transform() { return this._transform }
+  get transform_inverse() { return this._transform_inverse }
+  
+  set transform(value) {
+    if (value.d != undefined) {
+      this._transform = value
+      // Check if this is more expensive:
+      this._transform_inverse = value.inverse()
+    }
+  }
+  
+  atShape(shape, world_point) {
+    // 1. Convert point coordinates to object space by multiplying 
+    //    by the inverse of the object's transform.
+    // 2. Multiply the object space point by the inverse of the 
+    //    pattern's transform to convert that point into pattern space.
+    // 3. Pass the resulting point to _pattern_at() and return this result.
+  
+    const object_point = shape.transform_inverse.times_tuple(world_point)
+    const pattern_point = this.transform_inverse.times_tuple(object_point)
+  
+    return this._at(pattern_point)
+  }
+  
+  _at(point) { throw new Error("Abstract method.") }
+}
+
+class RandomPattern extends AbstractPattern {
+
+  constructor(c1, c2) {
+    super()
+  }
+  
+  _at(point) {
+  // This function returns a random color for every point
+  
+    return color(Math.random(), Math.random(), Math.random())
+  }
+}
+
+class TestPattern extends AbstractPattern {
+
+  constructor() {
+    super()
+  }
+  
+  _at(point) {
+  // This function returns a random color for every point
+  
+    return color(point.x, point.y, point.z)
+  }
+}
+
+class StripePattern extends AbstractPattern {
+  // A stripe pattern alternates between two colors in one dimension.
+  // c1 and c2 are the two colors.
+  
+  constructor(c1, c2) {
+    super()
+    
+    if (c1.isColor && c2.isColor) {  
+      this._color1 = c1
+      this._color2 = c2
+    } else {
+      throw new Error("stripe_pattern() wants two colors as input")
+    }
+    
+    if (this.constructor == AbstractPattern) { throw new TypeError("Cannot instantiate an abstract class.") }
+  }
+  
+  get a() { return this._color1 }
+  get b() { return this._color2 }
+  
+  _at(point) {
+    // This function returns alternating colors depending on the x-coordinate of the point.
+  
+    return Math.floor(point.x) % 2 === 0 ? this._color1 : this._color2
+  }
+}
+
+class GradientPattern extends AbstractPattern {
+  // A gradient pattern smoothly transitions from one color to anotherin one dimension.
+  // c1 and c2 are the two colors.
+  
+  constructor(g1, g2) {
+    super()
+    
+    if (g1.isColor && g2.isColor) {
+      this._gradient1 = g1
+      this._gradient2 = g2
+    } else {
+      throw new Error("GradientPattern() wants two colors as input")
+    }
+    
+    if (this.constructor == AbstractPattern) { throw new TypeError("Cannot instantiate an abstract class.") }
+  }
+  
+  get a() { return this._gradient1 }
+  get b() { return this._gradient2 }
+  
+  _at(point) {
+    // This function returns an intermediate color depending on the x-coordinate of the point.
+    
+    const distance = this._gradient2.minus(this._gradient1)
+    const fraction = point.x // The gradient covers the entire shape if we omit: "- Math.floor(point.x)" from the calculation
+    //log("error", `Point.x: ${point.x}, Math.floor(point.x): ${Math.floor(point.x)}, fraction: ${fraction}`)
+    
+    return distance.by_scalar(fraction).plus(this._gradient1)
+  }
+}
+
+class RingPattern extends AbstractPattern {
+  // A ring pattern alternates between two colors in x and z dimensions,
+  // resulting in concentric circles.
+  // c1 and c2 are the two colors.
+  
+  constructor(c1, c2) {
+    super()
+    
+    if (c1.isColor && c2.isColor) {  
+      this._color1 = c1
+      this._color2 = c2
+    } else {
+      throw new Error("stripe_pattern() wants two colors as input")
+    }
+    
+    if (this.constructor == AbstractPattern) { throw new TypeError("Cannot instantiate an abstract class.") }
+  }
+  
+  get a() { return this._color1 }
+  get b() { return this._color2 }
+  
+  _at(point) {
+    // This function returns alternating colors depending on the x-coordinate of the point.
+  
+    return Math.floor(Math.sqrt(point.x**2 + point.z**2)) % 2 === 0 ? this._color1 : this._color2
+  }
+}
+
+class ChequeredPattern extends AbstractPattern {
+  // A chequered pattern alternates between two colors in all three dimensions.
+  // c1 and c2 are the two colors.
+  
+  constructor(c1, c2) {
+    super()
+    
+    if (c1.isColor && c2.isColor) {  
+      this._color1 = c1
+      this._color2 = c2
+    } else {
+      throw new Error("stripe_pattern() wants two colors as input")
+    }
+    
+    if (this.constructor == AbstractPattern) { throw new TypeError("Cannot instantiate an abstract class.") }
+  }
+  
+  get a() { return this._color1 }
+  get b() { return this._color2 }
+  
+  _at(point) {
+    // This function returns alternating colors depending on the x, y and z coordinates of the point.
+  
+    return (Math.floor(point.x) + Math.floor(point.y) + Math.floor(point.z)) % 2 === 0 ? this._color1 : this._color2
+
+  }
+}
+
+</script>
+
+<!--<script src="./js/shapes.js"></script>-->
+<script>
+// *** SHAPE CLASSES
+class AbstractShape {
+  // Abstract class that all shapes should inherit from
+  
+  constructor() {
+    this._id = C.unique_id()
+    this._transform = idmatrix()
+    this._transform_inverse = idmatrix()
+    this._material = material()
+    if (this.constructor == AbstractShape) { throw new TypeError("Cannot instantiate an abstract class.") }
+  }
+  
+  get id() { return this._id }
+  get transform() { return this._transform }
+  get transform_inverse() { return this._transform_inverse }
+  get material() { return this._material }
+  get saved_ray() { return this._saved_ray }
+  
+  set transform(value) {
+    if (value.d != undefined) {
+      this._transform = value
+      // Check if this is more expensive:
+      this._transform_inverse = value.inverse()
+    }
+  }
+  
+  set material(mat) {
+    if (mat.ambient != undefined) {
+      this._material = mat
+    }
+  }
+  
+  intersect(ray) {
+    this._saved_ray = ray.transform(this._transform_inverse)
+    
+    return this._intersect(this._saved_ray)
+  }
+  
+  normalAt(world_point) {
+    
+    return this._normal_at(this._transform_inverse.times_tuple(world_point))
+  }
+  
+  _intersect(local_ray) { throw new Error("Abstract method.") }
+  _normal_at(local_point) { throw new Error("Abstract method.") }
+    
+  equals(obj) { return this._transform.equals(obj.transform) && this._material.equals(obj.material)}
+  toString() { throw new Error("Abstract method.") } 
+}
+
+class TestShape extends AbstractShape {
+  // The Shape class is an abstract class acting as a base class for all supported shapes.
+  // Constructor fields are not really private.
+  
+  constructor() {
+    super()
+  }
+  
+  _intersect(local_ray) {
+    // Intersect returns an array of points where a given ray (ra) intersects a given sphere (s)
+    // This is an internal method, should never be called from the outside.
+    // Instead call intersect, which is inherited from AbstractShape.
+    
+    // This is how a *Sphere* does intersection:
+  
+    // Vector from sphere's center to the ray origin
+    // Remember: The sphere is centered at the world origin (0, 0, 0)
+    
+    const sphere_to_ray = local_ray.origin.minus(point(0, 0, 0))
+    const a = local_ray.direction.dot(local_ray.direction)
+    const b = 2 * local_ray.direction.dot(sphere_to_ray)
+    const c = sphere_to_ray.dot(sphere_to_ray) - 1
+
+    const discriminant = b**2 - 4*a*c
+
+    // The discriminant is the key - if it's negative, the ray misses the sphere
+    if (discriminant < 0 ) { return [] }
+
+    // Otherwise, the equation has two solutions, which could be the same, if the
+    // ray intersects at a perfect tangent
+    const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
+    const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
+
+    return [intersection(t1, this), intersection(t2, this)]
+  }
+  
+  _normal_at(local_normal) { 
+    
+    const world_normal = this._transform_inverse.transpose().times_tuple(local_normal)
+    
+    return world_normal.toVector().normalize()
+  }
+    
+  get toString() { return `TestShape(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}
+
+class Sphere extends AbstractShape {
+  // The Sphere class represents a sphere object with data. This is the new norm.
+  // Default values are set in the constructor and/or parameters.
+  // Using getters and setters allows direct assignment, such as sphere.transform = translation(1, 2, 3)
+  // Constructor fields are not really private.
+  
+  constructor() {
+    super()
+  }
+  
+  _intersect(local_ray) {
+    // Intersect returns an array of points where a given ray (ra) intersects a given sphere (s)
+    // This is an internal method, should never be called from the outside.
+    // Instead call intersect, which is inherited from AbstractShape.
+    
+    // This is how a *Sphere* does intersection:
+  
+    // Vector from sphere's center to the ray origin
+    // Remember: The sphere is centered at the world origin (0, 0, 0)
+    
+    const sphere_to_ray = local_ray.origin.minus(point(0, 0, 0))
+    const a = local_ray.direction.dot(local_ray.direction)
+    const b = 2 * local_ray.direction.dot(sphere_to_ray)
+    const c = sphere_to_ray.dot(sphere_to_ray) - 1
+
+    const discriminant = b**2 - 4*a*c
+
+    // The discriminant is the key - if it's negative, the ray misses the sphere
+    if (discriminant < 0 ) { return [] }
+
+    // Otherwise, the equation has two solutions, which could be the same, if the
+    // ray intersects at a perfect tangent
+    const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
+    const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
+
+    return [intersection(t1, this), intersection(t2, this)]
+  }
+  
+  _normal_at(local_normal) { 
+    
+    const world_normal = this._transform_inverse.transpose().times_tuple(local_normal)
+    
+    return world_normal.toVector().normalize()
+  }
+  
+  get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}
+
+class Plane extends AbstractShape {
+  // The Plane represents a completely flat surface that extends infinitely in two directions.
+  
+  constructor() {
+    super()
+    this._normal = vector(0, 1, 0)
+  }
+  
+  _intersect(local_ray) {
+    // Intersect returns an array of points where a given ray (local_ray) intersects this plane.
+    // This is an internal method, should never be called from the outside.
+    // Instead call intersect(ray), which is inherited from AbstractShape.
+    
+    // This is how a Plane does intersection:
+    
+    // Ray is parallel to the plane if it has no slope in y at all.
+    if (Math.abs(local_ray.direction.y) < C.EPSILON ) {
+      // Return empty intersection array
+      
+      return []
+    }
+    
+    const t = local_ray.origin.negate().y / local_ray.direction.y
+    
+    if (t < C.EPSILON) {
+    
+      return []
+    } else {
+    
+      return [intersection(t, this)]
+    }
+  }
+  
+  _normal_at(local_normal) { return this._normal }
+  
+  get toString() { return `Plane(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}
+
+</script>
+
+<!--<script src="./js/functions.js"></script>-->
+<script>
 // *** FUNCTION DEFINITIONS
 
 const π = Math.PI
@@ -1592,6 +1994,9 @@ function test_pattern() {
   return new TestPattern()
 }
 
+
+
+
 function gradient_pattern(g1, g2) {
   // Factory function for GradientPattern
   // Class is implemented in patterns.js
@@ -1612,3 +2017,105 @@ function chequered_pattern(c1, c2) {
   
   return new ChequeredPattern(c1, c2)
 }
+
+</script>
+
+<script>
+// *** RUN SCENE
+
+// Putting it together chapter 9. Planes. From the book, page 124. 
+
+// Performance counter
+const start = performance.now()
+
+// *** DEFINE SCENE
+
+const hsize = 800
+const vsize = 600 //Math.round(hsize * 0.5625) // 16:9
+
+// SCENE TELEMETRY
+tuple = profile(tuple)
+matrix = profile(matrix)
+color = profile(color)
+lighting = profile(lighting)
+intersect_world = profile(intersect_world)
+
+log("error", `Image dimensions: ${hsize} x ${vsize}`)
+
+const floor = plane()
+
+floor.material.color = color(1, 1, 1)
+floor.transform = rotation_y(π/6)
+floor.material.specular = 0.0
+floor.material.pattern = ring_pattern(color(Math.random(), Math.random(), Math.random()), color(Math.random(), Math.random(), Math.random()))
+floor.material.pattern.transform = scaling(0.2, 0.2, 0.2)
+
+log("error", "Floor color: " + floor.material.color.scaled())
+
+const light = point_light(point(-10, 10, -10), color(1, 1, 1))
+
+log("error", "Light color: " + light.intensity.scaled())
+
+const cam = camera(hsize, vsize, π/3)
+const from = point(0, 2, -5)
+const to = point(0, 0.5, 0)
+const up = vector(0, 1, 0)
+cam.transform = view_transform(from, to, up)
+
+const myworld = world()
+
+myworld.addLight(light)
+myworld.addObject(floor)
+
+const kule = sphere()
+
+  kule.material.color = color(Math.random(), Math.random(), Math.random())
+  kule.transform = translation(0, 1, -1)
+  kule.material.pattern = chequered_pattern(color(1, 0, 0), color(0, 1, 0))
+  kule.material.pattern.transform = scaling(0.1, 0.1, 0.1).times_matrix(rotation_x(π/6).times_matrix(rotation_y(π/6).times_matrix(rotation_z(π/6))))
+  
+  
+  myworld.addObject(kule)
+
+for (e in myworld.objects) {
+  log("error", myworld.objects[e].toString)
+  
+}
+
+
+
+const can = render(cam, myworld)
+
+// HTML canvas
+const html_can = html_canvas("kansas", hsize, vsize)
+var context = html_can.getContext("2d")
+context.fillStyle = "black"
+context.fillRect(0, 0, hsize, vsize)
+
+canvas_to_html_canvas(context, can)
+
+
+
+// Performance measurement
+const end = performance.now()
+const elapsed = end - start
+const counter_id = "scene"
+const cumulated_id = counter_id + "_running_time"
+const numberOfRuns_id = counter_id + "_runs"
+
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
+
+localStorage.setItem(numberOfRuns_id, Number(runs) + 1)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+
+log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
+log("perf", "Running time per pixel: " + Math.round(elapsed)/(cam.vsize * cam.hsize) + " ms.")
+log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+
+Object.keys(_calls).length > 0 ? log("perf", JSON.stringify(_calls,0,3)) : null
+</script>
+
+</body>
+
+</html>
