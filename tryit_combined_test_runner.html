@@ -114,12 +114,14 @@ function equal(a, b) {
 }
 
 function equal_tuples(a, b) {
+  throw (`equal_tuples() is deprecated. Use tuple().equals(t) instead.`)
   // Compare x, y, z coordinates of a tuple. JS does not distinguish these types of objects
   // so a tuple == vector == point at this time.
   return equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z) && equal(a.w, b.w)
 }
 
 function add_tuples(a, b) {
+  throw (`add_tuples() is deprecated. Use tuple().plus(t) instead.`)
   // Add two tuples together.
   // A point (w=1) added to a vector (w=0) is a new point.
   // A vector (w=0) added to another vector (w=0) is the resulting vector.
@@ -128,42 +130,50 @@ function add_tuples(a, b) {
 }
 
 function subtract_tuples(a, b) {
+  throw (`subtract_tuples() is deprecated. Use tuple().minus(t) instead.`)
   // Subtract values of tuple b from values of tuple a.
   return tuple(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w)
 }
 
 function negate_tuple(t) {
+  throw (`negate_tuple() is deprecated. Use tuple().negate() instead.`)
   // Return a tuple with x=-x, y=-y, z=-z coordinates
   return tuple(t.x * -1, t.y * -1, t.z * -1, t.w * -1)
 }
 
 function multiply_vector(v, s) {
+  throw (`multiply_vector() is deprecated. Use vector().by_scalar(s) instead.`)
   // Multiply each component of the tuple t by the scalar value s
   return tuple(v.x * s, v.y * s, v.z * s, v.w * s)
 }
 
 function divide_vector(s, t) {
+  throw (`divide_vector() is deprecated. Use vector().divided_by(s) instead.`)
   // Multiply each component of the tuple t by the scalar value s
   return tuple(t.x / s, t.y / s, t.z / s, t.w / s)
 }
 
 function magnitude(v) {
+  throw (`magnitude() is deprecated. Use vector().magnitude() instead.`)
   // Calculate the magnitude of a vector
   return Math.sqrt(v.x**2 + v.y**2 + v.z**2 + v.w**2)
 }
 
 function normalize(v) {
+  throw (`normalize() is deprecated. Use vector.normalize() instead.`)
   // Normalize a vector using its magnitude
   var m = magnitude(v)
   return tuple(v.x / m, v.y / m, v.z / m, v.w / m)
 }
 
 function dot(a, b) {
+  throw (`dot() is deprecated. Use vector.dot(v) instead.`)
   // Compute the dot product of two vectors
   return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
 }
 
 function cross(a, b) {
+  throw (`cross() is deprecated. Use vector.cross(v) instead.`)
   // Compute the cross product of two vectors
   // Order matters!
   return vector(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
@@ -179,6 +189,50 @@ function tuple(a, b, c, d) {
     minus: function(t) { return tuple(a - t.x, b - t.y, c - t.z, d - t.w) },
     plus: function(t) { return tuple(a + t.x, b + t.y, c + t.z, d + t.w) },
     negate: function() { return tuple(a * -1, b * -1, c * -1, d * -1) },
+    by_scalar: function(s) { 
+      if (d === 0) {
+        return tuple(a * s, b * s, c * s, d * s)
+      } else {
+        throw(`Can only multiply vectors by scalar value.`)
+      }
+    },
+    divided_by: function(s) {
+      if (d === 0) {
+        return tuple(a / s, b / s, c / s, d / s)
+      } else {
+        throw(`Can only divide vectors by scalar value.`)
+      }
+    },
+    dot: function(v) {
+      if (d === 0) {
+        return a * v.x + b * v.y + c * v.z
+      } else {
+        throw(`Can only calculate dot product of vectors.`)
+      }
+    },
+    cross: function(v) {
+      if (d === 0) {
+        return vector(b * v.z - c * v.y, c * v.x - a * v.z, a * v.y - b * v.x)
+      } else {
+        throw(`Can only calculate cross product of vectors.`)
+      }
+    },
+    magnitude: function() {
+    if (d === 0) {
+        return Math.sqrt(a**2 + b**2 + c**2)
+      } else {
+        throw(`Can only calculate magnitude of vectors.`)
+      }
+      
+    },
+    normalize: function() {
+      if (d === 0) {
+        var m = this.magnitude()
+        return vector(a / m, b / m, c / m)
+      } else {
+        throw(`Can only normalize vectors.`)
+      }
+    },
     toString: function() { return `x:${a} y:${b} z:${c} w:${d}` },
   })
     
@@ -447,7 +501,22 @@ function matrix(rows, cols) {
         }
       }
       return Float32Array.of(...temp)
-    }
+    },
+    times_tuple: function(t) {
+      // Multiply matrix _a by tuple t.
+      // Returns a tuple.
+      
+      const result = []
+      for (let r = 0; r <= 3; r++) {
+        result[r] = 
+          _a.get(r,0) * t.x + 
+          _a.get(r,1) * t.y + 
+          _a.get(r,2) * t.z + 
+          _a.get(r,3) * t.w
+      }
+      
+      return tuple(result[0], result[1], result[2], result[3])
+    },
   })
 }
 
@@ -790,6 +859,12 @@ function ray(o, d) {
   return Object.freeze({
     origin:o,
     direction:d,
+    transform: function(matr) {
+      return ray(
+        multiply_matrix_by_tuple(matr, o), 
+        multiply_matrix_by_tuple(matr, d)
+      )
+    },
     toString: function() { return `origin: point(${this.origin}) direction: vector(${this.direction})`}
   })
   
@@ -797,7 +872,7 @@ function ray(o, d) {
 
 function position(ray, t) {
   // Compute a ray's direction by t to find the total distance traveled
-  return add_tuples(multiply_vector(ray.direction, t), ray.origin)
+  return ray.direction.by_scalar(t).plus(ray.origin)
 }
 
 class Sphere {
@@ -836,12 +911,12 @@ function intersect(s, ra) {
   // Vector from sphere's center to the ray origin
   // Remember: The sphere is centered at the world origin (0, 0, 0)
   
-  const r = transform(ra, inverse(s.transform)) // Ray passed to intersect should be transformed by the inversed transformation matrix
+  const r = ra.transform(inverse(s.transform)) // Ray passed to intersect should be transformed by the inversed transformation matrix
 
-  const sphere_to_ray = subtract_tuples(r.origin, point(0, 0, 0))
-  const a = dot(r.direction, r.direction)
-  const b = 2 * dot(r.direction, sphere_to_ray)
-  const c = dot(sphere_to_ray, sphere_to_ray) - 1
+  const sphere_to_ray = r.origin.minus(point(0, 0, 0))
+  const a = r.direction.dot(r.direction)
+  const b = 2 * r.direction.dot(sphere_to_ray)
+  const c = sphere_to_ray.dot(sphere_to_ray) - 1
   
   const discriminant = b**2 - 4*a*c
   
@@ -885,17 +960,16 @@ function hit(list_of_intersections) {
   return list_of_intersections.sort().reverse()[0]
 }
 
-function transform(r, matr) {
+function transform_old(r, matr) {
   // Transform applies a transformation matrix to a ray
-  
-  return ray(multiply_matrix_by_tuple(matr, r.origin), multiply_matrix_by_tuple(matr, r.direction))
+  throw(`Function is deprecated. Use ray().transform(m) instead.`)
 }
 
 // *** SHADING FUNCTIONS
 
 function normal_at(obj, p) {
   // This function takes an object and a point and returns the point's normal (perpendicular) vector.
-  return normalize(subtract_tuples(p, point(0, 0, 0)))
+  return p.minus(point(0, 0, 0)).normalize()
 }
 
 </script>
@@ -979,8 +1053,17 @@ function test_multiply_vector_function() {
   // Given t = tuple(1, -2, 3, -4)
   // Then t * 3.5 = tuple(3.5, -7, 10.5, -14)
   
-  var m = multiply_vector(tuple(1, -2, 3, -4), 3.5)
-  return (equal(m.x, 3.5) && equal(m.y, -7) && equal(m.z, 10.5) && equal(m.w, -14))
+  let should_throw_error = false
+  
+  try {
+    var n = tuple(1, -2, 3, -4).by_scalar(3.5)
+  } catch (error) {
+    should_throw_error = true  
+  }
+  
+  const m = vector(1, -2, 3).by_scalar(3.5)
+  
+  return equal(m.x, 3.5) && equal(m.y, -7) && equal(m.z, 10.5) && equal(m.w, 0) && should_throw_error
 }
 
 function test_divide_vector_function() {
@@ -988,20 +1071,28 @@ function test_divide_vector_function() {
   // Given t = tuple(1, -2, 3, -4)
   // Then t / 2 = tuple(0.5, -1, 1.5, -2)
   
-  var t = divide_vector(2, tuple(1, -2, 3, -4))
-  var t_result = (equal(t.x, 0.5) && equal(t.y, -1) && equal(t.z, 1.5) && equal(t.w, -2))
+  let should_throw_error = false
+  
+  try {
+    var s = tuple(1, -2, 3, -4).divided_by(2)
+  } catch (error) {
+    should_throw_error = true  
+  }
+  
+  var t = tuple(1, -2, 3, 0).divided_by(2)
+  var t_result = (equal(t.x, 0.5) && equal(t.y, -1) && equal(t.z, 1.5) && equal(t.w, 0))
     
-  return (t_result)
+  return t_result && should_throw_error
 }
 
 function test_magnitude_function() {
   // Magnitude, or length of a vector is the distance from one end of a vector to the other.
   // Given vector(x, y, z, 0), the magnitude is Math.sqrt(x**2 + y**2 + z**2 + w**2)
   
-  var r = magnitude(vector(0, 1, 0))
-  var s = magnitude(vector(0, 0, 1))
-  var t = magnitude(vector(1, 2, 3))
-  var u = magnitude(vector(-1, -2, -3))
+  var r = vector(0, 1, 0).magnitude()
+  var s = vector(0, 0, 1).magnitude()
+  var t = vector(1, 2, 3).magnitude()
+  var u = vector(-1, -2, -3).magnitude()
   
   return (equal(r, 1) && equal(s, 1), equal(t, Math.sqrt(14)) && equal(u, Math.sqrt(14)))
 }
@@ -1012,8 +1103,8 @@ function test_normalize_function() {
   // Normalizing vector(1, 2, 3) gives vector(1/sqrt(14, 2/sqrt(14), 3/sqrt(14))
   // The magnitude of a normalized vector is 1.
   
-  var a = normalize(vector(4, 0, 0))
-  var b = normalize(vector(1, 2, 3))
+  var a = vector(4, 0, 0).normalize()
+  var b = vector(1, 2, 3).normalize()
   
   return a.equals(vector(1, 0, 0)) && b.equals(vector(1/Math.sqrt(14), 2/Math.sqrt(14), 3/Math.sqrt(14)))
   
@@ -1023,7 +1114,7 @@ function test_dot_function() {
   // Compute the dot product (aka scalar product) of two vectors
   // Given vector(1, 2, 3) and vector(2, 3, 4) the dot product is 20
   
-  return (dot(vector(1, 2, 3), vector(2, 3, 4)) == 20)
+  return vector(1, 2, 3).dot(vector(2, 3, 4)) == 20
 }
 
 function test_cross_function() {
@@ -1034,8 +1125,8 @@ function test_cross_function() {
   var u = vector(1, 2, 3)
   var v = vector(2, 3, 4)
   
-  var uv = cross(u, v)
-  var vu = cross(v, u)
+  var uv = u.cross(v)
+  var vu = v.cross(u)
   
   return uv.equals(vector(-1, 2, -1)) && vu.equals(vector(1, -2, 1))
 }
@@ -2183,12 +2274,12 @@ function test_transform_function() {
   // Translating a ray
   const r = ray(point(1, 2, 3), vector(0, 1, 0))
   const m = translation(3, 4, 5)
-  const r2 = transform(r, m)
+  const r2 = r.transform(m)
   
   // Scaling a ray
   const r3 = ray(point(1, 2, 3), vector(0, 1, 0))
   const m2 = scaling(2, 3, 4)
-  const r4 = transform(r3, m2)
+  const r4 = r3.transform(m2)
   
   return r2.origin.equals(point(4, 6, 8)) 
       && r2.direction.equals(vector(0, 1, 0))
@@ -2261,20 +2352,44 @@ function test_normal_function() {
   
   // on the y axis
   const ny = normal_at(s, point(0, 1, 0))
-  const ry = equal_tuples(ny, vector(0, 1, 0))
+  const ry = ny.equals(vector(0, 1, 0))
   
   // on the z axis
   const nz = normal_at(s, point(0, 0, 1))
-  const rz = equal_tuples(nz, vector(0, 0, 1))
+  const rz = nz.equals(vector(0, 0, 1))
   
   // on a nonaxial point
   const nn = normal_at(s, point(sq3/3, sq3/3, sq3/3))
-  const rn = equal_tuples(nn, vector(sq3/3, sq3/3, sq3/3))
+  const rn = nn.equals(vector(sq3/3, sq3/3, sq3/3))
   
   // Test that the normal is a normalized vector
-  const rm = equal_tuples(nn, normalize(nn))
+  const rm = nn.equals(nn.normalize())
   
   return rx && ry && rz && rn && rm
+}
+
+function test_normal_on_transformed_sphere() {
+  // Test computing the normal on a translated sphere
+  const s1 = new Sphere()
+  
+  s1.transform = translation(0, 1, 0)
+  const n1 = normal_at(s1, point(0, 1.70711, -0.70711))
+  const v1 = vector(0, 0.70711, -0.70711)
+  
+  // Test computing the normal on a transformed sphere
+  const s2 = new Sphere()
+  
+  s2.transform = scaling(1, 0.5, 1)
+  s2.transform = rotation_z(Math.PI/5)
+  const n2 = normal_at(s2, point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
+  const v2 = vector(0, 0.97014, -0.24254)
+  
+  log("error", "test_normal_on_transformed_sphere(): " + n1)
+  log("error", "test_normal_on_transformed_sphere(): " + v1)
+  log("error", "test_normal_on_transformed_sphere(): " + n2)
+  log("error", "test_normal_on_transformed_sphere(): " + v2)
+  
+  return n1.equals(v1) && n2.equals(v2)
 }
 
 </script>
@@ -2383,6 +2498,7 @@ runTest("ray_list", test_transform_function)
 runTest("ray_list", test_transform_sphere)
 
 runTest("shading_list", test_normal_function)
+runTest("shading_list", test_normal_on_transformed_sphere)
 
 
 const end = performance.now()

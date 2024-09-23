@@ -51,7 +51,7 @@ function test_add_tuples_function() {
   var t = tuple(110.999, -23.11, 2, 0)
   var v = vector(1.999, 23.11, 22.001)
   var p = point(110.9990000001, -23.11, 2.00000001)
-  
+  //add_tuples(t, v)
   return t.plus(v).equals(tuple(112.998, 0.0, 24.001, 0))
 }
 
@@ -77,8 +77,17 @@ function test_multiply_vector_function() {
   // Given t = tuple(1, -2, 3, -4)
   // Then t * 3.5 = tuple(3.5, -7, 10.5, -14)
   
-  var m = multiply_vector(tuple(1, -2, 3, -4), 3.5)
-  return (equal(m.x, 3.5) && equal(m.y, -7) && equal(m.z, 10.5) && equal(m.w, -14))
+  let should_throw_error = false
+  
+  try {
+    var n = tuple(1, -2, 3, -4).by_scalar(3.5)
+  } catch (error) {
+    should_throw_error = true  
+  }
+  
+  const m = vector(1, -2, 3).by_scalar(3.5)
+  
+  return equal(m.x, 3.5) && equal(m.y, -7) && equal(m.z, 10.5) && equal(m.w, 0) && should_throw_error
 }
 
 function test_divide_vector_function() {
@@ -86,20 +95,28 @@ function test_divide_vector_function() {
   // Given t = tuple(1, -2, 3, -4)
   // Then t / 2 = tuple(0.5, -1, 1.5, -2)
   
-  var t = divide_vector(2, tuple(1, -2, 3, -4))
-  var t_result = (equal(t.x, 0.5) && equal(t.y, -1) && equal(t.z, 1.5) && equal(t.w, -2))
+  let should_throw_error = false
+  
+  try {
+    var s = tuple(1, -2, 3, -4).divided_by(2)
+  } catch (error) {
+    should_throw_error = true  
+  }
+  
+  var t = tuple(1, -2, 3, 0).divided_by(2)
+  var t_result = (equal(t.x, 0.5) && equal(t.y, -1) && equal(t.z, 1.5) && equal(t.w, 0))
     
-  return (t_result)
+  return t_result && should_throw_error
 }
 
 function test_magnitude_function() {
   // Magnitude, or length of a vector is the distance from one end of a vector to the other.
   // Given vector(x, y, z, 0), the magnitude is Math.sqrt(x**2 + y**2 + z**2 + w**2)
   
-  var r = magnitude(vector(0, 1, 0))
-  var s = magnitude(vector(0, 0, 1))
-  var t = magnitude(vector(1, 2, 3))
-  var u = magnitude(vector(-1, -2, -3))
+  var r = vector(0, 1, 0).magnitude()
+  var s = vector(0, 0, 1).magnitude()
+  var t = vector(1, 2, 3).magnitude()
+  var u = vector(-1, -2, -3).magnitude()
   
   return (equal(r, 1) && equal(s, 1), equal(t, Math.sqrt(14)) && equal(u, Math.sqrt(14)))
 }
@@ -110,8 +127,8 @@ function test_normalize_function() {
   // Normalizing vector(1, 2, 3) gives vector(1/sqrt(14, 2/sqrt(14), 3/sqrt(14))
   // The magnitude of a normalized vector is 1.
   
-  var a = normalize(vector(4, 0, 0))
-  var b = normalize(vector(1, 2, 3))
+  var a = vector(4, 0, 0).normalize()
+  var b = vector(1, 2, 3).normalize()
   
   return a.equals(vector(1, 0, 0)) && b.equals(vector(1/Math.sqrt(14), 2/Math.sqrt(14), 3/Math.sqrt(14)))
   
@@ -121,7 +138,7 @@ function test_dot_function() {
   // Compute the dot product (aka scalar product) of two vectors
   // Given vector(1, 2, 3) and vector(2, 3, 4) the dot product is 20
   
-  return (dot(vector(1, 2, 3), vector(2, 3, 4)) == 20)
+  return vector(1, 2, 3).dot(vector(2, 3, 4)) == 20
 }
 
 function test_cross_function() {
@@ -132,8 +149,8 @@ function test_cross_function() {
   var u = vector(1, 2, 3)
   var v = vector(2, 3, 4)
   
-  var uv = cross(u, v)
-  var vu = cross(v, u)
+  var uv = u.cross(v)
+  var vu = v.cross(u)
   
   return uv.equals(vector(-1, 2, -1)) && vu.equals(vector(1, -2, 1))
 }
@@ -1281,12 +1298,12 @@ function test_transform_function() {
   // Translating a ray
   const r = ray(point(1, 2, 3), vector(0, 1, 0))
   const m = translation(3, 4, 5)
-  const r2 = transform(r, m)
+  const r2 = r.transform(m)
   
   // Scaling a ray
   const r3 = ray(point(1, 2, 3), vector(0, 1, 0))
   const m2 = scaling(2, 3, 4)
-  const r4 = transform(r3, m2)
+  const r4 = r3.transform(m2)
   
   return r2.origin.equals(point(4, 6, 8)) 
       && r2.direction.equals(vector(0, 1, 0))
@@ -1370,7 +1387,31 @@ function test_normal_function() {
   const rn = nn.equals(vector(sq3/3, sq3/3, sq3/3))
   
   // Test that the normal is a normalized vector
-  const rm = nn.equals(normalize(nn))
+  const rm = nn.equals(nn.normalize())
   
   return rx && ry && rz && rn && rm
+}
+
+function test_normal_on_transformed_sphere() {
+  // Test computing the normal on a translated sphere
+  const s1 = new Sphere()
+  
+  s1.transform = translation(0, 1, 0)
+  const n1 = normal_at(s1, point(0, 1.70711, -0.70711))
+  const v1 = vector(0, 0.70711, -0.70711)
+  
+  // Test computing the normal on a transformed sphere
+  const s2 = new Sphere()
+  
+  s2.transform = scaling(1, 0.5, 1)
+  s2.transform = rotation_z(Math.PI/5)
+  const n2 = normal_at(s2, point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
+  const v2 = vector(0, 0.97014, -0.24254)
+  
+  log("error", "test_normal_on_transformed_sphere(): " + n1)
+  log("error", "test_normal_on_transformed_sphere(): " + v1)
+  log("error", "test_normal_on_transformed_sphere(): " + n2)
+  log("error", "test_normal_on_transformed_sphere(): " + v2)
+  
+  return n1.equals(v1) && n2.equals(v2)
 }

@@ -389,12 +389,21 @@ import { doStuff } from "./js/functions.js"
 
 
 <h3>&#127767; Chapter 6, Light and Shading</h3>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
+<p>Dette er et spennende kapittel! Nå skal vi omsider begynne å lage litt 3D-effekter, og det starter med at vi må beregne noen flere vektorer. Jeg ser at jeg gjerne vil refaktorere litt mer, for <code>ray()</code> har en ekstern <code>transform()</code> funksjon, mens <code>Sphere()</code> har en egen metode for dette. Det er på tide å rydde. Vi må kunne gjøre ting som <code>ray().transform = scaling(5,5,5)</code> og <code>sphere().transform = rotation_z(Math.PI/5)</code>. Ikke sant? &#128514;</p>
+
+<p>Videre har vi <code>equal_tuples()</code>, <code>add_tuples()</code>, <code>subtract_tuples()</code>, <code>negate_tuple()</code>, <code>multiply_vectors()</code>, <code>divide_vectors()</code>, <code>dot()</code>, <code>cross()</code>, <code>magnitude()</code> og <code>normalize()</code> som alle funksjoner som er eksterne fra <code>tuple()</code>! Jeg mener koden blir ryddigere hvis jeg gjør dem om til metoder på <code>tuple()</code>. Det viser seg også at disse metodene kan chaines, uten at jeg trenger å gjøre noe spesielt!</p>
+
+<p>Så må jeg skrive om alle kallene sånn at det blir konsistent og fint. Gjør det videre sånn at de gamle funksjonene får ligge i koden litt til, men de kaster bare exceptions hvis man prøver å bruke dem. Sånn blir det:</p>
+<pre>
+  const t = point(1, 2, 3).plus(vector(3, 2, 1).normalize()
+</pre>
+<p>Mens bruk av gammel metode blir:</p>
+<pre>
+  add_tuples(t, v)
+
+  Uncaught add_tuples() is deprecated. Use tuple().plus(t) instead.
+</pre>
+<p>Vakkert.</p>
 <p></p>
 <p></p>
 <p></p>
@@ -404,7 +413,7 @@ import { doStuff } from "./js/functions.js"
 <ul>
   <li>Fikse det som er galt med transformations() når jeg legger på en rotation.</li>
   <li>WIP: Kjøre raytracing som <a href="https://www.w3schools.com/js/js_api_web_workers.asp">bakgrunnsprosess</a>.</li>
-  <li>Bytte navn på funksjonen scale() til scaling().</li>
+  <li>Refaktorere minor(), determinant() og cofactor() som metoder på matrix() funksjonen.
   <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>
   <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og utgangshastighet.</li>
   <li>Kan jeg hente koden til en funksjon inn i dokumentasjonen direkte med JS? Istedet for å klippe og lime?</li>
@@ -412,8 +421,8 @@ import { doStuff } from "./js/functions.js"
   <ul>
     <li>Refaktorere canvas til class</li>
   </ul>
-  <li>Refaktorere minor(), determinant() og cofactor() som metoder på matrix() funksjonen.
-<li>Done! <del>Bytte til <a href="https://stackoverflow.com/a/22004858/83148">typed arrays</a> i alle array-funksjoner. Vurdere også 1D arrays istedet for 2D.<d/el></li>
+  <li>Done. <del>Bytte navn på funksjonen scale() til scaling().</del></li>
+  <li>Done! <del>Bytte til <a href="https://stackoverflow.com/a/22004858/83148">typed arrays</a> i alle array-funksjoner. Vurdere også 1D arrays istedet for 2D.</del></li>
   <li>Done! <del>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny transform funksjon side 68.)</del></li>
   <li>Done! <del>Siste "Putting it together" oppgaven fra kapittel 3</del></li>
   <li>Done! Ja, det stemte.. &#128514; <del>Fikse PPM lagring til fil. Mistenker at piksel-verdier må avrundes til heltall.</del></li>
