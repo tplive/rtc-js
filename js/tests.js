@@ -289,57 +289,6 @@ function test_write_pixel_function() {
   return (p1.red === c1.red && p1.green === c1.green && p1.blue === c1.blue) 
 }
 
-function test_catch_canvas_out_of_bounds() {
-  // Given a canvas, test that writing pixels or reading outside bounds will throw an exception.
-  const w = 7
-  const h = 6
-  const can = canvas(w, h)
-  const c1 = color(110, 220, 330) // Color values are unbounded for calculations, but cannot exceed 255 in display.
-  
-  var errors = [] // An array of errors from tests below
-  
-  var t1, t2, t3, t4, t5 = false
-  try {
-    can.write_pixel(4, 5, c1) // Should not fail
-    can.pixel_at(4, 5, c1) // Should not fail
-  } catch (err) {
-    errors.push(err)
-    t1 = true
-  }
-  
-  try {
-    can.write_pixel(-1, 1) // -1 is out of bounds
-  } catch (err) {
-    errors.push(err)
-    t2 = true
-  }
-      
-  try {
-      can.write_pixel(1, -1) // -1 is out of bounds
-  } catch (err) {
-    errors.push(err)
-    t3 = true
-  }
-  
-  try {
-    can.write_pixel(w, h + 1) // y > h is out of bounds
-  } catch (err) {
-    errors.push(err)
-    t4 = true
-  }
-  
-  try {
-    can.write_pixel(w + 1, h) // x > w is out of bounds
-  } catch (err) {
-    errors.push(err)
-    t5 = true
-  }
-  
-  //log("error", "Failed tests: " + errors.join("\n"))
-    
-  return ( !t1 && t2 && t3 && t4 && t5 ) 
-}
-
 function test_constructing_ppm_header() {
   // PPM header test
   // The header should look like this, where 80 40 is W and H:
@@ -1050,6 +999,27 @@ function test_apply_individual_transformations() {
   
   // Then apply translation
   const p4 = multiply_matrix_by_tuple(t, p3)
+  
+  return equal_tuples(p4, point(15, 0, 7))
+}
+
+function test_apply_individual_transformations() {
+  // Test applying individual transformations
+  
+  const p1 = point(1, 0, 1)
+  const rx = rotation_x(Math.PI / 2)
+  const s = scale(5, 5, 5)
+  const t = translation(10, 5, 7)
+  
+  // Apply rotation first
+  const p2 = multiply_matrix_by_tuple(rx, p1)
+  //log("error", `Rotated matrix: ${p2}`)
+  // Then apply scaling
+  const p3 = multiply_matrix_by_tuple(s, p2)
+  //log("error", `Rotated and scaled: ${p3}`)
+  // Then apply translation
+  const p4 = multiply_matrix_by_tuple(t, p3)
+  //log("error", `Rotated and scaled and translated: ${p4}`)
   
   return equal_tuples(p4, point(15, 0, 7))
 }

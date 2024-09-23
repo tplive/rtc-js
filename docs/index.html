@@ -253,7 +253,7 @@ const trans_inverse = inverse(transpose_matrix(structuredClone(ma)))
 const inverse_trans = transpose_matrix(inverse(structuredClone(ma)))
 log("error", matrix_equal(trans_inverse, inverse_trans)) // true
 </pre>
-<p><i>4. Remember ho multiplying the identity matrix by a tuple gives you the tuple, unchanged? Now, try changing any single element of the identity matrix to a different number, and then multiplying it by a tuple. What happens to the tuple?</i> Svar: Det må vi se på i morgen. Klokka er 21.18 nå. </p>
+<p><i>4. Remember ho multiplying the identity matrix by a tuple gives you the tuple, unchanged? Now, try changing any single element of the identity matrix to a different number, and then multiplying it by a tuple. What happens to the tuple?</i> Svar: Hvis ett enkelt element i id matrix endres, blir det tatt med i matrisekalkuleringen. Endringer på rad 0 påvirker x-koordinatet. Endringer på rad 1 påvirker y-koordinatet osv. </p>
 
 <h3>&#128177; Kapittel 4, Matrix Transformations</h3>
 
@@ -352,12 +352,14 @@ const C = function() {
 <p></p>
 <p>TODO:
 <ul>
-  <li>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny transform funksjon side 68.)</li>
-  <li>Fikse PPM lagring til fil. Mistenker at piksel-verdier må avrundes til heltall.</li>
-  <li>Siste "Putting it together" oppgaven fra kapittel 3</li>
+  <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>
   <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og utgangshastighet.</li>
   <li>Kan jeg hente koden til en funksjon inn i dokumentasjonen direkte med JS? Istedet for å klippe og lime?</li>
   <li>Skrive om JS funksjoner som returnerer Object.freeze({}) med ordentlige klasser og metoder.
+  <ul><li>Refaktorere canvas til class</li></ul>
+<li>Done! <del>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny transform funksjon side 68.)</del></li>
+  <li>Done! <del>Siste "Putting it together" oppgaven fra kapittel 3</del></li>
+  <li>Done! Ja, det stemte.. &#128514; <del>Fikse PPM lagring til fil. Mistenker at piksel-verdier må avrundes til heltall.</del></li>
 </ul>
 </p>
 

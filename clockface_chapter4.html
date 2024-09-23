@@ -45,7 +45,7 @@ const size = 300 // Size of canvas
 const radius = 6/8 * size/2 // Clock face radius
 
 // My canvas
-//const can = canvas(size, size)
+const can = canvas(size, size)
 const c1 = color(1.0, 1.0, 1.0)
 const s = scale_color(c1)
 
@@ -76,16 +76,16 @@ for (let i=0; i < 12; i++) {
 for (let j=0; j < hours.length; j++) {
   p = hours[j]
   log("error", `${j} X, Y: ${p.x}, ${p.y}`)
-  //can.write_pixel(p.x, p.y, s)
+  can.write_pixel(p.x, p.y, s)
   context.fillStyle = `rgb(${s.red}, ${s.green}, ${s.blue}`
   context.fillRect(p.x, p.y, 2, 2)
 }
 
 // How about we create the entire canvas and set the pixels just in time?
-//const ppm = canvas_to_ppm(can)
+
 // Show canvas
 //log("error", ppm)
-//downloadPPMfile(ppm, "plot")
+downloadPPMfile(can, "plot")
 
 
 // Performance measurement

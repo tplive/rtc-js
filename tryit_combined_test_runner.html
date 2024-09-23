@@ -89,10 +89,10 @@ function log(domId, msg) {
   element.appendChild(para);
 }
 
-function downloadPPMfile(ppm_data, name) {
-  // Download PPM file. Does NOT check that input data is valid PPM.
+function downloadPPMfile(can, name) {
+  // Download PPM file. Takes canvas and file firstname as input.
   
-  var dataStr = "data:text/ppm;charset=utf-8," + encodeURIComponent(ppm_data)
+  var dataStr = "data:text/ppm;charset=utf-8," + encodeURIComponent(canvas_to_ppm(can))
   var downloadAnchorNode = document.createElement("a")
   downloadAnchorNode.innerHTML = "Click here to download file " + name + ".ppm"
   downloadAnchorNode.setAttribute("href",     dataStr)
@@ -253,6 +253,7 @@ function html_canvas(parent, width, height) {
 
 
 
+
 function canvas(w, h) {
   // Create a canvas abstraction object. It has a width and a height and a pixel array.
   // Each pixel is defined by three values, r, g, b.
@@ -281,11 +282,11 @@ function canvas(w, h) {
       return color(this.data[i], this.data[i+1], this.data[i+2])
     },
     write_pixel: function(x, y, color) {
-    // Make sure pixels are within the canvas.
+    // Ignore pixels outside the canvas.
       if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
-        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+        return
       }
-      const i = (w * y + x) * b
+      const i = (w * Math.round(y) + Math.round(x)) * b
       // For debugging
       //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
       
@@ -684,6 +685,27 @@ function shearing(xy, xz, yx, yz, zx, zy) {
   
   return m
   
+}
+
+function transformations(tup, trans) {
+  // Transformations given as parameters will be applied in the reverse order
+  // We can apply translation, scaling, rotation and shearing into a single operation.
+  
+  let m = idmatrix()
+  //log("error", "Start: " + m)
+
+  
+  for (let i=0;i < arguments.length;i++) {
+    
+    // Unless argument is a point or vector, multiply by m
+    if (!(arguments[i].w === 1 || arguments[i].w === 0)) {
+      //log("error", `Applying ${i}: ${arguments[i]}`)
+      m = multiply_matrices(arguments[i], m)
+      //log("error", "Result: " + m)
+    }
+  }
+  
+  return multiply_matrix_by_tuple(m, tup)
 }
 
 // *** RAY FUNCTIONS
@@ -1089,57 +1111,6 @@ function test_write_pixel_function() {
   //log("error", `p1index: ${p1index} +1: ${p1index+1} +2x: ${p1index+2}`)
   //log("error", `p1index: ${can.data[p1index]} +1: ${can.data[p1index+1]} +2x: ${can.data[p1index+2]}`)
   return (p1.red === c1.red && p1.green === c1.green && p1.blue === c1.blue) 
-}
-
-function test_catch_canvas_out_of_bounds() {
-  // Given a canvas, test that writing pixels or reading outside bounds will throw an exception.
-  const w = 7
-  const h = 6
-  const can = canvas(w, h)
-  const c1 = color(110, 220, 330) // Color values are unbounded for calculations, but cannot exceed 255 in display.
-  
-  var errors = [] // An array of errors from tests below
-  
-  var t1, t2, t3, t4, t5 = false
-  try {
-    can.write_pixel(4, 5, c1) // Should not fail
-    can.pixel_at(4, 5, c1) // Should not fail
-  } catch (err) {
-    errors.push(err)
-    t1 = true
-  }
-  
-  try {
-    can.write_pixel(-1, 1) // -1 is out of bounds
-  } catch (err) {
-    errors.push(err)
-    t2 = true
-  }
-      
-  try {
-      can.write_pixel(1, -1) // -1 is out of bounds
-  } catch (err) {
-    errors.push(err)
-    t3 = true
-  }
-  
-  try {
-    can.write_pixel(w, h + 1) // y > h is out of bounds
-  } catch (err) {
-    errors.push(err)
-    t4 = true
-  }
-  
-  try {
-    can.write_pixel(w + 1, h) // x > w is out of bounds
-  } catch (err) {
-    errors.push(err)
-    t5 = true
-  }
-  
-  //log("error", "Failed tests: " + errors.join("\n"))
-    
-  return ( !t1 && t2 && t3 && t4 && t5 ) 
 }
 
 function test_constructing_ppm_header() {
@@ -1794,46 +1765,20 @@ function test_shearing_function() {
 }
 
 function test_transformations_function() {
-  // Transform is a function that makes it possible to chain 
-  // translation, scaling, rotation and shearing into a single operation.
+  // Transformations are applied in the reverse order of the one given
   
-  const t = new transformations() //
+  let p = point(1, 0, 1)
   
-  //const result = t.rotate_x(Math.PI / 4)//.rotate_y(Math.PI / 2)//.rotate_z(Math.PI / 3)//.scale(5, 5, 5).translate()
+  const result = transformations(
+    p, 
+    rotation_x(Math.PI / 2),
+    scale(5, 5, 5),
+    translation(10, 5, 7)
+  )
   
-  //log("error", result.join("\n"))
+  //log("error", result)
   
-  return false // TO BE CONTINUED
-}
-
-function transformations() {
-  // Transform is a function that makes it possible to chain 
-  // translation, scaling, rotation and shearing into a single operation.
-  
-  this.m = idmatrix()
-  
-  this.rotate_x = function(rad) {
-    log("error", "This is rotate_x: " + rad)
-    this.m = multiply_matrices(this.m, rotation_x(rad))
-    return this
-  }
-  
-  this.rotate_y = function(rad) {
-    log("error", "This is rotate_y: " + rad)
-    this.m = multiply_matrices(this.m, rotation_y(rad))
-    return this
-  }
-  this.rotate_z = function(rad) {
-    log("error", "This is rotate_z: " + rad)
-    this.m = multiply_matrices(this.m, rotation_z(rad))
-    return this
-  }
-      
-   if (this instanceof transformations) {
-        return this.transformations
-    } else {
-        return new transformations()
-    }
+  return equal_tuples(result, point(15, 0, 7))
 }
 
 function test_apply_individual_transformations() {
@@ -1846,12 +1791,13 @@ function test_apply_individual_transformations() {
   
   // Apply rotation first
   const p2 = multiply_matrix_by_tuple(rx, p1)
-  
+  //log("error", `Rotated matrix: ${p2}`)
   // Then apply scaling
   const p3 = multiply_matrix_by_tuple(s, p2)
-  
+  //log("error", `Rotated and scaled: ${p3}`)
   // Then apply translation
   const p4 = multiply_matrix_by_tuple(t, p3)
+  //log("error", `Rotated and scaled and translated: ${p4}`)
   
   return equal_tuples(p4, point(15, 0, 7))
 }
@@ -2161,7 +2107,6 @@ runTest("colors_list", test_scale_color_function)
 runTest("canvas_list", test_canvas_function)
 runTest("canvas_list", test_html_canvas_function)
 runTest("canvas_list", test_write_pixel_function)
-runTest("canvas_list", test_catch_canvas_out_of_bounds)
 runTest("canvas_list", test_constructing_ppm_header)
 runTest("canvas_list", test_ppm_pixel_data)
 runTest("canvas_list", test_canvas_to_ppm_function)

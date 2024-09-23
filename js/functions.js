@@ -41,10 +41,10 @@ function log(domId, msg) {
   element.appendChild(para);
 }
 
-function downloadPPMfile(ppm_data, name) {
-  // Download PPM file. Does NOT check that input data is valid PPM.
+function downloadPPMfile(can, name) {
+  // Download PPM file. Takes canvas and file firstname as input.
   
-  var dataStr = "data:text/ppm;charset=utf-8," + encodeURIComponent(ppm_data)
+  var dataStr = "data:text/ppm;charset=utf-8," + encodeURIComponent(canvas_to_ppm(can))
   var downloadAnchorNode = document.createElement("a")
   downloadAnchorNode.innerHTML = "Click here to download file " + name + ".ppm"
   downloadAnchorNode.setAttribute("href",     dataStr)
@@ -233,11 +233,11 @@ function canvas(w, h) {
       return color(this.data[i], this.data[i+1], this.data[i+2])
     },
     write_pixel: function(x, y, color) {
-    // Make sure pixels are within the canvas.
+    // Ignore pixels outside the canvas.
       if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
-        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+        return
       }
-      const i = (w * y + x) * b
+      const i = (w * Math.round(y) + Math.round(x)) * b
       // For debugging
       //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
       
@@ -638,6 +638,26 @@ function shearing(xy, xz, yx, yz, zx, zy) {
   
 }
 
+function transformations(tup, trans) {
+  // Transformations given as parameters will be applied in the reverse order
+  // We can apply translation, scaling, rotation and shearing into a single operation.
+  
+  let m = idmatrix()
+  //log("error", "Start: " + m)
+
+  
+  for (let i=0;i < arguments.length;i++) {
+    
+    // Unless argument is a point or vector, multiply by m
+    if (!(arguments[i].w === 1 || arguments[i].w === 0)) {
+      //log("error", `Applying ${i}: ${arguments[i]}`)
+      m = multiply_matrices(arguments[i], m)
+      //log("error", "Result: " + m)
+    }
+  }
+  
+  return multiply_matrix_by_tuple(m, tup)
+}
 // *** RAY FUNCTIONS
 
 function ray(o, d) {
