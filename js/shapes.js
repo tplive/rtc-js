@@ -385,3 +385,143 @@ class Cylinder extends AbstractShape {
   
   get toString() { return `Cylinder(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
+
+class Cone extends AbstractShape {
+  // The cone is for remarkably similar to the cylinder; an infinitely long shape, 
+  // with a radius of 1. The cone too, has controls to set its length 
+  // and to allow one or both ends to be either open or capped.
+  
+  constructor() {
+    super()
+    this._minimum = -Infinity
+    this._maximum = Infinity
+    this._closed = false
+  }
+  
+  _check_cap(ray, t) {
+    // Helper function to reduce duplication. Checks to see if 
+    // intersection at 't' is within a radius of 1 (radius of cylinder)
+    // from the y axis.
+    
+    const x = ray.origin.x + t * ray.direction.x
+    const z = ray.origin.z + t * ray.direction.z
+    
+    return (x**2 + z**2) <= 1.0
+  }
+  
+  _intersect_caps(ray, xs) {
+    
+    // Caps only matter if the cylinder is closed, and might possibly
+    // be intersected by the ray
+    if (this._closed === false || Math.abs(ray.direction.y) <= C.EPSILON) { 
+      //log("error", "_intersect_caps(): Cyl not closed or ray y close to 0")
+      return xs 
+    }
+    
+    //log("error", "_intersect_caps(): " + ray.direction.y)
+    
+    // Check for an intersection with the lower end cap by intersecting
+    // the ray with the plane at y = cyl.minimum
+    const t0 = (this.minimum - ray.origin.y) / ray.direction.y
+    if (this._check_cap(ray, t0) ) { 
+    
+      //log("error", "_intersect_caps(): Intersection with lower end cap")
+      xs.push(intersection(t0, this)) 
+    }
+    
+    // Check for an intersection with the upper end cap by intersecting
+    // the ray with the plane at y = cyl.maximum
+    const t1 = (this.maximum - ray.origin.y) / ray.direction.y
+    if (this._check_cap(ray, t1) ) { 
+      //log("error", "_intersect_caps(): Intersection with upper end cap")
+      
+      xs.push(intersection(t1, this)) 
+    }
+    
+    return xs
+  }
+    
+  _intersect(local_ray) {
+    
+    const xs = []
+    
+    // To enhance both writability and readability of the calculations
+    const o = local_ray.origin
+    const d = local_ray.direction
+    
+    const a = d.x**2 - d.y**2 + d.z**2
+    
+    const b = 2*o.x*d.x - 2*o.y*d.y + 2*o.z*d.z
+      
+    const c = o.x**2 - o.y**2 + o.z**2
+    
+    const disc = b ** 2 - 4 * a * c
+    
+    // ray is parallel to the y axis
+    if (a >= C.EPSILON) {
+      
+      // ray does not intersect the cylinder
+      if (disc < 0) { return [] }
+      
+      let t0 = (-b - Math.sqrt(disc)) / (2 * a)
+      let t1 = (-b + Math.sqrt(disc)) / (2 * a)
+      
+      // Swap
+      if (t0 > t1) {
+        const tmp = t0
+        t0 = t1
+        t1 = tmp
+      }  
+      
+      const y0 = o.y + t0 * d.y
+      if (this._minimum < y0 && y0 < this._maximum ) { 
+        //log("error", "_intersect(): y0 = " + y0)
+        xs.push(intersection(t0, this))   
+      }
+      
+      const y1 = o.y + t1 * d.y
+      if (this._minimum < y1 && y1 < this._maximum ) { 
+        //log("error", "_intersect(): y1 = " + y1)
+        xs.push(intersection(t1, this)) 
+      }
+    
+      return this._intersect_caps(local_ray, xs)
+    } else {
+      // If a < C.EPSILON, skip cylinder intersection logic and just check end caps.
+      
+      return this._intersect_caps(local_ray, xs)
+    }
+  }
+  
+  _normal_at(local_normal) {
+    
+    // compute the square of the distance from the y axis
+    const dist = local_normal.x**2 + local_normal.z**2
+    
+    //log("error", "_normal_at(): dist = " + dist)
+    
+    if (dist < 1.0 && local_normal.y >= (this._maximum - C.EPSILON) ) { 
+      
+      //log("error", "_normal_at():  " + vector(0, 1, 0))
+      return vector(0, 1, 0)
+    } else if (dist < 1.0 && local_normal.y <= (this._minimum + C.EPSILON) ) { 
+      
+      //log("error", "_normal_at(): + " + vector(0, -1, 0))
+      return vector(0, -1, 0)
+    } else {
+      
+      //log("error", "_normal_at(): local_normal = " + vector(local_normal.x, 0, local_normal.z))
+      return vector(local_normal.x, 0, local_normal.z)
+    }
+  }
+  
+  get minimum()  { return this._minimum }
+  get maximum()  { return this._maximum }
+  get closed()   { return this._closed  }
+  
+  set minimum(v) { this._minimum = v    }
+  set maximum(v) { this._maximum = v    }
+  set closed(v)  { this._closed = v     }
+  
+  get toString() { return `Cylinder(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}

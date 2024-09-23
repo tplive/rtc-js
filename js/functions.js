@@ -1531,3 +1531,10 @@ function cylinder() {
   
   return new Cylinder()
 }
+
+function cone() {
+  // Factory function for Cone
+  // Class is implemented in shapes.js
+  
+  return new Cone()
+}

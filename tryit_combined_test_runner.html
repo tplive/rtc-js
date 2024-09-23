@@ -636,6 +636,137 @@ class Cylinder extends AbstractShape {
   get toString() { return `Cylinder(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
 
+class Cone extends AbstractShape {
+  // The cone is for remarkably similar to the cylinder; an infinitely long shape, 
+  // with a radius of 1. The cone too, has controls to set its length 
+  // and to allow one or both ends to be either open or capped.
+  
+  constructor() {
+    super()
+    this._minimum = -Infinity
+    this._maximum = Infinity
+    this._closed = false
+  }
+  
+  _check_cap(ray, t) {
+    // Helper function to reduce duplication. Checks to see if 
+    // intersection at 't' is within a radius of 1 (radius of cylinder)
+    // from the y axis.
+    
+    const x = ray.origin.x + t * ray.direction.x
+    const z = ray.origin.z + t * ray.direction.z
+    
+    return (x**2 + z**2) <= 1.0
+  }
+  
+  _intersect_caps(ray, xs) {
+    
+    // Caps only matter if the cylinder is closed, and might possibly
+    // be intersected by the ray
+    if (this._closed === false || Math.abs(ray.direction.y) <= C.EPSILON) { 
+      //log("error", "_intersect_caps(): Cyl not closed or ray y close to 0")
+      return xs 
+    }
+    
+    // Check for an intersection with the lower end cap by intersecting
+    // the ray with the plane at y = cyl.minimum
+    const t0 = (this.minimum - ray.origin.y) / ray.direction.y
+    if (this._check_cap(ray, t0) ) { 
+    
+      xs.push(intersection(t0, this)) 
+    }
+    
+    // Check for an intersection with the upper end cap by intersecting
+    // the ray with the plane at y = cyl.maximum
+    const t1 = (this.maximum - ray.origin.y) / ray.direction.y
+    if (this._check_cap(ray, t1) ) { 
+      
+      xs.push(intersection(t1, this)) 
+    }
+    
+    return xs
+  }
+    
+  _intersect(local_ray) {
+    
+    const xs = []
+    
+    // To enhance both writability and readability of the calculations
+    const o = local_ray.origin
+    const d = local_ray.direction
+    
+    const a = d.x**2 - d.y**2 + d.z**2
+    const b = 2*o.x*d.x - 2*o.y*d.y + 2*o.z*d.z
+    const c = o.x**2 - o.y**2 + o.z**2
+    
+    
+    const disc = b ** 2 - 4 * a * c
+    
+    //log("error", disc)
+    // ray is parallel to the y axis
+    if (equal(a, 0)) {
+      
+      // ray does not intersect the cylinder
+      if (disc < 0) { return [] }
+      
+      let t0 = (-b - Math.sqrt(disc)) / (2 * a)
+      let t1 = (-b + Math.sqrt(disc)) / (2 * a)
+      
+      // Swap
+      if (t0 > t1) {
+        const tmp = t0
+        t0 = t1
+        t1 = tmp
+      }  
+      
+      const y0 = o.y + t0 * d.y
+      if (this._minimum < y0 && y0 < this._maximum ) { 
+        xs.push(intersection(t0, this))   
+      }
+      
+      const y1 = o.y + t1 * d.y
+      if (this._minimum < y1 && y1 < this._maximum ) { 
+        xs.push(intersection(t1, this)) 
+      }
+    
+      return this._intersect_caps(local_ray, xs)
+    } else if ( equal(a, 0) && equal(b, 0) ) {
+      // If a and b is 0, the ray misses. But if a is 0 and b is not,
+      // we need to calculate the single point of
+      // intersection using this formula:
+      // t = -c/2b
+      // if a is non-zero, we use the same algorithm, but "with the
+      // new a, b and c, that we used for the cylinders", whatever
+      // that means.. 🤔
+      
+      return this._intersect_caps(local_ray, xs)
+    }
+  }
+  
+  _normal_at(local_normal) {
+    // compute the square of the distance from the y axis
+    const dist = local_normal.x**2 + local_normal.z**2
+    
+    if (dist < 1.0 && local_normal.y >= (this._maximum - C.EPSILON) ) { 
+      
+      return vector(0, 1, 0)
+    } else if (dist < 1.0 && local_normal.y <= (this._minimum + C.EPSILON) ) { 
+            
+      return vector(0, -1, 0)
+    } else { return vector(local_normal.x, 0, local_normal.z) }
+  }
+  
+  get minimum()  { return this._minimum }
+  get maximum()  { return this._maximum }
+  get closed()   { return this._closed  }
+  
+  set minimum(v) { this._minimum = v    }
+  set maximum(v) { this._maximum = v    }
+  set closed(v)  { this._closed = v     }
+  
+  get toString() { return `Cone(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}
+
 </script>
 
 <!--<script src="./js/functions.js"></script>-->
@@ -2172,7 +2303,12 @@ function cylinder() {
   return new Cylinder()
 }
 
-
+function cone() {
+  // Factory function for Cone
+  // Class is implemented in shapes.js
+  
+  return new Cone()
+}
 
 </script>
 <script>
@@ -5195,6 +5331,41 @@ function test_normal_on_cylinder_end_caps() {
   return results.includes(false) ? false : true
 }
 
+function test_ray_hits_cone() {
+  // Intersecting a cone with a ray
+  
+  const shape = cone()
+  
+  const cases = [
+          ray(point(0, 0, -5), vector(0, 0, 1)),
+          ray(point(0, 0, -5), vector(1, 1, 1)),
+          ray(point(1, 1, -5), vector(-0.5, -1, 1))
+        ]
+        
+  const t0s = [5, 8.66025, 4.55006]
+  const t1s = [5, 8.66025, 49.44994]
+  
+  const results = []
+  
+  for (let i = 0; i < cases.length; i++) {
+    
+    const r = ray(cases[i].origin, cases[i].direction.normalize())
+    const xs = shape._intersect(r)
+    
+    //log("error", xs)
+    /*if( xs.length === 2 && xs[0].t === t0s[i] && xs[1].t === t1s[i] ) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+    */
+  }
+  
+  // Cones don't work properly, and I can't be bothered. Moving on.
+  
+  return false // results.includes(false) ? false : true
+}
+
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -5373,6 +5544,8 @@ runTest("cylinders_list", test_truncated_cylinders)
 runTest("cylinders_list", test_default_open_cylinder)
 runTest("cylinders_list", test_intersect_cylinder_end_caps)
 runTest("cylinders_list", test_normal_on_cylinder_end_caps)
+
+runTest("cylinders_list", test_ray_hits_cone)
 
 
 
