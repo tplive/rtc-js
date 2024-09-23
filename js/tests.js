@@ -1649,3 +1649,52 @@ function test_prepare_computations_function() {
       && comps.eyev.equals(vector(0, 0, -1))
       && comps.normalv.equals(vector(0, 0, -1))
 }
+
+function test_hit_inside_object() {
+  // The prepare_computations() function must handle hits on the inside of objects too
+  // Thus, an attribute .inside will be added and computed.
+  
+  // First, an intersection occurring on the outside of a sphere
+  const r1 = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s1 = new Sphere()
+  const i1 = intersection(4, s1)
+  const comps1 = prepare_computations(i1, r1)
+  
+  // Second, an intersection occurring on the inside of a sphere
+  const r2 = ray(point(0, 0, 0), vector(0, 0, 1))
+  const s2 = new Sphere()
+  const i2 = intersection(4, s2)
+  const comps2 = prepare_computations(i2, r2)
+  
+  //log("error", comps2.normalv)
+  
+  return comps1.inside === false 
+      && comps2.inside === true 
+      && comps2.normalv.equals(vector(0, 0, -1))
+}
+
+function test_shade_hit_function() {
+  // Test to make sure shading is done correctly both inside and outside an object
+  
+  // Test shading an intersection
+  const w = default_world()
+  
+  // Test shading an intersection
+  const r1 = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s1 = w.objects[0]
+  const i1 = intersection(4, s1)
+  const comps1 = prepare_computations(i1, r1)
+  const c1 = shade_hit(w, comps1)
+  const res1 = c1.equals(color(0.38066, 0.47583, 0.2855))
+  
+  // Test shading an intersection from the inside
+  w.lights[0] = point_light(point(0, 0.25, 0), color(1, 1, 1))
+  const r2 = ray(point(0, 0, 0), vector(0, 0, 1))
+  const s2 = w.objects[1]
+  const i2 = intersection(0.5, s2)
+  const comps2 = prepare_computations(i2, r2)
+  const c2 = shade_hit(w, comps2)
+  const res2 = c2.equals(color(0.90498, 0.90498, 0.90498))
+  
+  return res1 && res2
+}
