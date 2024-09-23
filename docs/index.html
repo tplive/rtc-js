@@ -432,9 +432,34 @@ function rotation_z(rad) {
 </pre>
 
 <p>Med det ute av veien, kan jeg gå tilbake til Chapter 6 og beregne normaler...</p>
+<p>Nå skal vi beregne refleksjon av vektorer. Det skjer ved å beregne en innkommende vektor mot en normal. Her blir løsningen ganske elegant, når jeg snubler over den:</p>
+<pre>
+function reflect(v_in, normal) {
+  // Reflecting a vector around an incoming in vector and a normal
+  // Pseudocode, page 83: return v_in - normal * 2 * v_in.dot(normal)
+  
+  return v_in.minus(normal.by_scalar(2).by_scalar(v_in.dot(normal)))
+}
+</pre>
+<p>Som den observante leser sikkert ser ved selvsyn, er det nå fullt mulig å kjede sammen operasjoner. Lekkert. </p>
+
+<p>Funksjonen gjør det den skal, og jeg kan gå videre med implementering av den første lyseffekten - <i>Phong reflection model</i>. Denne refleksjonsmodellen simulerer tre typer lys, og dets interaksjoner:</p>
+<p>
+  <ul>
+    <li><i>Ambient reflection</i> - bakgrunnsbelysning, eller lys reflektert fra andre objekter. Dette lyset er konstant, og farger alle punkter likt.</li>
+    <li><i>Diffuse reflection</i> - lys reflektert fra en matt overflate.</li>
+    <li><i>Specular reflection</i> - refleksjon av lyskilden, resulterer i en <i>specular highlight</i> og styres av en <i>shininess</i>-parameter. Her må vi altså introdusere en lyskilde.</li>
+  </ul>
+</p>
+<h3>&#9203; Bakgrunnsdigresjonen del II</h3>
+<p>27. mai 2024: Nå som matte-eksamen er i boks (håper jeg &#128517;) går det radig unna! I dag har jeg hatt full dag med PC, så jeg har fått jobbet videre med bakgrunnsprosesseringen og har fått ryddet i koden og unngår en masse kodeduplisering. For å få lov å bruke <code>import { function, function2 } from "js/library.js"</code> må skriptet man importerer til være en modul. Og funksjonen man skal hente inn må være eksporterbar, dvs at den er definert med <code>export function() {...}</code>.</p>
+
+<p> For at en script-tag skal være en modul bruker man <code>&lt;script type="module"&gt;</code>... når det gjelder en script-tag i en HTML-fil ja. Men i en <code>.js</code> fil er ikke det lov. For å importere noe der, fant jeg at <code>self.importScript(js/functions.js)</code> fungerte, men denne metoden er visstnok "på vei ut". Samma det.</p>
+
+<h3>&#127767; Chapter 6, Light and Shading</h3>
+<p>Vi prøver igjen. Og nå går det meget godt. Jeg har stor progresjon på koden, og er i løpet av noen timer klar for å "put it together" - men først skal jeg forklare litt hva jeg har gjort i kapittel 6.</p>
 <p></p>
-<p></p>
-<p></p>
+
 <p></p>
 <p></p>
 <p></p>

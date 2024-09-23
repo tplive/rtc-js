@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<style>
+pre {
+  background-color: lightgrey;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 3rem;
+}
+</style>
+<body>
+<script>
+window.onerror = function(errorMsg, url, lineNumber){
+    // any action you want goes here
+    // errorMsg is the error message itself.
+    // url should be the file presenting the error, though i have
+    //    found that it only presents to me the address of the site.
+    // lineNumber is the line number the error occoured on.
+    // here is an example of what you could do with it:
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+
+<h1>&#127767; SHADING</h1>
+<p id="perf"></p>
+<div id="kansas"></div>
+<pre id="error"></pre>
+
+<script src="./js/functions.js"></script>
+
+<script>
+// *** RUN RAYCAST
+
+// Putting it together chapter 5: Write a program that casts rays at a sphere and
+// draws the picture to a canvas. Any ray that hits the sphere should result in a
+// colored pixed (red, for example) and any miss should be drawn in black.
+
+// Performance counter
+const start = performance.now()
+
+// *** DEFINE SCENE
+const origin = point(0, 0, -5) // Ray origin
+const wall_z = 10 // Wall at z
+const wall_size = 7 // Size of the wall
+const size = 100 // Side length in pixels
+const pixel_size = wall_size / size
+const half = wall_size / 2
+const can = canvas(size, size)
+
+
+// Add a sphere and material, assign material
+const shape = new Sphere()
+const mat = material()
+mat.color = color(0.8, 0.9, 0.2)
+mat.ambient = 0.2
+
+shape.material = mat
+
+// Add a light source
+const light_position = point(-10, 10, 10)
+const light_color = color(1, 1, 1)
+const light = point_light(light_position, light_color)
+
+// HTML canvas
+const html_can = html_canvas("kansas", size, size)
+var context = html_can.getContext("2d")
+context.fillStyle = "black"
+context.fillRect(0, 0, size, size)
+
+for (let y=0;y < size;y++) {
+  const world_y = half - pixel_size * y
+  
+  for (let x=0;x < size;x++) {
+    const world_x = -half + pixel_size * x
+    
+    const pos = point(world_x, world_y, wall_z)
+    
+    const r = ray(origin, pos.minus(origin).normalize())
+    //log("error", `(${x}, ${y})`)
+
+    const xs = intersect(shape, r)
+    
+    const h = hit(xs) 
+    
+    if (h != undefined ) {
+      
+      const p = position(r, h.t)
+      const normal = normal_at(h.object, p)
+      const eye = r.direction.negate()
+      //log("error", eye)
+      
+      const res = lighting(h.object.material, light, p, eye, normal)
+      const s1 = scale_color(res)
+      context.fillStyle = `rgb(${s1.red}, ${s1.green}, ${s1.blue})`
+      context.fillRect(x, y, 1, 1)
+      
+    }
+  }
+}
+
+
+// How about we create the entire canvas and set the pixels just in time?
+
+// Show canvas
+//log("error", ppm)
+//downloadPPMfile(can, "plot")
+
+
+// Performance measurement
+const end = performance.now()
+const elapsed = end - start
+const cumulated_id = "shading_running_time"
+const numberOfRuns_id = "shading_runs"
+
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
+
+localStorage.setItem(numberOfRuns_id, Number(runs) + 1)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+
+log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
+log("perf", "Running time per pixel: " + Math.round(elapsed)/size**2 + " ms.")
+log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+</script>
+
+</body>
+
+</html>

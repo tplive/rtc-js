@@ -156,8 +156,14 @@ runTest("ray_list", test_hit_function)
 runTest("ray_list", test_transform_function)
 runTest("ray_list", test_transform_sphere)
 
-//runTest("shading_list", test_normal_function)
-//runTest("shading_list", test_normal_on_transformed_sphere)
+runTest("shading_list", test_normal_at_function)
+runTest("shading_list", test_normal_on_transformed_sphere)
+runTest("shading_list", test_reflect_function)
+runTest("shading_list", test_point_light_function)
+runTest("shading_list", test_material_function)
+runTest("shading_list", test_sphere_has_material)
+runTest("shading_list", test_lighting_function)
+
 
 
 const end = performance.now()

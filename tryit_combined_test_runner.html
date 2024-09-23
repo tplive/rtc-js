@@ -103,6 +103,18 @@ function downloadPPMfile(can, name) {
   document.getElementById("error").appendChild(downloadAnchorNode)
 }
 
+function shuffle(arr) {
+  // Durstenfeld shuffle algoritm. Found here: https://stackoverflow.com/a/12646864
+
+  for (let i = arr.length - 1; i > 0; i--) {
+
+    const j = Math.floor(Math.random() * (i + 1))
+    var temp = arr[i]
+    arr[i] = arr[j]
+    arr[j] = temp
+  }
+}
+
 // *** VECTOR FUNCTIONS
 
 function equal(a, b) {
@@ -253,7 +265,9 @@ function color(r, g, b) {
     red:r, 
     green:g, 
     blue:b,
-    toString: function() { return `red: ${this.red}, green: ${this.green}, blue: ${this.blue}`}})
+    toString: function() { return `red: ${this.red}, green: ${this.green}, blue: ${this.blue}`},
+    equals: function(t) { return equal(r, t.red) && equal(g, t.green) && equal(b, t.blue) },
+  })
 }
 
 function add_colors(c1, c2) {
@@ -268,7 +282,11 @@ function subtract_colors(c1, c2) {
 
 function multiply_color(s, c1) {
   // Multiply scalar value by r, g, b components
-  return color(s * c1.red, s * c1.green, s * c1.blue)
+  if (!isNaN(s)) {
+    return color(s * c1.red, s * c1.green, s * c1.blue)
+  } else {
+    throw `First input value must be a number. s = ${s}`
+  }
 }
 
 function multiply_colors(c1, c2) {
@@ -935,23 +953,23 @@ class Sphere {
   constructor() {
     this._id = C.unique_id()
     this._transform = idmatrix()
+    this._material = material()
   }
   
-  get id() {
-    return this._id
-  }
-  
-  get transform() {
-    return this._transform
-  }
-  
-  get toString() {
-    return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}`
-  }
+  get id() { return this._id }
+  get transform() { return this._transform }
+  get material() { return this._material }
+  get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
   
   set transform(value) {
     if (value.d != undefined) {
       this._transform = multiply_matrices(this._transform, value)
+    }
+  }
+  
+  set material(mat) {
+    if (mat.ambient != undefined) {
+      this._material = mat
     }
   }
 }
@@ -1018,9 +1036,164 @@ function transform_old(r, matr) {
 
 // *** SHADING FUNCTIONS
 
-function normal_at(obj, p) {
+function normal_at(obj, world_point) {
   // This function takes an object and a point and returns the point's normal (perpendicular) vector.
-  return p.minus(point(0, 0, 0)).normalize()
+  // This is an upgraded version of normal_at(), and will replace that function when done.
+  
+  const object_point = inverse(obj.transform).times_tuple(world_point)
+  const object_normal = object_point.minus(point(0, 0, 0))
+  const world_normal = transpose_matrix(inverse(obj.transform)).times_tuple(object_normal)
+  
+  return vector(world_normal.x, world_normal.y, world_normal.z).normalize()
+}
+
+function reflect(v_in, normal) {
+  // Reflecting a vector around an incoming in vector and a normal
+  // Pseudocode, page 83: return v_in - normal * 2 * v_in.dot(normal)
+  
+  //log("error", "reflect() v_in: " + v_in)
+  //log("error", "reflect() normal: " + normal)
+  
+  return v_in.minus(normal.by_scalar(2).by_scalar(v_in.dot(normal)))
+}
+
+class PointLight {
+  // The PointLight class represents a point light object with data.
+  // Default values are set in the constructor and/or parameters.
+  // Using getters and setters allows direct assignment, such as pointlight.intensity = color(1, 1, 1)
+  // Constructor fields are not really private.
+  
+  constructor(position, intensity) {
+    this._id = C.unique_id()
+    this._position = position
+    this._intensity = intensity
+  }
+  
+  get id() {
+    return this._id
+  }
+  
+  get position() {
+    return this._position
+  }
+  
+  get intensity() {
+    return this._intensity
+  }
+  
+  get toString() {
+    return `PointLight(), ID: ${this._id}, position: ${this._position}, intensity: ${this._intensity}`
+  }
+  
+  set intensity(value) {
+    if (value.red != undefined) {
+      this._intensity = value
+    } else {
+      throw `Intensity must be a color() object. value = ${value} `
+    }
+  }
+  
+  set position(value) {
+    if (value != undefined && value.x != undefined) {
+      this._position = value
+    } else {
+      throw `Position must be a point() object. value = ${value} `
+    }
+  }
+}
+
+function point_light(p, i) {
+  // Create an object representing a point light in the scene
+  
+  return new PointLight(p, i)
+}
+
+class Material {
+  // The PointLight class represents a point light object with data.
+  
+  constructor() {
+    this._id = C.unique_id()
+    this._color = color(1, 1, 1)
+    this._ambient = 0.1
+    this._diffuse = 0.9
+    this._specular = 0.9
+    this._shininess = 200.0
+  }
+  
+  get color() { return this._color}
+  get ambient() { return this._ambient}
+  get diffuse() { return this._diffuse}
+  get specular() { return this._specular}
+  get shininess() { return this._shininess}
+  
+  set color(col) { this._color = color(col.red, col.green, col.blue) }
+  
+  set ambient(amb) { this._ambient = amb }
+  set diffuse(dif) { this._diffuse = dif }
+  set specular(spe) { this._specular = spe }
+  set shininess(shi) { this._shininess = shi }
+
+}
+
+function material() {
+  // Create an object representing the default material
+  
+  return new Material()
+}
+
+function lighting(material, light, point, eyev, normalv) {
+  // The lighting function computes shading for pixels
+  
+  // Combine surface color with the light's color/intensity
+  const effective_color = multiply_colors(light.intensity, material.color)
+  //log("error", "effective_color: " + effective_color)
+  
+  // Find the direction to the light source
+  const lightv = light.position.minus(point).normalize()
+  //log("error", "lightv: " + lightv)
+  
+  // Compute ambient contribution
+  const ambient = multiply_color(material.ambient, effective_color)
+  //log("error", "ambient: " + ambient)
+  
+  let diffuse, specular
+  // light_dot_normal represents the cosine of the angle between the light vector and 
+  // the normal vector. A negative number means the light is on the other side of the
+  // surface.
+  const light_dot_normal = lightv.dot(normalv)
+  //log("error", "light_dot_normal: " + light_dot_normal)
+  
+  if (light_dot_normal < 0) {
+    diffuse = color(0, 0, 0)
+    specular = color(0, 0, 0)
+  } else {
+    // Compute the diffuse contribution
+    diffuse = multiply_color(material.diffuse * light_dot_normal, effective_color)
+    //log("error", "diffuse: " + diffuse)
+    
+    // reflect_dot_eye represents the cosine of the angle between the reflection vector
+    // and the eye vector. A negative number means the light reflects away from the eye.
+    const reflectv = reflect(lightv.negate(), normalv)
+    //log("error", "reflectv: " + reflectv)
+    
+    const reflect_dot_eye = reflectv.dot(eyev)
+    log("error", "reflect_dot_eye: " + reflect_dot_eye)
+    
+    if (reflect_dot_eye <= 0 ) {
+      specular = color(0, 0, 0)
+    } else {
+      // Compute the specular contribution
+      const factor = reflect_dot_eye ** material.shininess
+      
+      specular = multiply_color(material.specular * factor, light.intensity)
+      log("error", "light.intensity: " + light.intensity)
+      log("error", "material.specular: " + material.specular)
+      log("error", "factor: " + factor)
+    }
+  }
+  // Add the three contributions together to get the final shading
+  //log("error", "add_colors(ambient, add_colors(diffuse, specular)): " + add_colors(ambient, add_colors(diffuse, specular)))
+  return add_colors(ambient, add_colors(diffuse, specular))
 }
 
 </script>
@@ -2431,25 +2604,25 @@ function test_transform_sphere() {
     && transformations_applied_to_sphere
 }
 
-function test_normal_function() {
-  // Compute the normal on a sphere at a point
+function test_normal_at_function() {
+  // Compute the normal on a sphere at a point...
   
   const s = new Sphere()
   const sq3 = Math.sqrt(3)
   
-  // on the x axis
+  // ...on the x axis
   const nx = normal_at(s, point(1, 0, 0))
   const rx = nx.equals(vector(1, 0, 0))
   
-  // on the y axis
+  // ...on the y axis
   const ny = normal_at(s, point(0, 1, 0))
   const ry = ny.equals(vector(0, 1, 0))
   
-  // on the z axis
+  // ...on the z axis
   const nz = normal_at(s, point(0, 0, 1))
   const rz = nz.equals(vector(0, 0, 1))
   
-  // on a nonaxial point
+  // ...on a nonaxial point
   const nn = normal_at(s, point(sq3/3, sq3/3, sq3/3))
   const rn = nn.equals(vector(sq3/3, sq3/3, sq3/3))
   
@@ -2470,17 +2643,132 @@ function test_normal_on_transformed_sphere() {
   // Test computing the normal on a transformed sphere
   const s2 = new Sphere()
   
-  s2.transform = scaling(1, 0.5, 1)
-  s2.transform = rotation_z(Math.PI/5)
+  const transforms = transformations(rotation_z(Math.PI/5), scaling(1, 0.5, 1))
+  
+  s2.transform = transforms
   const n2 = normal_at(s2, point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
   const v2 = vector(0, 0.97014, -0.24254)
-  
-  log("error", "test_normal_on_transformed_sphere(): " + n1)
-  log("error", "test_normal_on_transformed_sphere(): " + v1)
-  log("error", "test_normal_on_transformed_sphere(): " + n2)
-  log("error", "test_normal_on_transformed_sphere(): " + v2)
-  
+    
   return n1.equals(v1) && n2.equals(v2)
+}
+
+function test_reflect_function() {
+  // Test reflecting a vector approaching at 45°
+  
+  const v1 = vector(1, -1, 0)
+  
+  const n1 = vector(0, 1, 0)
+  const r1 = reflect(v1, n1)
+  
+  // Test reflecting a vector off a slanted surface
+  const sqr2 = Math.sqrt(2)
+  
+  const v2 = vector(0, -1, 0)
+  const n2 = vector(sqr2/2, sqr2/2, 0)
+  const r2 = reflect(v2, n2)
+  
+  return r1.equals(vector(1, 1, 0)) 
+      && r2.equals(vector(1, 0, 0))
+}
+
+function test_point_light_function() {
+  // Test that a point light has a position and intensity
+  
+  const intensity = color(1, 1, 1)
+  const position = point(0, 0, 0)
+  
+  const light = point_light(point(0, 0, 0), color(1, 1, 1))
+  
+  return position.equals(light.position)
+      && intensity.equals(light.intensity)
+}
+
+function test_material_function() {
+  // Test the default material
+  
+  // Create a default material
+  const m = material()
+  
+  return m.color.equals(color(1, 1, 1))
+      && m.ambient   === 0.1
+      && m.diffuse   === 0.9
+      && m.specular  === 0.9
+      && m.shininess === 200
+}
+
+function test_sphere_has_material() {
+  // Tests that a sphere object now has a material property
+  
+  // Create a sphere and a material
+  const s = new Sphere()
+  const m = material()
+  
+  // Test that sphere has default material
+  const sphere_has_default_material = s.material.ambient === m.ambient 
+                                   && s.material.shininess === 200
+                                   && s.material.specular === 0.9
+  
+  // Create another material
+  const m2 = material()
+  
+  // Change its attributes
+  m2.shininess = 111.22
+  m2.specular = 0.01
+  m2.ambient = 1.1
+  
+  // Assign the new material to the sphere
+  s.material = m2
+
+  // Test that the sphere will have the new material with correct values
+  const sphere_can_be_assigned_a_material = s.material.shininess === 111.22 
+                                         && s.material.specular === 0.01
+                                         && s.material.ambient === 1.1
+
+  return sphere_has_default_material
+      && sphere_can_be_assigned_a_material
+}
+
+function test_lighting_function() {
+  // Test that the lighting() function can shade objects correctly
+  
+  const m = material()
+  const position = point(0, 0, 0)
+  
+  // Lighting with the eye between the light and the surface
+  const eyev1    = vector(0, 0, -1)
+  const normalv1 = vector(0, 0, -1)
+  const light1   = point_light(point(0, 0, -10), color(1, 1, 1))
+  const r1       = lighting(m, light1, position, eyev1, normalv1)
+  
+  // Lighting with the eye between light and surface, eye offset 45°
+  const eyev2    = vector(0, Math.sqrt(2)/2, -Math.sqrt(2)/2)
+  const normalv2 = vector(0, 0, -1)
+  const light2   = point_light(point(0, 0, -10), color(1, 1, 1))
+  const r2       = lighting(m, light2, position, eyev2, normalv2)
+  
+  // Lighting with eye opposite surface, light offset 45°
+  const eyev3    = vector(0, 0, -1)
+  const normalv3 = vector(0, 0, -1)
+  const light3   = point_light(point(0, 10, -10), color(1, 1, 1))
+  const r3       = lighting(m, light3, position, eyev3, normalv3)
+  
+  // Lighting with eye in the path of the reflection vector
+  const eyev4    = vector(0, -Math.sqrt(2)/2, -Math.sqrt(2)/2)
+  const normalv4 = vector(0, 0, -1)
+  const light4   = point_light(point(0, 10, -10), color(1, 1, 1))
+  const r4       = lighting(m, light4, position, eyev4, normalv4)
+    
+  // Lighting with the light behind the surface
+  const eyev5    = vector(0, 0, -1)
+  const normalv5 = vector(0, 0, -1)
+  const light5   = point_light(point(0, 0, 10), color(1, 1, 1))
+  const r5       = lighting(m, light5, position, eyev5, normalv5)
+  
+  return r1.equals(color(1.9, 1.9, 1.9)) 
+      && r2.equals(color(1.0, 1.0, 1.0))
+      && r3.equals(color(0.7364, 0.7364, 0.7364))
+      && r4.equals(color(1.6364, 1.6364, 1.6364))
+      && r5.equals(color(0.1, 0.1, 0.1))
 }
 
 </script>
@@ -2588,8 +2876,13 @@ runTest("ray_list", test_hit_function)
 runTest("ray_list", test_transform_function)
 runTest("ray_list", test_transform_sphere)
 
-//runTest("shading_list", test_normal_function)
-//runTest("shading_list", test_normal_on_transformed_sphere)
+runTest("shading_list", test_normal_at_function)
+runTest("shading_list", test_normal_on_transformed_sphere)
+runTest("shading_list", test_reflect_function)
+runTest("shading_list", test_point_light_function)
+runTest("shading_list", test_material_function)
+runTest("shading_list", test_sphere_has_material)
+runTest("shading_list", test_lighting_function)
 
 
 const end = performance.now()

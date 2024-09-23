@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<style>
+pre {
+  background-color: lightgrey;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 3rem;
+}
+</style>
+<body>
+<script>
+window.onerror = function(errorMsg, url, lineNumber){
+    // any action you want goes here
+    // errorMsg is the error message itself.
+    // url should be the file presenting the error, though i have
+    //    found that it only presents to me the address of the site.
+    // lineNumber is the line number the error occoured on.
+    // here is an example of what you could do with it:
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+
+<h1>&#128294; RAYCAST</h1>
+<p>Her demonstreres bruk av web worker for rendering. P&aring; denne m&aring;ten kj&oslash;res prosessen i bakgrunnen, og blokkerer ikke nettleseren. 
+  Funksjonen rapporterer tilbake fremdrift i prosent og sekunder, og oppdaterer p&aring; skjerm etter hvert som bildet trer fram.</p>
+  <p>For at man raskere skal se hva resultatet blir, genereres punktene tilfeldig.</p>
+<button id = "startBtn">&#128247; Start</button>
+<button id = "stopBtn">&#9209; Stopp</button>
+<p id="status">Status: <output id="out"></output></p>
+<ul id="test_list"></ul>
+<p id="error"></p>
+
+<script src="js/functions.js"></script>
+
+<!-- skriptet må være en modul for å tillate import av startRendering() funksjonen -->
+<script type="module">
+
+// Får ikke lov til å bare inkludere startRendering() metoden i functions.js, så da måtte den defineres separat...
+import { startRendering } from "./js/rendering.js"
+
+// *** RUN RAYCAST
+
+// Putting it together chapter 5: Write a program that casts rays at a sphere and
+// draws the picture to a canvas. Any ray that hits the sphere should result in a
+// colored pixed (red, for example) and any miss should be drawn in black.
+
+// Performance counter
+const start = performance.now()
+
+// Define running parameters
+const size = 300
+const o = point(0, 0, -5) // Origin
+const c1 = color(1.0, 0, 0)
+const s1 = scale_color(c1)
+
+// HTML canvas
+const html_can = html_canvas("error", size, size)
+const context = html_can.getContext("2d")
+context.fillStyle = "black"
+context.fillRect(0, 0, size, size)
+
+
+// Define a worker object
+let w
+
+// Define buttons onclick event handlers
+const startBtn = document.getElementById("startBtn").onclick = function() {
+
+  context.fillStyle = "black"
+  context.fillRect(0, 0, size, size)
+  context.fillStyle = `rgb(${s1.red}, ${s1.green}, ${s1.blue}`
+  
+  w = startRendering(w, context, size, o)
+} 
+
+const stopBtn = document.getElementById("stopBtn").onclick = function() {
+    
+  if (!(typeof(w) == "undefined")) {
+    w.terminate()
+    w = undefined
+  }
+}
+
+
+
+// Performance measurement
+const end = performance.now()
+const elapsed = end - start
+const cumulated_id = "webworker_running_time"
+const numberOfRuns_id = "webworker_runs"
+
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
+
+localStorage.setItem(numberOfRuns_id, Number(runs) + 1)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+
+//log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
+//log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+</script>
+
+</body>
+
+</html>

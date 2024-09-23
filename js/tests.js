@@ -1451,3 +1451,122 @@ function test_normal_on_transformed_sphere() {
     
   return n1.equals(v1) && n2.equals(v2)
 }
+
+function test_reflect_function() {
+  // Test reflecting a vector approaching at 45°
+  
+  const v1 = vector(1, -1, 0)
+  
+  const n1 = vector(0, 1, 0)
+  const r1 = reflect(v1, n1)
+  
+  // Test reflecting a vector off a slanted surface
+  const sqr2 = Math.sqrt(2)
+  
+  const v2 = vector(0, -1, 0)
+  const n2 = vector(sqr2/2, sqr2/2, 0)
+  const r2 = reflect(v2, n2)
+  
+  return r1.equals(vector(1, 1, 0)) 
+      && r2.equals(vector(1, 0, 0))
+}
+
+function test_point_light_function() {
+  // Test that a point light has a position and intensity
+  
+  const intensity = color(1, 1, 1)
+  const position = point(0, 0, 0)
+  
+  const light = point_light(point(0, 0, 0), color(1, 1, 1))
+  
+  return position.equals(light.position)
+      && intensity.equals(light.intensity)
+}
+
+function test_material_function() {
+  // Test the default material
+  
+  // Create a default material
+  const m = material()
+  
+  return m.color.equals(color(1, 1, 1))
+      && m.ambient   === 0.1
+      && m.diffuse   === 0.9
+      && m.specular  === 0.9
+      && m.shininess === 200
+}
+
+function test_sphere_has_material() {
+  // Tests that a sphere object now has a material property
+  
+  // Create a sphere and a material
+  const s = new Sphere()
+  const m = material()
+  
+  // Test that sphere has default material
+  const sphere_has_default_material = s.material.ambient === m.ambient 
+                                   && s.material.shininess === 200
+                                   && s.material.specular === 0.9
+  
+  // Create another material
+  const m2 = material()
+  
+  // Change its attributes
+  m2.shininess = 111.22
+  m2.specular = 0.01
+  m2.ambient = 1.1
+  
+  // Assign the new material to the sphere
+  s.material = m2
+
+  // Test that the sphere will have the new material with correct values
+  const sphere_can_be_assigned_a_material = s.material.shininess === 111.22 
+                                         && s.material.specular === 0.01
+                                         && s.material.ambient === 1.1
+
+  return sphere_has_default_material
+      && sphere_can_be_assigned_a_material
+}
+
+function test_lighting_function() {
+  // Test that the lighting() function can shade objects correctly
+  
+  const m = material()
+  const position = point(0, 0, 0)
+  
+  // Lighting with the eye between the light and the surface
+  const eyev1    = vector(0, 0, -1)
+  const normalv1 = vector(0, 0, -1)
+  const light1   = point_light(point(0, 0, -10), color(1, 1, 1))
+  const r1       = lighting(m, light1, position, eyev1, normalv1)
+  
+  // Lighting with the eye between light and surface, eye offset 45°
+  const eyev2    = vector(0, Math.sqrt(2)/2, -Math.sqrt(2)/2)
+  const normalv2 = vector(0, 0, -1)
+  const light2   = point_light(point(0, 0, -10), color(1, 1, 1))
+  const r2       = lighting(m, light2, position, eyev2, normalv2)
+  
+  // Lighting with eye opposite surface, light offset 45°
+  const eyev3    = vector(0, 0, -1)
+  const normalv3 = vector(0, 0, -1)
+  const light3   = point_light(point(0, 10, -10), color(1, 1, 1))
+  const r3       = lighting(m, light3, position, eyev3, normalv3)
+  
+  // Lighting with eye in the path of the reflection vector
+  const eyev4    = vector(0, -Math.sqrt(2)/2, -Math.sqrt(2)/2)
+  const normalv4 = vector(0, 0, -1)
+  const light4   = point_light(point(0, 10, -10), color(1, 1, 1))
+  const r4       = lighting(m, light4, position, eyev4, normalv4)
+  
+  // Lighting with the light behind the surface
+  const eyev5    = vector(0, 0, -1)
+  const normalv5 = vector(0, 0, -1)
+  const light5   = point_light(point(0, 0, 10), color(1, 1, 1))
+  const r5       = lighting(m, light5, position, eyev5, normalv5)
+  
+  return r1.equals(color(1.9, 1.9, 1.9)) 
+      && r2.equals(color(1.0, 1.0, 1.0))
+      && r3.equals(color(0.7364, 0.7364, 0.7364))
+      && r4.equals(color(1.6364, 1.6364, 1.6364))
+      && r5.equals(color(0.1, 0.1, 0.1))
+}
