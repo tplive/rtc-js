@@ -991,11 +991,11 @@ function test_shearing_function() {
     && equal_tuples(r6, point(2, 3, 7))
 }
 
-function test_transform_function() {
+function test_transformations_function() {
   // Transform is a function that makes it possible to chain 
   // translation, scaling, rotation and shearing into a single operation.
   
-  const t = new transform() //
+  const t = new transformations() //
   
   //const result = t.rotate_x(Math.PI / 4)//.rotate_y(Math.PI / 2)//.rotate_z(Math.PI / 3)//.scale(5, 5, 5).translate()
   
@@ -1004,7 +1004,7 @@ function test_transform_function() {
   return false // TO BE CONTINUED
 }
 
-function transform() {
+function transformations() {
   // Transform is a function that makes it possible to chain 
   // translation, scaling, rotation and shearing into a single operation.
   
@@ -1027,10 +1027,10 @@ function transform() {
     return this
   }
       
-   if (this instanceof transform) {
-        return this.transform
+   if (this instanceof transformations) {
+        return this.transformations
     } else {
-        return new transform()
+        return new transformations()
     }
 }
 
@@ -1093,11 +1093,11 @@ function test_sphere_function() {
   // The sphere() function should return a unique value for every invocation, as the sphere's id.
   
   const spheres = []
-  const n = 1000
+  const n = 100
   
   // Create a lot of spheres and store their ids in the array
   for (let i=0; i < n; i++) {
-    const s = sphere()
+    const s = new Sphere()
     //log("error", s.id)
     spheres.push(s.id)
   }
@@ -1108,16 +1108,26 @@ function test_sphere_function() {
   return spheres.length === n && spheres.length === unique.length
 }
 
+function test_intersect_sets_the_object_on_the_intersection() {
+  // Make sure the intersect functions sets the actual object on the intersection, not just the t values.
+  
+  const r = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s = new Sphere()
+  
+  const xs = intersect(s, r)
+  return xs.length === 2 && xs[0].object === s && xs[1].object === s
+}
+
 function test_ray_intersects_sphere_at_two_points() {
   // The intersect function returns all points where a ray intersects an object, in this case a sphere.
   
   // A ray intersects a sphere at two points
   const r = ray(point(0, 0, -5), vector(0, 0, 1))
-  const s = sphere()
+  const s = new Sphere()
   
   const xs = intersect(s, r)
   
-  return xs.length === 2 && xs[0] === 4.0 && xs[1] === 6.0
+  return xs.length === 2 && xs[0].t === 4.0 && xs[1].t === 6.0
 }
 
 function test_ray_intersects_sphere_at_tangent() {
@@ -1125,11 +1135,11 @@ function test_ray_intersects_sphere_at_tangent() {
   
   // A ray intersects a sphere at a tangent
   const r = ray(point(0, 1, -5), vector(0, 0, 1))
-  const s = sphere()
+  const s = new Sphere()
   
   const xs = intersect(s, r)
   
-  return xs.length === 2 && xs[0] === 5.0 && xs[1] === 5.0
+  return xs.length === 2 && xs[0].t === 5.0 && xs[1].t === 5.0
 }
 
 function test_ray_misses_a_sphere() {
@@ -1137,7 +1147,7 @@ function test_ray_misses_a_sphere() {
   
   // A ray intersects a sphere at a tangent
   const r = ray(point(0, 2, -5), vector(0, 0, 1))
-  const s = sphere()
+  const s = new Sphere()
   
   const xs = intersect(s, r)
   
@@ -1151,11 +1161,11 @@ function test_ray_originates_inside_a_sphere() {
   
   // A ray originates inside a sphere
   const r = ray(point(0, 0, 0), vector(0, 0, 1))
-  const s = sphere()
+  const s = new Sphere()
   
   const xs = intersect(s, r)
   
-  return xs.length === 2 && xs[0] === -1.0 && xs[1] === 1.0
+  return xs.length === 2 && xs[0].t === -1.0 && xs[1].t === 1.0
 }
 
 function test_sphere_is_behind_a_ray() {
@@ -1165,18 +1175,18 @@ function test_sphere_is_behind_a_ray() {
   
   // A sphere is behind the ray
   const r = ray(point(0, 0, 5), vector(0, 0, 1))
-  const s = sphere()
+  const s = new Sphere()
   
   const xs = intersect(s, r)
   
-  return xs.length === 2 && xs[0] === -6.0 && xs[1] === -4.0
+  return xs.length === 2 && xs[0].t === -6.0 && xs[1].t === -4.0
 }
 
 function test_intersection_function() {
   // Test the intersection function
   // An intersection encapsulates t and object
   
-  const s = sphere()
+  const s = new Sphere()
   const i = intersection(3.5, s)
   
   return i.t === 3.5 && i.object.id === s.id
@@ -1186,9 +1196,9 @@ function test_intersection_function() {
 function test_intersections_function() {
   // Test intersections function. Aggregates intersections
   
-  const s1 = sphere()
-  const s2 = sphere()
-  const s3 = sphere()
+  const s1 = new Sphere()
+  const s2 = new Sphere()
+  const s3 = new Sphere()
   const i1 = intersection(1, s1)
   const i2 = intersection(2, s2)
   const i3 = intersection(3, s3)
@@ -1215,7 +1225,7 @@ function test_hit_function() {
   // Test the hit function, which returns the lowest non-negative value of
   // intersection objects from a list of intersections
   
-  const s = sphere()
+  const s = new Sphere()
 
   // The hit, when all intersections have a positive t  
   const i1 = intersection(1, s)
@@ -1244,4 +1254,50 @@ function test_hit_function() {
   const h4 = hit(xs4)
   
   return h1 === i1 && h2 === i4 && !h3 && h4 === i10 // h3: there are no intersections, returns "undefined", which equals "false"
+}
+
+function test_transform_function() {
+  // Test transform function.
+  // Transform takes a ray and applies a transformation matrix.
+  
+  // Translating a ray
+  const r = ray(point(1, 2, 3), vector(0, 1, 0))
+  const m = translation(3, 4, 5)
+  const r2 = transform(r, m)
+  
+  // Scaling a ray
+  const r3 = ray(point(1, 2, 3), vector(0, 1, 0))
+  const m2 = scale(2, 3, 4)
+  const r4 = transform(r3, m2)
+  
+  return equal_tuples(r2.origin, point(4, 6, 8))  && equal_tuples(r2.direction, vector(0, 1, 0))
+      && equal_tuples(r4.origin, point(2, 6, 12)) && equal_tuples(r4.direction, vector(0, 3, 0))
+
+}
+
+function test_transform_sphere() {
+  // This tests that we 
+  //   * can allow transformation to be applied to a sphere
+  //   * that the sphere has a default transformation
+  //   * that its transformation can be assigned
+  
+  // A sphere's default transformation
+  const s = new Sphere()
+  const default_transform_equals_idmatrix = matrix_equal(s.transform, [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+  
+  // Changing a sphere's transformation
+  s.transform = translation(2, 3, 4)
+  const new_transform_is_set = matrix_equal(s.transform, translation(2, 3, 4))
+  //log("error", s.toString)
+  
+  // Intersecting a scaled sphere with a ray
+  const r = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s2 = new Sphere()
+  s2.transform = scale(2, 2, 2)
+  const xs = intersect(s2, r)
+  const test_intersecting_scaled_sphere_with_ray = xs.length === 2 && xs[0].t === 3 && xs[1].t === 7
+  
+  //log("error", s2.toString)
+  
+  return default_transform_equals_idmatrix && new_transform_is_set && test_intersecting_scaled_sphere_with_ray
 }

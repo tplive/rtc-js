@@ -645,7 +645,7 @@ function ray(o, d) {
   
   // Check that o is a point and d is a vector, by checking the w value of each
   if (!(o.w === 1 && d.w === 0) ) {
-    throw "Origin must be a point, and Direction must be a vector"
+    throw "ray(): Origin must be a point, and Direction must be a vector"
   }
   
   return Object.freeze({
@@ -661,22 +661,42 @@ function position(ray, t) {
   return add_tuples(multiply_vector(ray.direction, t), ray.origin)
 }
 
-function sphere(id) {
-  // Returns a new sphere object, each invocation has a unique id.
+class Sphere {
+  // The Sphere class represents a sphere object with data. This is the new norm.
+  // Default values are set in the constructor and/or parameters.
+  // Using getters and setters allows direct assignment, such as sphere.transform = translation(1, 2, 3)
+  // Constructor fields are not really private.
   
-  const _id = C.unique_id()
+  constructor() {
+    this._id = C.unique_id()
+    this._transform = idmatrix()
+  }
   
-  return Object.freeze({
-    id:_id
-  })
+  get id() {
+    return this._id
+  }
+  
+  get transform() {
+    return this._transform
+  }
+  
+  get toString() {
+    return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform}`
+  }
+  
+  set transform(value) {
+    this._transform = multiply_matrices(this._transform, value) 
+  }
 }
 
-function intersect(s, r) {
-  // Intersect returns an array of points where a given ray (r) intersects a given object (s)
+function intersect(s, ra) {
+  // Intersect returns an array of points where a given ray (ra) intersects a given sphere (s)
   
   // Vector from sphere's center to the ray origin
   // Remember: The sphere is centered at the world origin (0, 0, 0)
   
+  const r = transform(ra, inverse(s.transform)) // Ray passed to intersect should be transformed by the inversed transformation matrix
+
   const sphere_to_ray = subtract_tuples(r.origin, point(0, 0, 0))
   const a = dot(r.direction, r.direction)
   const b = 2 * dot(r.direction, sphere_to_ray)
@@ -692,7 +712,7 @@ function intersect(s, r) {
   const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
   const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
   
-  return [t1, t2]
+  return [intersection(t1, s), intersection(t2, s)]
 }
 
 function intersection(t_value, sphere) {
@@ -703,6 +723,7 @@ function intersection(t_value, sphere) {
     object:sphere
   })
 }
+
 function intersections() {
   // This method takes an arbitrary number of intersection objects as input and
   // aggregates them in an array
@@ -721,4 +742,10 @@ function hit(list_of_intersections) {
   list_of_intersections = list_of_intersections.filter( item => { if (item.t > 0) {return item}} )
   
   return list_of_intersections.sort().reverse()[0]
+}
+
+function transform(r, matr) {
+  // Transform applies a transformation matrix to a ray
+  
+  return ray(multiply_matrix_by_tuple(matr, r.origin), multiply_matrix_by_tuple(matr, r.direction))
 }

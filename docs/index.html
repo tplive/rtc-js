@@ -51,7 +51,7 @@ footer {
 <h1>&#128302; The Ray Tracer Challenge &#128302;</h1>
 <p>"En strålesporingsutfording".</p>
 <div class="shadow floatleft"><img width="250" src="rtc.jpg"/></div>
-<p>Dette er en øvelse i minimalisme. Og tålmodighet. Og nøyaktighet. Jeg er vant til å ha full tilgang til Internett, til nedlasting av programvare; utallige artikler og videoer om alle tenkelige emner, rik programvare med tusenvis av hjelpemidler som gjør mye av jobben for meg. Nå må jeg klare meg med DFS, nesten uten Internett-tilgang, helt uten mulighet for installasjon av programvare og med minimalt av hjelpemidler. Jeg skal utdype disse begrensningene og hva jeg gjør for å komme rundt dem.</p>
+<p>Dette er en øvelse i minimalisme. Og tålmodighet. Og nøyaktighet. Jeg er vant til å ha full tilgang til Internett, til nedlasting av programvare; utallige artikler og videoer om alle tenkelige emner, rik programvare med tusenvis av hjelpemidler som gjør mye av jobben for meg. Jeg skal utdype disse begrensningene og hva jeg gjør for å komme rundt dem.</p>
 
 <h2>&#128170; Utfordringen</h2>
 <p>Utfordringen kommer i form av en bok, "The Ray Tracer Challenge" av Jamis Buck, utgitt 2019 på The Pragmatic Programmers. Denne boken tar leseren gjennom alle stegene for å lage en "3D Renderer", en programvare som lager bilder av 3D-modeller, ved beregne hvordan lys reflekteres og brytes når det treffer de ulike 3D objektene som utgjør modellen. Dette skal man lage selv – boken har ingen ferdig kode, kun "pseudokode" som beskriver omtrentlig hva de ulike funksjonene skal gjøre, og så er det opp til leseren å implementere dette i sitt valgte programmeringsspråk. I tillegg er fremgangsmåten TDD (Test-Driven Development), som jeg skal redegjøre for lenger ned i dette dokumentet.</p>
@@ -313,7 +313,9 @@ For å tegne på canvas, er det en ny loop som går gjennom arrayet og dytter pu
 Jeg legger til litt perf-testing og pynter med litt CSS og vòila! Resultatet ser du her: <a href="../clockface_chapter4.html"><code>clockface_chapter4.html</code></a></p>
 <p>Jeg oppdager også at lagring til PPM-fil alldeles ikke fungerer som det skal. Men jeg er litt irritert på de greiene der, PPM er et idiotisk format uansett, 300x300 px blir jo over 500kB! Må da gå an å gjøre en bedre jobb enn som så... </p>
 <p>Jeg ser også at rendring av urskiven tar sånn circa 150 ms i snitt, ved 300x300 piksler. Det er 12 * 2 transformasjoner, og 12 write_pixel kall og 12 fillRect. Når jeg kommenterer ut håndtering av PPM, kjører vi på 1 ms. Bare sånn for senere referanse.</p>
-<p>1. mai 2024: I dag har jeg implementert tester for å lage <code>sphere()</code> objekter med en id som er unik for hvert objekt, og jeg har laget <code>intersect()</code> funksjonen som sjekker om en stråle (ray) treffer en sphere() eller ikke. Kjente igjen andregradsligning og abc-formelen der &#129299;, selv om jeg ikke har satt meg inn i hva denne funksjonen egentlig gjør.</p>
+
+<h3>&#129526;Chapter 5, Ray-Sphere Intersections</h3>
+<p>1. mai 2024: I dag har jeg implementert tester for å lage <code>sphere()</code> objekter med en id som er unik for hvert objekt, og jeg har laget <code>intersect()</code> funksjonen som sjekker om en <code>ray()</code> treffer en <code>sphere()</code> eller ikke. Kjente igjen andregradsligning og abc-formelen der &#129299;, selv om jeg ikke har satt meg inn i hva denne funksjonen egentlig gjør.</p>
 <p>Det er litt forvirrende forklart i boka - det ser ut som jeg skal beholde alle intersections i en global liste? Det ansporer meg til en liten refaktorering - jeg er ukomfortabel med å ha så mye global konfigurasjon strødd rundt overalt. Så jeg tar på meg å implementere noe som ligner på et "Configuration"-objekt. Her i form av en selv-eksekverende funksjon, som kjører ved oppstart og holder på ting som konstanter, globale lister og tellere. Funksjonen ser i første iterasjon slik ut:</p>
 <pre id="config-object">
 const C = function() {
@@ -335,18 +337,27 @@ const C = function() {
 
 <p>Jeg endrer koden sånn at <code>PRECISION</code> og <code>EPSILON</code> refereres som <code>C.PRECISION</code> og <code>C.EPSILON</code>, og sånn at telleren som gir unik id til objektene blir <code>C.unique_id()</code>. Dette er mer ryddig enn å strø om seg i koden med globale arrays og konstanter hist og her.</p>
 <p>Men etter hvert mister jeg trua på at forfatteren mener at intersections skal være en global liste, så jeg skriver om funksjonen og genererer en liste med intersections i hver test, som så sjekkes av <code>hit()</code> funksjonen for hvilken intersection som er gjeldende. Det er alltid den intersection med laveste positive verdi som er gjeldende. De med negativ verdi er "bak kamera" og de med høyere positiv verdi skjules av den første. This will all make sense at some point. &#128514;</p>
-<p></p><p></p>
-<p></p><p></p>
-<p></p><p></p>
-<p></p><p></p>
+
+<p>Jeg ser her at jeg veldig gjerne skulle hatt "klarheten" som jeg syns klasser gir meg; at jeg kan definere en <code>class</code> med en <code>constructor</code> og <code>fields</code> og <code>getters</code> og <code>setters</code>. Kall meg gammeldags. Go on. Men klasser blir det! Skriver om <code>Sphere()</code> til en klasse, og syns det går strålende å intersecte! (pun intended).</p>
+<p>Jeg vil etter hvert også refaktorere så disse pinglete JS objektene med metoder blir ordentlige klasser som kan bygges ut etter behov.</p>
+
+<h4>Putting it together</h4>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
 <p></p>
 <p>TODO:
 <ul>
-  <li>Fikse chaining transform function</li>
+  <li>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny transform funksjon side 68.)</li>
   <li>Fikse PPM lagring til fil. Mistenker at piksel-verdier må avrundes til heltall.</li>
   <li>Siste "Putting it together" oppgaven fra kapittel 3</li>
   <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og utgangshastighet.</li>
   <li>Kan jeg hente koden til en funksjon inn i dokumentasjonen direkte med JS? Istedet for å klippe og lime?</li>
+  <li>Skrive om JS funksjoner som returnerer Object.freeze({}) med ordentlige klasser og metoder.
 </ul>
 </p>
 
