@@ -1,3 +1,306 @@
+<!DOCTYPE html>
+<html>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+<style>
+
+@import url('https://fonts.googleapis.com/css?family=Coda|Crimson+Text|Gothic+A1|M+PLUS+1p|M+PLUS+Rounded+1c|Nanum+Gothic|Nanum+Myeongjo|Noto+Sans&display=swap');
+
+pre {
+  background-color: lightgrey;
+}
+
+body {
+  font-family: Crimson Text;
+  font-size: 1.3rem;
+}
+
+p {
+  margin-left: 2rem;
+}
+
+input {
+  font-family: Crimson Text;
+  font-size: 1.3rem;
+}
+
+table, th , td  {
+  border: 1px solid grey;
+  border-collapse: collapse;
+  padding-left: 1.2rem;
+  padding-right: 1.2rem;
+}
+
+.outer {
+  display: grid;
+}
+
+.container {
+  margin: 3rem;
+}
+.matrix {
+  margin: 1rem;
+  width: auto;
+  padding: 1rem;;
+  float: left;
+  border: 0.1rem solid grey;
+  border-collapse: collapse;
+}
+.explanation {
+
+}
+
+.tbl-explanation {
+  
+}
+.calculation {
+
+}
+
+.tbl-calculation {
+
+}
+
+.result {
+  display:grid;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+</style>
+<body>
+<script>
+const start = performance.now()
+
+window.onerror = function(errorMsg, url, lineNumber){
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+
+<script src="./js/matrixCalc.js"></script>
+<script src="./js/matrixController.js"></script>
+<script>
+  // *** MATRIX TRANSFORMATIONS CALCULATOR ANGULAR APP
+  var app = angular.module('matrixCalc', [])
+  
+</script>
+
+<script>
+  // *** MATRIX TRANSFORMATIONS CALCULATOR ANGULAR CONTROLLER
+  var controller = app.controller('matrixCtrl', function($scope) {
+    
+    $scope.trx = 0.0
+    $scope.try = 0.0
+    $scope.trz = 0.0
+    $scope.tra = function() {
+      return translation($scope.trx, $scope.try, $scope.trz).d
+    }
+    
+    $scope.scx = 1.0
+    $scope.scy = 1.0
+    $scope.scz = 1.0
+    $scope.sca = function() {
+      return scaling($scope.scx, $scope.scy, $scope.scz).d
+    }
+    
+    $scope.rotx = 0.0
+    $scope.rotxc = function() {
+      return rotation_x($scope.rotx).d
+    }
+    
+    $scope.roty = 0.0
+    $scope.rotyc = function() {
+      return rotation_y($scope.roty).d
+    }
+
+    $scope.rotz = 0.0
+    $scope.rotzc = function() {
+      return rotation_z($scope.rotz).d
+    }
+    
+    $scope.xy = 0.0
+    $scope.xz = 0.0
+    $scope.yx = 0.0
+    $scope.yz = 0.0
+    $scope.zx = 0.0
+    $scope.zy = 0.0
+    $scope.shec = function() {
+      return shearing($scope.xy, $scope.xz, $scope.yx, $scope.yz, $scope.zx, $scope.zy).d
+    }
+    
+    $scope.res = function() {
+      
+      return transformations(
+        shearing($scope.xy, $scope.xz, $scope.yx, $scope.yz, $scope.zx, $scope.zy),
+        rotation_z($scope.rotz),
+        rotation_y($scope.roty),
+        rotation_x($scope.rotx),
+        
+        translation($scope.trx, $scope.try, $scope.trz),
+        scaling($scope.scx, $scope.scy, $scope.scz),
+      ).d
+    }
+    
+  })
+
+</script>
+
+<h1>&#128526; MATRIX CALCULATOR</h1>
+<p>This is a calculator that visualises how the transformation matrix calculations work.</p>
+<p>Rotations are given in radians, refer to the unit circle for values. 2&pi; is one full rotation.</p>
+<p>Scaling has been given a default value of 1, 1, 1 to keep it from nulling out all other operations.</p>
+<div ng-app="matrixCalc" ng-controller="matrixCtrl">
+<div class="outer">
+  <div class="container">
+
+    <div class="matrix">
+      <div class="explanation">
+        <p><b>translation(x, y, z)</b></p>
+        <table class="tbl-explanation">
+          <tr><td>1</td><td>0</td><td>0</td><td><b>x</b></td></tr>
+          <tr><td>0</td><td>1</td><td>0</td><td><b>y</b></td></tr>
+          <tr><td>0</td><td>0</td><td>1</td><td><b>z</b></td></tr>
+          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+        </table>
+      </div>
+      <div class="calculation">
+        <p>translation(<input size="2" type="text" ng-model="trx">, <input size="2" type="text" ng-model="try">, <input size="2" type="text" ng-model="trz">)</p>
+        <table class = "tbl-calculation">
+          <tr><td>{{tra()[0]}}</td><td>{{tra()[1]}}</td><td>{{tra()[2]}}</td><td>{{tra()[3]}}</td></tr>
+          <tr><td>{{tra()[4]}}</td><td>{{tra()[5]}}</td><td>{{tra()[6]}}</td><td>{{tra()[7]}}</td></tr>
+          <tr><td>{{tra()[8]}}</td><td>{{tra()[9]}}</td><td>{{tra()[10]}}</td><td>{{tra()[11]}}</td></tr>
+          <tr><td>{{tra()[12]}}</td><td>{{tra()[13]}}</td><td>{{tra()[14]}}</td><td>{{tra()[15]}}</td></tr>
+        </table>
+      </div>
+    </div>
+
+
+    <div class="matrix">
+      <div class="explanation">
+        <p><b>scaling(x, y, z)</b></p>
+        <table class="tbl-explanation">
+          <tr><td><b>x</b></td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td><b>y</b></td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td>0</td><td><b>z</b></td><td>0</td></tr>
+          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+        </table>
+      </div>
+      <div class="calculation">
+        <p>scaling(<input size="2" type="text" ng-model="scx">, <input size="2" type="text" ng-model="scy">, <input size="2" type="text" ng-model="scz">)</p>
+        <table class = "tbl-calculation">
+          <tr><td>{{sca()[0]}}</td><td>{{sca()[1]}}</td><td>{{sca()[2]}}</td><td>{{sca()[3]}}</td></tr>
+          <tr><td>{{sca()[4]}}</td><td>{{sca()[5]}}</td><td>{{sca()[6]}}</td><td>{{sca()[7]}}</td></tr>
+          <tr><td>{{sca()[8]}}</td><td>{{sca()[9]}}</td><td>{{sca()[10]}}</td><td>{{sca()[11]}}</td></tr>
+          <tr><td>{{sca()[12]}}</td><td>{{sca()[13]}}</td><td>{{sca()[14]}}</td><td>{{sca()[15]}}</td></tr>
+        </table>
+      </div>
+    </div>
+
+
+    <div class="matrix">
+      <div class="explanation">
+        <p><b>rotation_x(rad)</b></p>
+        <table class="tbl-explanation">
+          <tr><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td><b>cos(rad)</b></td><td><b>-sin(rad)</b></td><td>0</td></tr>
+          <tr><td>0</td><td><b>sin(rad)</b></td><td><b>cos(rad)</b></td><td>0</td></tr>
+          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+        </table>
+      </div>
+      <div class="calculation">
+        <p>rotation_x(<input size="2" type="text" ng-model="rotx">)</p>
+        <table class = "tbl-calculation">
+          <tr><td>{{rotxc()[0]}}</td><td>{{rotxc()[1]}}</td><td>{{rotxc()[2]}}</td><td>{{rotxc()[3]}}</td></tr>
+          <tr><td>{{rotxc()[4]}}</td><td>{{rotxc()[5]}}</td><td>{{rotxc()[6]}}</td><td>{{rotxc()[7]}}</td></tr>
+          <tr><td>{{rotxc()[8]}}</td><td>{{rotxc()[9]}}</td><td>{{rotxc()[10]}}</td><td>{{rotxc()[11]}}</td></tr>
+          <tr><td>{{rotxc()[12]}}</td><td>{{rotxc()[13]}}</td><td>{{rotxc()[14]}}</td><td>{{rotxc()[15]}}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="matrix">
+      <div class="explanation">
+        <p><b>rotation_y(rad)</b></p>
+        <table class="tbl-explanation">
+          <tr><td><b>cos(rad)</b></td><td>0</td><td><b>sin(rad)</b></td><td>0</td></tr>
+          <tr><td>0</td><td>1</td><td>0</td><td>0</td></tr>
+          <tr><td><b>-sin(rad)</b></td><td>0</td><td><b>cos(rad)</b></td><td>0</td></tr>
+          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+        </table>
+      </div>
+      <div class="calculation">
+        <p>rotation_y(<input size="2" type="text" ng-model="roty">)</p>
+        <table class = "tbl-calculation">
+          <tr><td>{{rotyc()[0]}}</td><td>{{rotyc()[1]}}</td><td>{{rotyc()[2]}}</td><td>{{rotyc()[3]}}</td></tr>
+          <tr><td>{{rotyc()[4]}}</td><td>{{rotyc()[5]}}</td><td>{{rotyc()[6]}}</td><td>{{rotyc()[7]}}</td></tr>
+          <tr><td>{{rotyc()[8]}}</td><td>{{rotyc()[9]}}</td><td>{{rotyc()[10]}}</td><td>{{rotyc()[11]}}</td></tr>
+          <tr><td>{{rotyc()[12]}}</td><td>{{rotyc()[13]}}</td><td>{{rotyc()[14]}}</td><td>{{rotyc()[15]}}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="matrix">
+      <div class="explanation">
+        <p><b>rotation_z(rad)</b></p>
+        <table class="tbl-explanation">
+          <tr><td><b>cos(rad)</b></td><td><b>-sin(rad)</b></td><td>0</td><td>0</td></tr>
+          <tr><td><b>sin(rad)</b></td><td><b>cos(rad)</b></td><td>0</td><td>0</td></tr>
+          <tr><td>0</td><td>0</td><td>1</td><td>0</td></tr>
+          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+        </table>
+      </div>
+      <div class="calculation">
+        <p>rotation_z(<input size="2" type="text" ng-model="rotz">)</p>
+        <table class = "tbl-calculation">
+          <tr><td>{{rotzc()[0]}}</td><td>{{rotzc()[1]}}</td><td>{{rotzc()[2]}}</td><td>{{rotzc()[3]}}</td></tr>
+          <tr><td>{{rotzc()[4]}}</td><td>{{rotzc()[5]}}</td><td>{{rotzc()[6]}}</td><td>{{rotzc()[7]}}</td></tr>
+          <tr><td>{{rotzc()[8]}}</td><td>{{rotzc()[9]}}</td><td>{{rotzc()[10]}}</td><td>{{rotzc()[11]}}</td></tr>
+          <tr><td>{{rotzc()[12]}}</td><td>{{rotzc()[13]}}</td><td>{{rotzc()[14]}}</td><td>{{rotzc()[15]}}</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="matrix">
+      <div class="explanation">
+        <p><b>shearing(x<sub>y</sub>, x<sub>z</sub>, y<sub>x</sub>, y<sub>z</sub>, z<sub>x</sub>, z<sub>y</sub>)</b></p>
+        <table class="tbl-explanation">
+          <tr><td>1</td><td><b>x<sub>y</sub></b></td><td><b>x<sub>z</sub></b></td><td>0</td></tr>
+          <tr><td><b>y<sub>x</sub></b></td><td>1</td><td><b>y<sub>z</sub></b></td><td>0</td></tr>
+          <tr><td><b>z<sub>x</sub></b></td><td><b>z<sub>y</sub></b></td><td>1</td><td>0</td></tr>
+          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+        </table>
+      </div>
+      <div class="calculation">
+        <p>shearing(<input size="2" type="text" ng-model="xy">, <input size="2" type="text" ng-model="xz">, <input size="2" type="text" ng-model="yx">, <input size="2" type="text" ng-model="yz">, <input size="2" type="text" ng-model="zx">, <input size="2" type="text" ng-model="zy">)</p>
+        <table class = "tbl-calculation">
+          <tr><td>{{shec()[0]}}</td><td>{{shec()[1]}}</td><td>{{shec()[2]}}</td><td>{{shec()[3]}}</td></tr>
+          <tr><td>{{shec()[4]}}</td><td>{{shec()[5]}}</td><td>{{shec()[6]}}</td><td>{{shec()[7]}}</td></tr>
+          <tr><td>{{shec()[8]}}</td><td>{{shec()[9]}}</td><td>{{shec()[10]}}</td><td>{{shec()[11]}}</td></tr>
+          <tr><td>{{shec()[12]}}</td><td>{{shec()[13]}}</td><td>{{shec()[14]}}</td><td>{{shec()[15]}}</td></tr>
+        </table>
+      </div>
+    </div> 
+</div>
+    <div class="result">
+      <p><b>Resulting transformation matrix</b></p>
+      <table class = "tbl-calculation">
+        <tr><td>{{res()[0]}}</td><td>{{res()[1]}}</td><td>{{res()[2]}}</td><td>{{res()[3]}}</td></tr>
+        <tr><td>{{res()[4]}}</td><td>{{res()[5]}}</td><td>{{res()[6]}}</td><td>{{res()[7]}}</td></tr>
+        <tr><td>{{res()[8]}}</td><td>{{res()[9]}}</td><td>{{res()[10]}}</td><td>{{res()[11]}}</td></tr>
+        <tr><td>{{res()[12]}}</td><td>{{res()[13]}}</td><td>{{res()[14]}}</td><td>{{res()[15]}}</td></tr>
+      </table>
+    </div>
+
+  </div>
+</div>
+<p id="perf"></p>
+<pre id="error"></pre>
+
+
+
+<script>
 // *** FUNCTION DEFINITIONS
 
 
@@ -63,6 +366,8 @@ function shuffle(arr) {
     arr[j] = temp
   }
 }
+
+
 
 // *** VECTOR FUNCTIONS
 
@@ -904,7 +1209,7 @@ class Sphere {
   get transform() { return this._transform }
   get material() { return this._material }
   get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
-    
+  
   set transform(value) {
     if (value.d != undefined) {
       this._transform = multiply_matrices(this._transform, value)
@@ -916,8 +1221,6 @@ class Sphere {
       this._material = mat
     }
   }
-  
-  equals(obj) { return this._transform.equals(obj.transform) && this._material.equals(obj.material)}
 }
 
 function intersect(s, ra) {
@@ -1078,14 +1381,6 @@ class Material {
   set diffuse(dif) { this._diffuse = dif }
   set specular(spe) { this._specular = spe }
   set shininess(shi) { this._shininess = shi }
-  
-  equals(mat) {
-    return mat.color.equals(this._color) 
-        && mat.ambient === this._ambient 
-        && mat.diffuse === this._diffuse
-        && mat.specular === this._specular 
-        && mat.shininess === this._shininess
-  }
 
 }
 
@@ -1152,143 +1447,33 @@ function lighting(material, light, point, eyev, normalv) {
   return add_colors(ambient, add_colors(diffuse, specular))
 }
 
-// *** SCENE FUNCTIONS
+</script>
 
-class World {
-  // The World object holds all the objects for the scene
-  
-  constructor() {
-    this._objects = []
-    this._lights = []
-  }
-  
-  get objects() { return this._objects }
-  get lights() { return this._lights }
-  
-  addLight(light_object) { this._lights.push(light_object) }
-  addObject(world_object) { this._objects.push(world_object) }
-  
-  has(object) {
-    // Check if the world contains an object matching the input
-    if (object.position != undefined && object.intensity != undefined) {
-      // Input is a light object
-      return this._lights.filter(e => e.position.equals(object.position) && e.intensity.equals(object.intensity))
-    } else {
-      // Input is a world object
-      return this._objects.filter(e => e.transform.equals(object.transform) && e.material.equals(object.material) )
-    }
-  }
-}
+<script>
+// *** TRANSFORMATION MATRIX CALCULATOR
 
-function world() {
-  // Creates World-objects
-  return new World()
-}
+// Using functions.js, we can visualise how matrix calculations work.
 
-function default_world() {
-  // Creates a default world
-  
-  // Create world object
-  const w = new World()
-  
-  // Create a default light object
-  const light = point_light(point(-10, 10, -10), color(1, 1, 1))
-  
-  // Create a sphere
-  const s1 = new Sphere()
-  
-  // Create a new material
-  const mat = material()
-  
-  // Set material properties
-  mat.color = color(0.8, 1.0, 0.6)
-  mat.diffuse = 0.7
-  mat.specular = 0.2
-  
-  // Apply material to sphere
-  s1.material = mat
-  
-  // Create a new sphere
-  const s2 = new Sphere()
-  
-  // Add a transform to the sphere
-  s2.transform = scaling(0.5, 0.5, 0.5)
-  
-  // Add objects to the world
-  w.addLight(light)
-  w.addObject(s1)
-  w.addObject(s2)
-  
-  return w
-}
+// Performance counter
 
-function intersect_world(w, r) {
-  // Iterate over the world w and log all object intersections with ray r
-  
-  const _intersections = []
-  
-  if (w.objects === undefined || w.objects.length === 0) {
-    throw(`Trying to iterate over an empty world`)
-  }
-  
-  for (e in w.objects) {
-    
-    const f = intersect(w.objects[e], r)
-    
-    for (g in f) {
-      //log("error", "Intersection: " + f[g].t)
 
-      _intersections.push(f[g])
-    } 
-  }
-  
-  // Sort the array of intersections by their t-values
-  return _intersections.sort( function(a, b) {
-    return a.t - b.t
-  })
-}
 
-class PrepareComputations {
-  // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
-  
-  constructor(i, r) {
-    this._i = i
-    this._t = i.t
-    this._r = r
-    this._p = position(this._r, this._t)
-    this._e = this._r.direction.negate()
-    this._nv = normal_at(this._i.object, this._p)
-  }
-  
-  get t() { return this._t }
-  get object() { return this._i.object }
-  get point() { return this._p }
-  get eyev() { return this._e }
-  get normalv() { return this._nv }
-  get inside() { 
-    if (this.normalv.dot(this.eyev) < 0 ) {
-        this.normalv = this.normalv.negate()
-        //log("error", "Inside true")
-        return true
-      } else {
-        //log("error", "Inside false")
-        return false
-      }
-  }
-  
-  set normalv(v) {
-    this._nv = v
-  }
-}
+// Performance measurement
+const end = performance.now()
+const elapsed = end - start
+const cumulated_id = "matrix_calculator_running_time"
+const numberOfRuns_id = "matrix_calculator_runs"
 
-function prepare_computations(i, r) {
-  // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
-  
-  return new PrepareComputations(i, r)
-}
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
 
-function shade_hit(w, c) {
-  // Call lighting() function with the intersected object's material and the prepared computations
-  
-  return lighting(c.object.material, w.lights[0], c.point, c.eyev, c.normalv)
-}
+localStorage.setItem(numberOfRuns_id, Number(runs) + 1)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+
+log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
+log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+</script>
+
+</body>
+
+</html>

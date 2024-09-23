@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+</head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+<style>
+
+  @import url('https://fonts.googleapis.com/css?family=Coda|Crimson+Text|Gothic+A1|M+PLUS+1p|M+PLUS+Rounded+1c|Nanum+Gothic|Nanum+Myeongjo|Noto+Sans&display=swap');
+
+  pre {
+    background-color: lightgrey;
+  }
+
+  body {
+    font-family: Crimson Text;
+    font-size: 1.3rem;
+  }
+
+  p {
+    margin-left: 2rem;
+  }
+
+  input {
+    font-family: Crimson Text;
+    font-size: 1.3rem;
+  }
+
+  table, th , td  {
+    border: 1px solid grey;
+    border-collapse: collapse;
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+  }
+
+  .outer {
+    display: grid;
+  }
+
+  .container {
+    margin: 3rem;
+  }
+  .matrix {
+    margin: 1rem;
+    width: auto;
+    padding: 1rem;;
+    float: left;
+    border: 0.1rem solid grey;
+    border-collapse: collapse;
+  }
+
+  .result {
+    display:grid;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+</style>
+
+<body>
+<script src="./js/symbol_data.js"></script>
+
+<script>
+const start = performance.now()
+
+var _entries = []
+</script>
+
+<script>
+
+// *** SYMBOL SEARCH ANGULAR APP
+var app = angular.module('symbolsearch', [])
+
+// *** SYMBOL SEARCH ANGULAR CONTROLLER
+app.controller('ssController', function($scope) {
+  //log("error", "In ssController")
+  
+  // ** SEARCH
+  $scope.search = ""
+  
+  $scope.results = function() {
+    return perform_search($scope.search.toLowerCase())
+  }
+  
+  $scope.nosymb = function () {
+    return number_of_symbols() 
+  }
+
+  // ** EDIT
+  $scope.add_symb = ""
+  $scope.add_name = ""
+  $scope.add_deci = ""
+  $scope.add_hexa = ""
+  $scope.add_cate = ""
+  $scope.add_keyw = ""
+  
+  $scope.format_entry = function () {
+    //log("error", "Format entry")
+    const k = $scope.add_keyw.split(" ").map(e => `"${e}"`)
+    
+    return `{
+  decimal: ${$scope.add_deci},
+  hex: "0x${$scope.add_hexa}",
+  category: "${$scope.add_cate}",
+  name: "${$scope.add_name}",
+  symbol: "${$scope.add_symb}",
+  keywords: [${k}]
+},`
+  }
+})
+    
+</script>
+
+<div ng-app="symbolsearch" ng-controller="ssController">
+<h1>&#128526; SYMBOL SEARCH</h1>
+<p>A search engine for ASCII symbols and emoji. Because I needed one.</p>
+<p>Searching <span ng-model="nosymb">{{ nosymb() }}</span> symbols...</p>
+
+
+  <div class="outer">
+    <div class="container">
+      <p>Search: <input type="text" ng-model="search"></p>
+    </div>
+   
+  </div>
+
+  <div class="result" ng-model="results">
+    <p><b>Search results</b></p>
+
+    <table>
+      <tr>
+        <th>Symbol</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Decimal</th>
+        <th>Keywords</th>    
+      </tr>
+      <tr ng-repeat="x in results()"><td>{{x.symbol}}</td><td>{{x.name}}</td><td>{{x.category}}</td><td><code>&#{{x.decimal}};</code></td><td>{{x.keywords}}</td></tr>
+    </table>
+  </div>
+
+
+<div class="container">
+      <table>
+        <tr>
+          <td>Symbol: <input type="text" ng-model="add_symb"> Name: <input type="text" ng-model="add_name"></td>
+          <td>Decimal: <input type="text" ng-model="add_deci"> Hex: <input type="text" ng-model="add_hexa"></td>
+          <td>Category: <input type="text" ng-model="add_cate"> Keywords: <input type="text" ng-model="add_keyw"></td>
+        </tr>
+      </table>
+      <pre>{{format_entry()}}</pre>
+</div>
+</div>
+<div>
+  <p id="perf"></p>
+  <pre id="error"></pre>
+</div>
+
+<script src="./js/symbol_data.js"></script>
+<script>
+// *** SYMBOLS. WANT TO LOAD FROM FILE HERE
+const symbols = [
+  {
+    decimal: 128176,
+    hex: 0x1F4B0,
+    category: "money",
+    name: "Money bag",
+    symbol: "💰",
+    keywords: ["money", "bag", "dollar", "yellow", "green"]
+  },
+  {
+    decimal: 128177,
+    hex: 0x1F4B1,
+    category: "money",
+    name: "Currency exchange",
+    symbol: "💱",
+    keywords: ["currency", "exchange", "yen", "dollar"]
+  },
+  {
+    decimal: 128183,
+    hex: 0x1F4B7,
+    category: "money",
+    name: "Banknote pound",
+    symbol: "💷",
+    keywords: ["bank", "note", "pound", "£"]
+  },
+  {
+    decimal: 128178,
+    hex: 0x1F4B2,
+    category: "money",
+    name: "Dollar sign",
+    symbol: "💲",
+    keywords: ["dollar", "sign", "$", "green"]
+  },
+  {
+    decimal: 128179,
+    hex: 0x1F4B3,
+    category: "money",
+    name: "Credit card",
+    symbol: "💳",
+    keywords: ["credit", "card", "cc", "master", "visa", "yellow", "gold"]
+  },
+  {
+    decimal: 128180,
+    hex: 0x1F4B4,
+    category: "money",
+    name: "Banknote yen",
+    symbol:"💴",
+    keywords: ["bank", "note", "yen"]
+  },
+  {
+    decimal: 128181,
+    hex: 0x1F4B5,
+    category: "money",
+    name: "Banknote dollar",
+    symbol: "💵",
+    keywords: ["bank", "note", "dollar", "$"]
+  },
+  {
+    decimal: 128182,
+    hex: 0x1F4B6,
+    category: "money",
+    name: "Banknote euro",
+    symbol: "💶",
+    keywords: ["bank", "note", "euro", "€"]
+  },
+  {
+    decimal: 128183,
+    hex: 0x1F4B7,
+    category: "money",
+    name: "Banknote pound",
+    symbol: "💷",
+    keywords: ["bank", "note", "pound", "£"]
+  },
+  {
+    decimal: 128184,
+    hex: 0x1F4B8,
+    category: "money",
+    name: "Money with wings",
+    symbol: "💸",
+    keywords: ["money", "wings", "lose", "loss", "fly"]
+  },
+  {
+    decimal: 128185,
+    hex: 0x1F4B9,
+    category: "money",
+    name: "Upward trend yen",
+    symbol: "💹",
+    keywords: ["money", "upward", "trend", "yen", "positive", "chart", "green"]
+  },
+  {
+    decimal: 9962,
+    hex: 0x26EA,
+    category: "religion",
+    name: "Church",
+    symbol: "⛪",
+    keywords: ["church", "religion", "worship", "god", "faith", "christian", "christianity", "holy", "white", "red"]
+  },
+  {
+    decimal: 128255,
+    hex: 0x1F4FF,
+    category: "religion",
+    name: "Prayer Beads",
+    symbol: "📿",
+    keywords: ["religion", "prayer", "beads", "necklace", "faith", "holy", "red"]
+  },
+  {
+    decimal: 128331,
+    hex: 0x1F54B,
+    category: "religion",
+    name: "Kaaba",
+    symbol: "🕋",
+    keywords: ["religion", "prayer", "faith", "black", "yellow"]
+  },
+  {
+    decimal: 128332,
+    hex: 0x1F54C,
+    category: "religion",
+    name: "Mosque",
+    symbol: "🕌",
+    keywords: ["religion", "prayer", "faith", "islam", "muslim", "holy", "white", "green"]
+  },
+  {
+    decimal: 128333,
+    hex: 0x1F54D,
+    category: "religion",
+    name: "Synagogue",
+    symbol: "🕍",
+    keywords: ["religion", "prayer", "faith", "judaism", "jewish", "israel", "zion", "holy", "white", "red"]
+  },
+  {
+    decimal: 128334,
+    hex: 0x1F54E,
+    category: "religion",
+    name: "Menorah",
+    symbol: "🕎",
+    keywords: ["religion", "prayer", "faith", "judaism", "jewish", "israel", "zion", "holy", "purple"]
+  },
+  {
+    decimal: 128725,
+    hex: 0x1F6D5,
+    category: "religion",
+    name: "Hindu temple",
+    symbol: "🛕",
+    keywords: ["religion", "prayer", "faith", "hindu", "holy", "yellow", "gold"]
+  },
+  {
+    decimal: 128303,
+    hex: 0x1F52F,
+    category: "religion",
+    name: "Six pointed star",
+    symbol: "🔯",
+    keywords: ["religion", "prayer", "faith", "judaism", "david", "jewish", "israel", "zion", "holy", "purple"]
+  },
+  {
+    decimal: 128269,
+    hex: 0x1F50D,
+    category: "tools",
+    name: "Left magnifying glass",
+    symbol: "🔍",
+    keywords: ["lens", "investigate", "enlarge", "study", "blue"]
+  },
+  {
+    decimal: 128270,
+    hex: 0x1F50E,
+    category: "tools",
+    name: "Right magnifying glass",
+    symbol: "🔎",
+    keywords: ["lens", "investigate", "enlarge", "study", "blue"]
+  },
+  {
+    decimal: 128271,
+    hex: 0x1F50F,
+    category: "tools",
+    name: "Lock with pen",
+    symbol: "🔏",
+    keywords: ["padlock", "write", "protect", "yellow", "gold", "orange"]
+  },
+  {
+    decimal: 128272,
+    hex: 0x1F510,
+    category: "tools",
+    name: "Lock with key",
+    symbol: "🔐",
+    keywords: ["padlock", "protect", "closed", "yellow", "gold", "orange"]
+  },
+  {
+    decimal: 128273,
+    hex: 0x1F511,
+    category: "tools",
+    name: "Key",
+    symbol: "🔑",
+    keywords: ["protect", "closed", "yellow", "gold", "orange"]
+  },
+  {
+    decimal: 128274,
+    hex: 0x1F512,
+    category: "tools",
+    name: "Lock",
+    symbol: "🔒",
+    keywords: ["protect", "closed", "yellow", "gold", "orange"]
+  },
+  {
+    decimal: 128275,
+    hex: 0x1F513,
+    category: "tools",
+    name: "Open lock",
+    symbol: "🔓",
+    keywords: ["protect", "open", "unlocked", "yellow", "gold", "orange"]
+  },
+  {
+    decimal: 128294,
+    hex: 0x1F526,
+    category: "tools",
+    name: "Electric torch",
+    symbol: "🔦",
+    keywords: ["light", "illuminate", "portable", "battery", "grey"]
+  },
+  {
+    decimal: 128295,
+    hex: 0x1F527,
+    category: "tools",
+    name: "Wrench",
+    symbol: "🔧",
+    keywords: ["nut", "repair", "tighten", "loosen", "metal", "hard", "silver"]
+  },
+  {
+    decimal: 128296,
+    hex: 0x1F528,
+    category: "tools",
+    name: "Hammer",
+    symbol: "🔨",
+    keywords: ["repair", "smash", "mc", "metal", "hard", "hit", "nail"]
+  },
+  {
+    decimal: 128297,
+    hex: 0x1F529,
+    category: "tools",
+    name: "Nut and bolt",
+    symbol: "🔩",
+    keywords: ["tighten", "loosen", "screw", "thread", "metal", "links", "repair", "machine", "silver"]
+  },
+  {
+    decimal: 128300,
+    hex: 0x1F52C,
+    category: "tools",
+    name: "Microscope",
+    symbol: "🔬",
+    keywords: ["enlarge", "study", "miniscule", "tiny", "medical", "micro", "small", "machine"]
+  },
+  {
+    decimal: 128301,
+    hex: 0x1F52D,
+    category: "tools",
+    name: "Telescope",
+    symbol: "🔭",
+    keywords: ["enlarge", "study", "space", "planets", "stars", "galaxy", "machine"]
+  },
+  {
+    decimal: 129517,
+    hex: 0x1F9ED,
+    category: "tools",
+    name: "Compass",
+    symbol: "🧭",
+    keywords: ["navigate", "needle", "magnetic", "north", "south", "east", "west", "find", "map"]
+  },
+  {
+    decimal: 129520,
+    hex: 0x1F9F0,
+    category: "tools",
+    name: "Toolbox",
+    symbol: "🧰",
+    keywords: ["container", "box", "lid", "handle", "red"]
+  },
+  {
+    decimal: 129522,
+    hex: 0x1F9F2,
+    category: "tools",
+    name: "Magnet",
+    symbol: "🧲",
+    keywords: ["magnetic", "metal", "north", "south", "attract", "repel"]
+  },
+
+
+]
+</script>
+<script>
+// *** SEARCH FUNCTIONS
+function number_of_symbols() {
+  return symbols.length
+}
+
+function perform_search(searchterm) {
+  const start_search = performance.now()
+
+  let matches = []
+  
+  if (searchterm.length === 0) { return []}
+  
+  for (e in symbols) {
+    const n = parseInt(searchterm)
+    if (typeof n == 'number' && !isNaN(n)) {
+      //log("error", parseInt(searchterm))
+      if (symbols[e].decimal.toString().includes(searchterm)) {
+       matches.push(symbols[e])
+      }
+    } else if (symbols[e].name.toLowerCase().includes(searchterm)) {
+      //log("error", searchterm + " matches name " + symbols[e].name)
+      matches.push(symbols[e])
+    } else if (symbols[e].category.toLowerCase().includes(searchterm)) {
+      matches.push(symbols[e])
+    } else {
+      for (f in symbols[e].keywords) {
+        if (symbols[e].keywords[f].includes(searchterm)) {
+          //log("error", searchterm + " matches keyword " + symbols[e].keywords[f])
+          matches.push(symbols[e])
+        }
+      }
+    }
+  }
+  const end_search = performance.now()
+  //log("perf", "Search took: " + (end_search - start_search) + " ms")
+  
+  return matches.length > 0 ? matches.sort() : []
+}
+
+
+  
+
+function log(domId, msg) {
+    
+  const para = document.createElement("p");
+  const node = document.createTextNode(msg);
+  para.appendChild(node);
+  const element = document.getElementById(domId);
+  element.appendChild(para);
+}
+
+
+// Performance counter
+
+// Performance measurement
+const end = performance.now()
+const elapsed = end - start
+const cumulated_id = "symbol_search_running_time"
+const numberOfRuns_id = "symbol_search_runs"
+
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
+
+localStorage.setItem(numberOfRuns_id, Number(runs) + 1)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+
+log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
+log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+</script>
+
+</body>
+
+</html>

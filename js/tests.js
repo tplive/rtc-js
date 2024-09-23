@@ -1650,27 +1650,47 @@ function test_prepare_computations_function() {
       && comps.normalv.equals(vector(0, 0, -1))
 }
 
-function test_hit_inside_object() {
-  // The prepare_computations() function must handle hits on the inside of objects too
-  // Thus, an attribute .inside will be added and computed.
+function test_hit_inside_function() {
+  // Test hit when an intersection occurs on the outside
   
-  // First, an intersection occurring on the outside of a sphere
   const r1 = ray(point(0, 0, -5), vector(0, 0, 1))
   const s1 = new Sphere()
   const i1 = intersection(4, s1)
   const comps1 = prepare_computations(i1, r1)
   
-  // Second, an intersection occurring on the inside of a sphere
+  // Test hit when an intersection occurs on the inside
   const r2 = ray(point(0, 0, 0), vector(0, 0, 1))
   const s2 = new Sphere()
-  const i2 = intersection(4, s2)
+  const i2 = intersection(1, s2)
   const comps2 = prepare_computations(i2, r2)
+  const res2 = comps2.point.equals(point(0, 0, 1)) 
+            && comps2.eyev.equals(vector(0, 0, -1))
+            && comps2.inside
+            //&& comps2.normalv.equals(vector(0, 0, -1)) // Would have been 0, 0, 1, but it's inverted!
   
-  //log("error", comps2.normalv)
   
-  return comps1.inside === false 
-      && comps2.inside === true 
-      && comps2.normalv.equals(vector(0, 0, -1))
+  return !comps1.inside && res2
+}
+
+function test_hit_inside_function() {
+  // Test hit when an intersection occurs on the outside
+  
+  const r1 = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s1 = new Sphere()
+  const i1 = intersection(4, s1)
+  const comps1 = prepare_computations(i1, r1)
+  
+  // Test hit when an intersection occurs on the inside
+  const r2 = ray(point(0, 0, 0), vector(0, 0, 1))
+  const s2 = new Sphere()
+  const i2 = intersection(1, s2)
+  const comps2 = prepare_computations(i2, r2)
+  const res2 = comps2.point.equals(point(0, 0, 1)) 
+            && comps2.eyev.equals(vector(0, 0, -1))
+            && comps2.inside
+            && comps2.normalv.equals(vector(0, 0, -1)) // Would have been 0, 0, 1, but it's inverted!
+  
+  return !comps1.inside && res2
 }
 
 function test_shade_hit_function() {
@@ -1694,6 +1714,14 @@ function test_shade_hit_function() {
   const i2 = intersection(0.5, s2)
   const comps2 = prepare_computations(i2, r2)
   const c2 = shade_hit(w, comps2)
+  //log("error", c2)
+  // Something is off here. If I set the light's color values at 9.0498 (10x the expected output)
+  // the test passes. But following instructions, output is at 0.1, almost complete darkness.
+  // The above test works fine, but that's on the outside of the object.
+  // No, the anomaly in the lighting() function doesn't affect this, I tried.
+  // According to the books errata, others have also gotten other values here. 
+  // Someone made it come together by loosening the EPSILON value. But not by 10x!! :D
+  // I can't figure it out, and so I move on...
   const res2 = c2.equals(color(0.90498, 0.90498, 0.90498))
   
   return res1 && res2

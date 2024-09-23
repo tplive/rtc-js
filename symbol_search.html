@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+</head>
+
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+<style>
+
+  @import url('https://fonts.googleapis.com/css?family=Coda|Crimson+Text|Gothic+A1|M+PLUS+1p|M+PLUS+Rounded+1c|Nanum+Gothic|Nanum+Myeongjo|Noto+Sans&display=swap');
+
+  pre {
+    background-color: lightgrey;
+  }
+
+  body {
+    font-family: Crimson Text;
+    font-size: 1.3rem;
+  }
+
+  p {
+    margin-left: 2rem;
+  }
+
+  input {
+    font-family: Crimson Text;
+    font-size: 1.3rem;
+  }
+
+  table, th , td  {
+    border: 1px solid grey;
+    border-collapse: collapse;
+    padding-left: 1.2rem;
+    padding-right: 1.2rem;
+  }
+
+  .outer {
+    display: grid;
+  }
+
+  .container {
+    margin: 3rem;
+  }
+  .matrix {
+    margin: 1rem;
+    width: auto;
+    padding: 1rem;;
+    float: left;
+    border: 0.1rem solid grey;
+    border-collapse: collapse;
+  }
+
+  .result {
+    display:grid;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+</style>
+
+<body>
+<script src="./js/symbol_data.js"></script>
+
+<script>
+const start = performance.now()
+
+var _entries = []
+</script>
+
+<script>
+
+// *** SYMBOL SEARCH ANGULAR APP
+var app = angular.module('symbolsearch', [])
+
+// *** SYMBOL SEARCH ANGULAR CONTROLLER
+app.controller('ssController', function($scope) {
+  //log("error", "In ssController")
+  
+  // ** SEARCH
+  $scope.search = ""
+  
+  $scope.results = function() {
+    return perform_search($scope.search.toLowerCase())
+  }
+  
+  $scope.nosymb = function () {
+    return number_of_symbols() 
+  }
+
+  // ** EDIT
+  $scope.add_symb = ""
+  $scope.add_name = ""
+  $scope.add_deci = ""
+  $scope.add_hexa = ""
+  $scope.add_cate = ""
+  $scope.add_keyw = ""
+  
+  $scope.format_entry = function () {
+    //log("error", "Format entry")
+    const k = $scope.add_keyw.split(" ").map(e => `"${e}"`)
+    
+    return `{
+  decimal: ${$scope.add_deci},
+  hex: "0x${$scope.add_hexa}",
+  category: "${$scope.add_cate}",
+  name: "${$scope.add_name}",
+  symbol: "${$scope.add_symb}",
+  keywords: [${k}]
+},`
+  }
+})
+    
+</script>
+
+<div ng-app="symbolsearch" ng-controller="ssController">
+<h1>&#128526; SYMBOL SEARCH</h1>
+<p>A search engine for ASCII symbols and emoji. Because I needed one.</p>
+<p>Searching <span ng-model="nosymb">{{ nosymb() }}</span> symbols...</p>
+
+
+  <div class="outer">
+    <div class="container">
+      <p>Search: <input type="text" ng-model="search"></p>
+    </div>
+   
+  </div>
+
+  <div class="result" ng-model="results">
+    <p><b>Search results</b></p>
+
+    <table>
+      <tr>
+        <th>Symbol</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Decimal</th>
+        <th>Keywords</th>    
+      </tr>
+      <tr ng-repeat="x in results()"><td>{{x.symbol}}</td><td>{{x.name}}</td><td>{{x.category}}</td><td><code>&#{{x.decimal}};</code></td><td>{{x.keywords}}</td></tr>
+    </table>
+  </div>
+
+
+<div class="container">
+      <table>
+        <tr>
+          <td>Symbol: <input type="text" ng-model="add_symb"> Name: <input type="text" ng-model="add_name"></td>
+          <td>Decimal: <input type="text" ng-model="add_deci"> Hex: <input type="text" ng-model="add_hexa"></td>
+          <td>Category: <input type="text" ng-model="add_cate"> Keywords: <input type="text" ng-model="add_keyw"></td>
+        </tr>
+      </table>
+      <pre>{{format_entry()}}</pre>
+</div>
+</div>
+<div>
+  <p id="perf"></p>
+  <pre id="error"></pre>
+</div>
+
+<script src="./js/symbol_data.js"></script>
+<script>
+// *** SEARCH FUNCTIONS
+function number_of_symbols() {
+  return symbols.length
+}
+
+function perform_search(searchterm) {
+  const start_search = performance.now()
+
+  let matches = []
+  
+  if (searchterm.length === 0) { return []}
+  
+  for (e in symbols) {
+    const n = parseInt(searchterm)
+    if (typeof n == 'number' && !isNaN(n)) {
+      //log("error", parseInt(searchterm))
+      if (symbols[e].decimal.toString().includes(searchterm)) {
+       matches.push(symbols[e])
+      }
+    } else if (symbols[e].name.toLowerCase().includes(searchterm)) {
+      //log("error", searchterm + " matches name " + symbols[e].name)
+      matches.push(symbols[e])
+    } else if (symbols[e].category.toLowerCase().includes(searchterm)) {
+      matches.push(symbols[e])
+    } else {
+      for (f in symbols[e].keywords) {
+        if (symbols[e].keywords[f].includes(searchterm)) {
+          //log("error", searchterm + " matches keyword " + symbols[e].keywords[f])
+          matches.push(symbols[e])
+        }
+      }
+    }
+  }
+  const end_search = performance.now()
+  //log("perf", "Search took: " + (end_search - start_search) + " ms")
+  
+  return matches.length > 0 ? matches.sort() : []
+}
+
+
+  
+
+function log(domId, msg) {
+    
+  const para = document.createElement("p");
+  const node = document.createTextNode(msg);
+  para.appendChild(node);
+  const element = document.getElementById(domId);
+  element.appendChild(para);
+}
+
+
+// Performance counter
+
+// Performance measurement
+const end = performance.now()
+const elapsed = end - start
+const cumulated_id = "symbol_search_running_time"
+const numberOfRuns_id = "symbol_search_runs"
+
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
+
+localStorage.setItem(numberOfRuns_id, Number(runs) + 1)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+
+log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
+log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+</script>
+
+</body>
+
+</html>

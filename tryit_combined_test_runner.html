@@ -1243,7 +1243,7 @@ function default_world() {
   // Creates a default world
   
   // Create world object
-  const w = new World()
+  const w = world()
   
   // Create a default light object
   const light = point_light(point(-10, 10, -10), color(1, 1, 1))
@@ -1302,26 +1302,68 @@ function intersect_world(w, r) {
   })
 }
 
+class PrepareComputations {
+  // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
+  
+  constructor(i, r) {
+    this._i = i
+    this._t = i.t
+    this._r = r
+    this._p = position(this._r, this._t)
+    this._e = this._r.direction.negate()
+    this._nv = normal_at(this._i.object, this._p)
+  }
+  
+  get t() { return this._t }
+  get object() { return this._i.object }
+  get point() { return this._p }
+  get eyev() { return this._e }
+  get normalv() { return this._nv }
+  get inside() {
+    if (this.normalv.dot(this.eyev) < 0 ) {
+      //log("error", "Inside true before negate(): " + this.normalv)
+      this.normalv = this.normalv.negate()
+      //log("error", "Inside true: " + this.normalv)
+      return true
+    } else {
+      //log("error", "Inside false: " + this.normalv)
+      return false
+    }
+  }
+  
+  set normalv(v) {
+    this._nv = v
+  }
+}
+
 function prepare_computations(i, r) {
   // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
-    
-    const _t = i.t
-    const _o = i.object
-    const _p = position(r, _t)
-    const _e = r.direction.negate()
-    const _n = normal_at(_o, _p)
-    
-    //log("error", _t)
-    
-    
-    
-  return Object.freeze({
-    t: _t,
-    object: _o,
-    point: _p,
-    eyev: _e,
-    normalv: _n,
-  })
+  
+  return new PrepareComputations(i, r)
+}
+
+function shade_hit(w, c) {
+  // Call lighting() function with the intersected object's material and the prepared computations
+  return lighting(c.object.material, w.lights[0], c.point, c.eyev, c.normalv)
+}
+
+function color_at(w, r) {
+  // The color_at function uses intersect(), prepare_computations()
+  // and shade_hit() to compute the color at the resulting intersection
+  
+  var comps
+  const xs = intersect_world(w, r)
+  
+  for (x in xs) {
+    for (shape in w.objects) {
+      const i = intersect(xs[x], shape)
+      comps = prepare_computations(i, r)
+    }
+  }
+  
+  const h = shade_hit(w, comps)
+  
+  return lighting(comps.object.material, w.light[0], comps.point, comps.eyev, comps.normalv)
 }
 
 </script>
@@ -2977,6 +3019,79 @@ function test_prepare_computations_function() {
       && comps.eyev.equals(vector(0, 0, -1))
       && comps.normalv.equals(vector(0, 0, -1))
 }
+
+function test_hit_inside_object() {
+  // Test hit when an intersection occurs on the outside
+  
+  const r1 = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s1 = new Sphere()
+  const i1 = intersection(4, s1)
+  const comps1 = prepare_computations(i1, r1)
+  
+  // Test hit when an intersection occurs on the inside
+  const r2 = ray(point(0, 0, 0), vector(0, 0, 1))
+  const s2 = new Sphere()
+  const i2 = intersection(1, s2)
+  const comps2 = prepare_computations(i2, r2)
+  const res2 = comps2.point.equals(point(0, 0, 1)) 
+            && comps2.eyev.equals(vector(0, 0, -1))
+            && comps2.inside
+            && comps2.normalv.equals(vector(0, 0, -1)) // Would have been 0, 0, 1, but it's inverted!
+  
+  return !comps1.inside && res2
+}
+
+function test_shade_hit_function() {
+  // Test to make sure shading is done correctly both inside and outside an object
+  
+  // Test shading an intersection
+  const w = default_world()
+  
+  // Test shading an intersection
+  const r1 = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s1 = w.objects[0]
+  const i1 = intersection(4, s1)
+  const comps1 = prepare_computations(i1, r1)
+  const c1 = shade_hit(w, comps1)
+  const res1 = c1.equals(color(0.38066, 0.47583, 0.2855))
+  
+  // Test shading an intersection from the inside
+  w.lights[0] = point_light(point(0, 0.25, 0), color(1, 1, 1))
+  const r2 = ray(point(0, 0, 0), vector(0, 0, 1))
+  const s2 = w.objects[1]
+  const i2 = intersection(0.5, s2)
+  const comps2 = prepare_computations(i2, r2)
+  const c2 = shade_hit(w, comps2)
+  //log("error", c2)
+  // Something is off here. If I set the light's color values at 9.0498 (10x the expected output)
+  // the test passes. But following instructions, output is at 0.1, almost complete darkness.
+  // The above test works fine, but that's on the outside of the object.
+  // No, the anomaly in the lighting() function doesn't affect this, I tried.
+  // According to the books errata, others have also gotten other values here. 
+  // Someone made it come together by loosening the EPSILON value. But not by 10x!! :D
+  // I can't figure it out, and so I move on...
+  const res2 = c2.equals(color(0.90498, 0.90498, 0.90498))
+  
+  return res1 && res2
+}
+
+function test_color_at_function() {
+  // Test that the color_at function gives the correct color when applied to a default world
+  
+  const w = default_world()
+  
+  // First, when ray misses
+  const r1 = ray(point(0, 0, -5), vector(0, 1, 0))
+  const c1 = color_at(w, r1)
+  
+  // The color when a ray hits
+  const r2 = ray(point(0, 0, 5), vector(0, 1, 0))
+  const c2 = color_at(w, r2)
+  
+  //return c1.equals(color(0, 0, 0)) 
+  //    && c2.equals(color(0.38066, 0.47583, 0.2855))
+}
+
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -3094,6 +3209,9 @@ runTest("scene_list", test_world_function)
 runTest("scene_list", test_create_default_world_function)
 runTest("scene_list", test_intersect_world_function)
 runTest("scene_list", test_prepare_computations_function)
+runTest("scene_list", test_hit_inside_object)
+runTest("scene_list", test_shade_hit_function)
+//runTest("scene_list", test_color_at_function)
 
 
 
