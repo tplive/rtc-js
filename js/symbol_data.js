@@ -1839,7 +1839,454 @@ const symbols = [
   symbol: "🍑",
   keywords: ["butt","pussy"]
 },
-
+{
+  decimal: 128000,
+  hex: 0x1F400,
+  category: "Animals",
+  name: "Rat",
+  symbol: "🐀",
+  keywords: ["mouse","tail","ears"]
+},
+{
+  decimal: 128001,
+  hex: 0x1F401,
+  category: "Animals",
+  name: "Mouse",
+  symbol: "🐁",
+  keywords: ["rat","tail","ears","white","albino"]
+},
+{
+  decimal: 128002,
+  hex: 0x1F402,
+  category: "Animals",
+  name: "Ox",
+  symbol: "🐂",
+  keywords: ["bull","beef","horns","tail","brown"]
+},
+{
+  decimal: 128003,
+  hex: 0x1F403,
+  category: "Animals",
+  name: "Water buffalo",
+  symbol: "🐃",
+  keywords: ["bull","beef","horns","tail","grey","ox"]
+},
+{
+  decimal: 128004,
+  hex: 0x1F404,
+  category: "Animals",
+  name: "Cow",
+  symbol: "🐄",
+  keywords: ["milk","beef","tail","white","black"]
+},
+{
+  decimal: 128005,
+  hex: 0x1F405,
+  category: "Animals",
+  name: "Tiger",
+  symbol: "🐅",
+  keywords: ["claws","fangs","stripes"]
+},
+{
+  decimal: 128007,
+  hex: 0x1F407,
+  category: "Animals",
+  name: "Rabbit",
+  symbol: "🐇",
+  keywords: ["ears","white","jump"]
+},
+{
+  decimal: 129440,
+  hex: 0x1F9A0,
+  category: "Animals",
+  name: "Microbe",
+  symbol: "🦠",
+  keywords: ["amoeba"]
+},
+{
+  decimal: 127756,
+  hex: 0x1F30C,
+  category: "Earth and Sky",
+  name: "Milky way",
+  symbol: "🌌",
+  keywords: ["galaxy"]
+},
+{
+  decimal: 127761,
+  hex: 0x1F311,
+  category: "Earth and Sky",
+  name: "New moon",
+  symbol: "🌑",
+  keywords: ["dark","side"]
+},
+{
+  decimal: 127762,
+  hex: 0x1F312,
+  category: "Earth and Sky",
+  name: "Waxing cresent moon",
+  symbol: "🌒",
+  keywords: ["dark","side"]
+},
+{
+  decimal: 127763,
+  hex: 0x1F313,
+  category: "Earth and Sky",
+  name: "First quarter moon",
+  symbol: "🌓",
+  keywords: ["light"]
+},
+{
+  decimal: 127764,
+  hex: 0x1F314,
+  category: "Earth and Sky",
+  name: "Waxing gibbous moon",
+  symbol: "🌔",
+  keywords: ["light"]
+},
+{
+  decimal: 127765,
+  hex: 0x1F315,
+  category: "Earth and Sky",
+  name: "Full moon",
+  symbol: "🌕",
+  keywords: ["light"]
+},
+{
+  decimal: 127766,
+  hex: 0x1F316,
+  category: "Earth and Sky",
+  name: "Waining gibbous moon",
+  symbol: "🌖",
+  keywords: ["light"]
+},
+{
+  decimal: 127767,
+  hex: 0x1F317,
+  category: "Earth and Sky",
+  name: "Last quarter moon",
+  symbol: "🌗",
+  keywords: ["light"]
+},
+{
+  decimal: 127768,
+  hex: 0x1F318,
+  category: "Earth and Sky",
+  name: "Waining cresent moon",
+  symbol: "🌘",
+  keywords: ["light"]
+},
+{
+  decimal: 127769,
+  hex: 0x1F319,
+  category: "Earth and Sky",
+  name: "Cresent moon",
+  symbol: "🌙",
+  keywords: ["light"]
+},
+{
+  decimal: 127770,
+  hex: 0x1F31A,
+  category: "Earth and Sky",
+  name: "New moon face",
+  symbol: "🌚",
+  keywords: ["dark","side"]
+},
+{
+  decimal: 127771,
+  hex: 0x1F31B,
+  category: "Earth and Sky",
+  name: "First quarter moon face",
+  symbol: "🌛",
+  keywords: ["light"]
+},
+{
+  decimal: 127772,
+  hex: 0x1F31C,
+  category: "Earth and Sky",
+  name: "Last quarter moon face",
+  symbol: "🌜",
+  keywords: ["light"]
+},
+{
+  decimal: 127773,
+  hex: 0x1F31D,
+  category: "Earth and Sky",
+  name: "Full moon face",
+  symbol: "🌝",
+  keywords: ["light"]
+},
+{
+  decimal: 127774,
+  hex: 0x1F31E,
+  category: "Earth and Sky",
+  name: "Sun with face",
+  symbol: "🌞",
+  keywords: ["light"]
+},
+{
+  decimal: 127775,
+  hex: 0x1F31F,
+  category: "Earth and Sky",
+  name: "Glowing star",
+  symbol: "🌟",
+  keywords: ["light"]
+},
+{
+  decimal: 127776,
+  hex: 0x1F320,
+  category: "Earth and Sky",
+  name: "Shooting star",
+  symbol: "🌠",
+  keywords: ["light"]
+},
+{
+  decimal: 9924,
+  hex: 0x26C4,
+  category: "Weather",
+  name: "Snowman",
+  symbol: "⛄",
+  keywords: ["frosty","hat","scarf"]
+},
+{
+  decimal: 9925,
+  hex: 0x26C5,
+  category: "Weather",
+  name: "Sun behind cloud",
+  symbol: "⛅",
+  keywords: ["partly"]
+},
+{
+  decimal: 9748,
+  hex: 0x2614,
+  category: "Weather",
+  name: "Umbrella",
+  symbol: "☔",
+  keywords: ["rain","drops","purple","open"]
+},
+{
+  decimal: 127744,
+  hex: 0x1F300,
+  category: "Weather",
+  name: "Cyclone",
+  symbol: "🌀",
+  keywords: ["whirl","wind","tornado"]
+},
+{
+  decimal: 127745,
+  hex: 0x1F301,
+  category: "Weather",
+  name: "Foggy",
+  symbol: "🌁",
+  keywords: ["city","dark"]
+},
+{
+  decimal: 127746,
+  hex: 0x1F302,
+  category: "Weather",
+  name: "Umbrella",
+  symbol: "🌂",
+  keywords: ["rain","red","closed"]
+},
+{
+  decimal: 127747,
+  hex: 0x1F303,
+  category: "Weather",
+  name: "Night with stars",
+  symbol: "🌃",
+  keywords: ["city","dark","moon"]
+},
+{
+  decimal: 127748,
+  hex: 0x1F304,
+  category: "Weather",
+  name: "Sunrise",
+  symbol: "🌄",
+  keywords: ["scenic","green"]
+},
+{
+  decimal: 127749,
+  hex: 0x1F305,
+  category: "Weather",
+  name: "Sunrise",
+  symbol: "🌅",
+  keywords: ["scenic","ocean","blue"]
+},
+{
+  decimal: 127750,
+  hex: 0x1F306,
+  category: "Weather",
+  name: "Cityscape at dusk",
+  symbol: "🌆",
+  keywords: ["red","orange","sky"]
+},
+{
+  decimal: 127751,
+  hex: 0x1F307,
+  category: "Weather",
+  name: "Sunset over buildings",
+  symbol: "🌇",
+  keywords: ["city","dark"]
+},
+{
+  decimal: 127752,
+  hex: 0x1F308,
+  category: "Weather",
+  name: "Rainbow",
+  symbol: "🌈",
+  keywords: ["pride","rogbif"]
+},
+{
+  decimal: 127753,
+  hex: 0x1F309,
+  category: "Weather",
+  name: "Bridge at night",
+  symbol: "🌉",
+  keywords: ["water","blue","moon","dark"]
+},
+{
+  decimal: 127872,
+  hex: 0x1F380,
+  category: "Celebration",
+  name: "Ribbon",
+  symbol: "🎀",
+  keywords: ["pink","bowtie"]
+},
+{
+  decimal: 127873,
+  hex: 0x1F381,
+  category: "Celebration",
+  name: "Wrapped present",
+  symbol: "🎁",
+  keywords: ["yellow","red","ribbon","box","gift"]
+},
+{
+  decimal: 127874,
+  hex: 0x1F382,
+  category: "Celebration",
+  name: "Birthday cake",
+  symbol: "🎂",
+  keywords: ["brown","chocolate","lie","candle"]
+},
+{
+  decimal: 127875,
+  hex: 0x1F383,
+  category: "Celebration",
+  name: "Jack-O lantern",
+  symbol: "🎃",
+  keywords: ["halloween","pumpkin","face","scary"]
+},
+{
+  decimal: 127876,
+  hex: 0x1F384,
+  category: "Celebration",
+  name: "Christmas tree",
+  symbol: "🎄",
+  keywords: ["star","green"]
+},
+{
+  decimal: 127878,
+  hex: 0x1F386,
+  category: "Celebration",
+  name: "Fireworks",
+  symbol: "🎆",
+  keywords: ["star","spark"]
+},
+{
+  decimal: 127879,
+  hex: 0x1F387,
+  category: "Celebration",
+  name: "Firework sparkler",
+  symbol: "🎇",
+  keywords: ["star"]
+},
+{
+  decimal: 127880,
+  hex: 0x1F388,
+  category: "Celebration",
+  name: "Ballon",
+  symbol: "🎈",
+  keywords: ["red","party"]
+},
+{
+  decimal: 127881,
+  hex: 0x1F389,
+  category: "Celebration",
+  name: "Party popper",
+  symbol: "🎉",
+  keywords: ["confetti","announce","celebrate"]
+},
+{
+  decimal: 127882,
+  hex: 0x1F38A,
+  category: "Celebration",
+  name: "Confetti ball",
+  symbol: "🎊",
+  keywords: ["party"]
+},
+{
+  decimal: 127891,
+  hex: 0x1F393,
+  category: "Celebration",
+  name: "Graduation cap",
+  symbol: "🎓",
+  keywords: ["scholar","university","college"]
+},
+{
+  decimal: 129512,
+  hex: 0x1F9E8,
+  category: "Celebration",
+  name: "Firecracker",
+  symbol: "🧨",
+  keywords: ["explosion","boom","blow","up","red"]
+},
+{
+  decimal: 127906,
+  hex: 0x1F3A2,
+  category: "Entertainment",
+  name: "Roller coaster",
+  symbol: "🎢",
+  keywords: ["amusement","park","ride"]
+},
+{
+  decimal: 127912,
+  hex: 0x1F3A8,
+  category: "Entertainment",
+  name: "Artist Palette",
+  symbol: "🎨",
+  keywords: ["paint","color","picker"]
+},
+{
+  decimal: 127914,
+  hex: 0x1F3AA,
+  category: "Entertainment",
+  name: "Circus",
+  symbol: "🎪",
+  keywords: ["tent"]
+},
+{
+  decimal: 127915,
+  hex: 0x1F3AB,
+  category: "Entertainment",
+  name: "Ticket",
+  symbol: "🎫",
+  keywords: ["blue","entrance","fee","allow","ride"]
+},
+{
+  decimal: 127917,
+  hex: 0x1F3AD,
+  category: "Entertainment",
+  name: "Performing art",
+  symbol: "🎭",
+  keywords: ["masks","sad","happy","theatre"]
+},
+{
+  decimal: 128175,
+  hex: 0x1F4AF,
+  category: "Entertainment",
+  name: "Hundred points",
+  symbol: "💯",
+  keywords: ["one","percent","full","all","perfect","score"]
+},
 
 
 

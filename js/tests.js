@@ -1722,3 +1722,119 @@ function test_color_at_function() {
   return c1.equals(color(0, 0, 0)) 
       && c2.equals(color(0.38066, 0.47583, 0.2855))
 }
+
+function test_view_transform_function() {
+  // The view_transformation function orientates "the eye" in the world
+  // mimicking the placement of a camera looking in a given direction
+  
+  const up = vector(0, 1, 0)
+  
+  // Test transformation matrix for the default orientation
+  const from1 = point(0, 0, 0)
+  const to1 = point(0, 0, -1)
+  const up1 = vector(0, 1, 0)
+  const t1 = view_transform(from1, to1, up1)
+  
+  // A view transformation matrix looking in the positive z direction
+  const from2 = point(0, 0, 0)
+  const to2 = point(0, 0, 1)
+  const up2 = vector(0, 1, 0)
+  const t2 = view_transform(from2, to2, up2)
+  
+  // The view transformation moves the world
+  const from3 = point(0, 0, 8)
+  const to3 = point(0, 0, 0)
+  const up3 = vector(0, 1, 0)
+  const t3 = view_transform(from3, to3, up3)
+  
+  // An arbitrary view transformation
+  const from4 = point(1, 3, 2)
+  const to4 = point(4, -2, 8)
+  const up4 = vector(1, 1, 0)
+  const t4 = view_transform(from4, to4, up4)
+  const expected_t4 = matrix(4, 4)
+  expected_t4.putAll([-0.50709, 0.50709,  0.67612, -2.36643,
+                      0.76772, 0.60609,  0.12122, -2.82843,
+                     -0.35857, 0.59761, -0.71714,  0.00000,
+                      0.00000, 0.00000,  0.00000,  1.00000
+                    ])
+  
+  return t1.equals(idmatrix()) 
+      && t2.equals(scaling(-1, 1, -1))
+      && t3.equals(translation(0, 0, -8))
+      && t4.equals(expected_t4)
+}
+
+function test_camera_function() {
+  // Test that the virtual camera performs as expected
+  
+  // Constructing a camera
+  const hsize = 160
+  const vsize = 120
+  const fov = π / 2 // First test of UTF-8 π character as a constant. Sexy! 😍
+  
+  const c1 = camera(hsize, vsize, fov)
+  
+  const res = c1.hsize === 160 
+           && c1.vsize === 120 
+           && c1.fov === π / 2 
+           && c1.transform.equals(idmatrix())
+  
+  // The pixel size for a horizontal canvas
+  const c2 = camera(200, 125, π / 2)
+  
+  // The pixel size for a vertical canvas
+  const c3 = camera(125, 200, π / 2)
+  
+  //log("error", c2.pixel_size)
+  //log("error", c3.pixel_size)
+  
+  return res 
+      && c2.pixel_size === 0.01 
+      && c3.pixel_size === 0.01
+}
+
+function test_ray_for_pixel_function() {
+  // Test creating rays that can pass through any given pixel on the canvas.
+  
+  // Constructing a ray through the center of the canvas
+  const c1 = camera(201, 101, π / 2)
+  const r1 = ray_for_pixel(c1, 100, 50)
+  const res1 = r1.origin.equals(point(0, 0, 0)) 
+           && r1.direction.equals(vector(0, 0, -1))
+  
+  // Constructing a ray through a corner of the canvas
+  const c2 = camera(201, 101, π / 2)
+  const r2 = ray_for_pixel(c2, 0, 0)
+  const res2 = r2.origin.equals(point(0, 0, 0)) 
+            && r2.direction.equals(vector(0.66519, 0.33259, -0.66851))
+  
+  // Constructing a ray when the camera is transformed
+  const c3 = camera(201, 101, π / 2)
+  c3.transform = transformations(translation(0, -2, 5), rotation_y(π/4))
+  const r3 = ray_for_pixel(c3, 100, 50)
+  const res3 = r3.origin.equals(point(0, 2, -5)) 
+            && r3.direction.equals( vector( Math.sqrt(2)/2, 0, -Math.sqrt(2)/2 ) )
+    
+  return res1 
+      && res2 
+      && res3
+}
+
+function test_render_function() {
+  // Test the render() function. Takes a camera and a world and renders and image
+  // by returning it as a canvas.
+  
+  // Rendering a world with a camera
+  const w = default_world()
+  const c = camera(11, 11, π / 2)
+  const from = point(0, 0, -5)
+  const to = point(0, 0, 0)
+  const up = vector(0, 1, 0)
+  c.transform = view_transform(from , to, up)
+  
+  const image = render(c, w)
+  //log("error", image.pixel_at(5, 5))
+  
+  return image.pixel_at(5,5).equals(color(0.38066, 0.47583, 0.2855))
+}

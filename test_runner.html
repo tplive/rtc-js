@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <meta charset="UTF-8">
+</head>
+
 <style>
 pre {
   background-color: lightgrey;
@@ -39,7 +43,7 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#129518; Testing Matrix functions</h2>
 <ul id="matrix_list"></ul>
 
-<h2>&#127775; Testing Ray functions</h2>
+<h2>&#127776; Testing Ray functions</h2>
 <ul id="ray_list"></ul>
 
 <h2>&#127763; Testing Shading functions</h2>
@@ -174,6 +178,10 @@ runTest("scene_list", test_prepare_computations_function)
 runTest("scene_list", test_hit_inside_object)
 runTest("scene_list", test_shade_hit_function)
 runTest("scene_list", test_color_at_function)
+runTest("scene_list", test_view_transform_function)
+runTest("scene_list", test_camera_function)
+runTest("scene_list", test_ray_for_pixel_function)
+runTest("scene_list", test_render_function)
 
 
 const end = performance.now()

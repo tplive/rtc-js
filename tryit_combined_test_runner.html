@@ -39,7 +39,7 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#129518; Testing Matrix functions</h2>
 <ul id="matrix_list"></ul>
 
-<h2>&#127775; Testing Ray functions</h2>
+<h2>&#127776; Testing Ray functions</h2>
 <ul id="ray_list"></ul>
 
 <h2>&#127763; Testing Shading functions</h2>
@@ -54,6 +54,7 @@ window.onerror = function(errorMsg, url, lineNumber){
 <script>
 // *** FUNCTION DEFINITIONS
 
+const π = Math.PI
 
 // *** CONFIGURATION OBJECT
 const C = function() {
@@ -333,7 +334,7 @@ function html_canvas(parent, width, height) {
 
 
 class Canvas {
-  // Create a canvas abstraction object. It has a width and a height and a pixel array.
+  // Create a canvas object. It has a width and a height and a pixel array.
   // Each pixel is defined by three values, r, g, b.
   // The format is a single array or bit stream.
   // To make the array as efficient as possible, we make it a const and pre-initialize length.
@@ -341,91 +342,49 @@ class Canvas {
   // So 0 < x < w - 1, and 0 < y < h - 1
   
   constructor(w, h) {
-    this.width = w
-    this.height = h
-    this.bits = 3 // Bits per pixel. rgb = 3. rgba = 4.
-    this.d = new Uint8ClampedArray(w * h * b).fill(0)
+    this._width = w
+    this._height = h
+    this._bits = 3 // Bits per pixel. rgb = 3. rgba = 4.
+    this._d = new Float32Array(w * h * this._bits).fill(0)
   }
   
-  get width() {return this.width}
-  get height() {return this.height}
-  get data() {return this.d}
+  get width() { return this._width }
+  get height() { return this._height }
+  get data() { return this._d }
+  get bits() { return this._bits }
   
   pixel_at(x, y) {
     // Make sure pixels are within the canvas.
-    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) {
+    if (x < 0 || y < 0 || x > this._width - 1 || y > this._height - 1) {
       throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
     }
     
-    const i = (this.width * y + x) * this.bits
+    const i = (this._width * y + x) * this._bits
   
-    return color(this.d[i], this.d[i+1], this.d[i+2])
+    return color(this._d[i], this._d[i+1], this._d[i+2])
   }
   
   write_pixel(x, y, color) {
     // Ignore pixels outside the canvas.
-    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) {
+    if (x < 0 || y < 0 || x > this._width - 1 || y > this._height - 1) {
       return
     }
     
-    const i = (this.width * Math.round(y) + Math.round(x)) * this.bits
+    const i = (this._width * Math.round(y) + Math.round(x)) * this._bits
     // For debugging
     //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
     
-    this.d[i]   = color.red
-    this.d[i+1] = color.green
-    this.d[i+2] = color.blue
+    this._d[i]   = color.red
+    this._d[i+1] = color.green
+    this._d[i+2] = color.blue
     //log("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
   }
 }
 
 function canvas(w, h) {
-  // Create a canvas abstraction object. It has a width and a height and a pixel array.
-  // Each pixel is defined by three values, r, g, b.
-  // The format is a single array or bit stream.
-  // To make the array as efficient as possible, we make it a const and pre-initialize length.
-  // The RTC book assumes all x and y values are 0-based.
-  // So 0 < x < w - 1, and 0 < y < h - 1
+  // Canvas factory 
   
-  const b = 3 // Bits per pixel. rgb = 3. rgba = 4.
-  
-  //const d = Array(w * h * b).fill(0)
-  
-  // Typed Array
-  const d = new Uint8ClampedArray(w * h * b).fill(0)
-  
-  //log("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
-  
-  return {
-    width:w,
-    height:h,
-    data:d,
-    bits:b,
-    pixel_at: function(x, y) {
-      // Make sure pixels are within the canvas.
-      if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
-        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
-      }
-      
-      const i = (w * y + x) * b
-  
-      return color(this.data[i], this.data[i+1], this.data[i+2])
-    },
-    write_pixel: function(x, y, color) {
-    // Ignore pixels outside the canvas.
-      if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
-        return
-      }
-      const i = (w * Math.round(y) + Math.round(x)) * b
-      // For debugging
-      //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
-      
-      this.data[i]   = color.red
-      this.data[i+1] = color.green
-      this.data[i+2] = color.blue
-      //log("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
-    }
-    }
+  return new Canvas(w, h)
 }
 
 function canvas_to_ppm(can) {
@@ -1374,6 +1333,120 @@ function color_at(w, r) {
   }
 }
 
+function view_transform(from, to, up) {
+  // Defines transformation matrix for the view, effectively moving "the eye"
+  // The default transformation is the idmatrix()
+  
+  const forward = to.minus(from).normalize()
+  //log("error", "view_transform(): forward: " + forward)
+  
+  const upn = up.normalize()
+  //log("error", "view_transform(): upn: " + upn)
+  
+  const left = forward.cross(upn)
+  //log("error", "view_transform(): left: " + left)
+  
+  const trueup = left.cross(forward)
+  //log("error", "view_transform(): trueup: " + trueup)
+  
+  const orientation = matrix(4, 4)
+  orientation.putAll([left.x,     left.y,     left.z,    0,
+                      trueup.x,   trueup.y,   trueup.z,  0,
+                     -forward.x, -forward.y, -forward.z, 0,
+                              0,          0,          0, 1,
+                    ])
+  
+  return multiply_matrices(orientation, translation(-from.x, -from.y, -from.z))
+}
+
+class Camera {
+  // The virtual camera will let you "take pictures" of your scene.
+  // Like a real camera, you can move it around, zoom in and out and
+  // even rotate the camera upside down if that's the shot you want.
+  
+  constructor(h, v, fov) {
+    this._h = h
+    this._v = v
+    this._f = fov
+    this._transform = idmatrix()
+    
+    const half_view = Math.tan(fov / 2 )
+    const aspect = this._h / this._v
+    
+    if (aspect >= 1) {
+      this._half_width = half_view
+      this._half_height = half_view / aspect
+    } else {
+      this._half_width = half_view * aspect
+      this._half_height = half_view
+    }
+  }
+  
+  get hsize() { return this._h }
+  get vsize() { return this._v }
+  get fov() { return this._f }
+  get transform() { return this._transform }
+  get half_width() { return this._half_width }
+  get half_height() { return this._half_height }
+  
+  set transform(value) {
+    if (value.d != undefined) {
+      this._transform = multiply_matrices(this._transform, value)
+    }
+  }
+  
+  get pixel_size() {
+    // Calculate pixel size for the camera
+    
+    return parseFloat((( this._half_width * 2 ) / this._h))
+  }
+}
+
+function camera(hs, vs, fov) {
+  // Factory function for camera
+  
+  return new Camera(hs, vs, fov)
+}
+
+function ray_for_pixel(cam, px, py) {
+  // Compute ray that can pass through any given pixel on the canvas
+  
+  // Offset from edge of canvas to pixel's center
+  const xoffset = (px + 0.5) * cam.pixel_size
+  const yoffset = (py + 0.5) * cam.pixel_size
+  
+  // The untransformed coordinates of the pixel in world space.
+  // (camera looks toward -z, so +x is to the left)
+  const worldx = cam.half_width - xoffset
+  const worldy = cam.half_height - yoffset
+  
+  // Using the camera matrix, transform the canvas point and the origin,
+  // and then compute the ray's direction vector
+  // (remember that the canvas is at z=-1)
+  const pixel = inverse(cam.transform).times_tuple(point(worldx, worldy, -1))
+  
+  const origin = inverse(cam.transform).times_tuple(point(0, 0, 0))
+  const direction = pixel.minus(origin)
+    
+  return ray(origin, direction.normalize())
+}
+
+function render(cam, w) {
+  // The render function will render a scene and return a canvas
+  
+  const image = canvas(cam.hsize, cam.vsize)
+  
+  for (let y=0; y < cam.vsize; y++) {
+    for (let x=0; x < cam.hsize; x++) {
+      const ray = (ray_for_pixel(cam, x, y))
+      const col = color_at(w, ray)
+      image.write_pixel(x, y, col)
+    }
+  }
+  
+  return image
+}
+
 </script>
 <script>
 // *** TESTS
@@ -1662,7 +1735,13 @@ function test_canvas_function() {
   can.data[11+1] = 123
   can.data[11+2] = 234
   //log("error", "at i=11: " + can.data[11])
-  return (can.width === w && can.height === h && can.data[11] === 255 && can.data[11+1] === 123 && can.data[11+2] === 234 && can.data[1] == 0 && valzero)
+  return can.width === w 
+      && can.height === h 
+      && can.data[11] === 255 
+      && can.data[11+1] === 123 
+      && can.data[11+2] === 234 
+      && can.data[1] == 0 
+      && valzero
 }
 
 function test_write_pixel_function() {
@@ -1713,7 +1792,7 @@ function test_ppm_pixel_data() {
   const w = 10
   const h = 10
   const can = canvas(w, h)
-  const c1 = color(1.0, 0.55432, 0.4)
+  const c1 = color(Math.random(), Math.random(), Math.random())
   
   const scaled_color = scale_color(c1)
   
@@ -1729,7 +1808,8 @@ function test_ppm_pixel_data() {
   //log("error", ppm)
     
   ppm = ppm.split("\n")
-    
+  
+  
   let width_exceeded, starts_ws, ends_ws = false
   let last_is_newline = true
   
@@ -3105,12 +3185,128 @@ function test_color_at_function() {
   
   const r3 = ray(point(0, 0, 0.75), vector(0, 0, -1))
   const c3 = color_at(w, r3)
-  log("error", c3)
-  log("error", inner.material.color)
+  //log("error", c3)
+  //log("error", inner.material.color)
   
   return c1.equals(color(0, 0, 0)) 
       && c2.equals(color(0.38066, 0.47583, 0.2855))
       && c3.equals(inner.material.color)
+}
+
+function test_view_transform_function() {
+  // The view_transformation function orientates "the eye" in the world
+  // mimicking the placement of a camera looking in a given direction
+  
+  const up = vector(0, 1, 0)
+  
+  // Test transformation matrix for the default orientation
+  const from1 = point(0, 0, 0)
+  const to1 = point(0, 0, -1)
+  const up1 = vector(0, 1, 0)
+  const t1 = view_transform(from1, to1, up1)
+  
+  // A view transformation matrix looking in the positive z direction
+  const from2 = point(0, 0, 0)
+  const to2 = point(0, 0, 1)
+  const up2 = vector(0, 1, 0)
+  const t2 = view_transform(from2, to2, up2)
+  
+  // The view transformation moves the world
+  const from3 = point(0, 0, 8)
+  const to3 = point(0, 0, 0)
+  const up3 = vector(0, 1, 0)
+  const t3 = view_transform(from3, to3, up3)
+  
+  // An arbitrary view transformation
+  const from4 = point(1, 3, 2)
+  const to4 = point(4, -2, 8)
+  const up4 = vector(1, 1, 0)
+  const t4 = view_transform(from4, to4, up4)
+  const expected_t4 = matrix(4, 4)
+  expected_t4.putAll([-0.50709, 0.50709,  0.67612, -2.36643,
+                      0.76772, 0.60609,  0.12122, -2.82843,
+                     -0.35857, 0.59761, -0.71714,  0.00000,
+                      0.00000, 0.00000,  0.00000,  1.00000
+                    ])
+  
+  return t1.equals(idmatrix()) 
+      && t2.equals(scaling(-1, 1, -1))
+      && t3.equals(translation(0, 0, -8))
+      && t4.equals(expected_t4)
+}
+
+function test_camera_function() {
+  // Test that the virtual camera performs as expected
+  
+  // Constructing a camera
+  const hsize = 160
+  const vsize = 120
+  const fov = π / 2 // First test of UTF-8 π character as a constant. Sexy! 😍
+  
+  const c1 = camera(hsize, vsize, fov)
+  
+  const res = c1.hsize === 160 
+           && c1.vsize === 120 
+           && c1.fov === π / 2 
+           && c1.transform.equals(idmatrix())
+  
+  // The pixel size for a horizontal canvas
+  const c2 = camera(200, 125, π / 2)
+  
+  // The pixel size for a vertical canvas
+  const c3 = camera(125, 200, π / 2)
+  
+  //log("error", c2.pixel_size)
+  //log("error", c3.pixel_size)
+  
+  return res 
+      && equal(c2.pixel_size, 0.01)
+      && equal(c3.pixel_size, 0.01)
+}
+
+function test_ray_for_pixel_function() {
+  // Test creating rays that can pass through any given pixel on the canvas.
+  
+  // Constructing a ray through the center of the canvas
+  const c1 = camera(201, 101, π / 2)
+  const r1 = ray_for_pixel(c1, 100, 50)
+  const res1 = r1.origin.equals(point(0, 0, 0)) 
+           && r1.direction.equals(vector(0, 0, -1))
+  
+  // Constructing a ray through a corner of the canvas
+  const c2 = camera(201, 101, π / 2)
+  const r2 = ray_for_pixel(c2, 0, 0)
+  const res2 = r2.origin.equals(point(0, 0, 0)) 
+            && r2.direction.equals(vector(0.66519, 0.33259, -0.66851))
+  
+  // Constructing a ray when the camera is transformed
+  const c3 = camera(201, 101, π / 2)
+  c3.transform = transformations(translation(0, -2, 5), rotation_y(π/4))
+  const r3 = ray_for_pixel(c3, 100, 50)
+  const res3 = r3.origin.equals(point(0, 2, -5)) 
+            && r3.direction.equals( vector( Math.sqrt(2)/2, 0, -Math.sqrt(2)/2 ) )
+    
+  return res1 
+      && res2 
+      && res3
+}
+
+function test_render_function() {
+  // Test the render() function. Takes a camera and a world and renders and image
+  // by returning it as a canvas.
+  
+  // Rendering a world with a camera
+  const w = default_world()
+  const c = camera(11, 11, π / 2)
+  const from = point(0, 0, -5)
+  const to = point(0, 0, 0)
+  const up = vector(0, 1, 0)
+  c.transform = view_transform(from , to, up)
+  
+  const image = render(c, w)
+  //log("error", image.pixel_at(5, 5))
+  
+  return image.pixel_at(5,5).equals(color(0.38066, 0.47583, 0.2855))
 }
 
 </script>
@@ -3233,6 +3429,10 @@ runTest("scene_list", test_prepare_computations_function)
 runTest("scene_list", test_hit_inside_object)
 runTest("scene_list", test_shade_hit_function)
 runTest("scene_list", test_color_at_function)
+runTest("scene_list", test_view_transform_function)
+runTest("scene_list", test_camera_function)
+runTest("scene_list", test_ray_for_pixel_function)
+runTest("scene_list", test_render_function)
 
 
 

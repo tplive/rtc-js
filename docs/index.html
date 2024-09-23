@@ -1,6 +1,18 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width">
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script>
+        MathJax = {
+            tex: {
+                inlineMath: [["$", "$"]]
+            }
+        }
+  </script>
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
 <style>
 body {
   margin-left: 5rem;
@@ -554,13 +566,58 @@ is 0</pre>
 <blockquote><i>Think about this for a second. You've written a program from scratch, with tests, that draws a three-dimensional object by simulating the behavior of light. That's <strong>awesome.</strong></i></blockquote>
 
 <p>Hittil har vår verden vært ett enkelt object, en kule, plassert i verdens midtpunkt origo 0, 0, 0. Nå skal vi ta for oss det å bygge opp en verden som består av flere objekter og lys, og dandere dem rundt omkring etter eget forgodtbefinnende. Så skal vi finne ut hvordan lyset treffer disse objektene, og lage et bilde av det. <i>Bjynne å småkkå føggel!</i> &#129321;</p>
+
+<p>Jeg lager en "default world" som består av et lys og to kuler, den ene er inni den andre, med halvparten så stor radius. Deretter beregner jeg intersecions på alle objektene, og lagrer disse i en liste. Med to kuler, inni hverandre, vil en stråle treffe hver kule to ganger. Foreløpig benyttes bare det første (nærmeste) treffet, for objektene er ikke transparente, men på sikt blir alle treff tatt i bruk, og derfor må de sorteres.</p>
+<p>Jeg får ikke riktig sorterings-rekkefølge med <code>.sort()</code> metoden, men det viser seg at den kan benytte en tilpasset sorteringsfunksjon, så jeg finner en på Stack Overflow (<a href="https://stackoverflow.com/a/18307292">her</a>), og tilpasser den til mitt bruk:</p>
+<pre>
+// Sort the array of intersections by their t-values
+return _intersections.sort( function(a, b) {
+  return a.t - b.t
+})
+</pre>
+
+<h3>&#9203; Transformasjonsmatrisekalkulatordigresjonen</h3>
+<p>1. juni 2024: Ja, jeg fikk litt blod på mølla og laget en matrise-kalkulator som viser sammenhengene mellom de ulike transformasjonene og resultatet etter at de er multiplisert sammen. Samtidig lærte jeg litt AngularJS, så dobbel win i min bok! Den gir litt mer innsikt i hvordan de ulike verdiene påvirker hverandre. <a href="../transformation_matrix_calculator.html">Til kalkulatoren!</a></p>
+
+<h3>&#9203; Symbolsøkdigresjonen</h3>
+<p>Det har irritert meg en stund at det skal være så vanskelig å finne HTML-koder til de søte små emojiene jeg strør om meg med her i dokumentasjonen. Jeg har lett i evigheter på w3schools, som har en imponerende liste, men svært dårlige søkemuligheter. Visuelt søk tar tid. Så siden jeg nå hadde Transformasjonsmatrisekalkulatoren friskt i minnet, skrev jeg den like godt om til en "søkemotor" for disse emojiene, og siden det er mange andre symboler også, ble navnet til <a href="../symbol_search.html">Symbol Search</a>.</p>
+
+<p>10. juni: Tilbake til kapittel 7. Det gikk med en drøy uke til digresjonene, men jeg har lært utrolig mye. Totally worth it! &#129321; Jeg bestemmer meg for å la de feilende testene feile, for de skyldes at jeg har misset "noe" i lyssettingen, altså returnerer de det de skal, men feil fargeverdier. Ikke helt feil heller, så det er vanskelig å vite hvordan det slår ut. Jeg skal komme tilbake til dem senere.</p>
+
+<p>Jeg har nå implementert funksjoner som lar oss sette opp et virtuelt kamera - på samme måte som andre punkter og objekter kan view'et defineres med en transformasjons-matrise, gjennom funksjonen <code>view_transform(from, to, up)</code>, med parametre som bestemmer hvor vi ser fra, hvor vi ser mot og hva som er opp. Vi utnytter det faktum at en refleksjon bare er en skalering med negativ verdi, og får en funksjon som plasserer kameraet pekende i riktig retning mot dit vi ønsker. Med diverse matrisekalkuleringer (se koden) får vi en matrise som plasserer kamera riktig.</p>
+
+<p>Når vi så har funnet ut hvor vi skal se fra og til, og orientert oss, lager vi et kamera, gitt med <code>camera(hsize, vsize, field_of_view)</code> funksjonen. Kameraet skal mappe den 3-dimensjonale scenen til et 2-dimensjonalt canvas. For å gjøre det litt enkelt for oss selv, plasserer vi canvas nøyaktig 1 enhet fra kameraet, og hva kameraet "ser", bestemmes ut fra en vinkel <var>field-of-view</var> (selvsagt oppgitt i radianer &#128527;) som utgjør synsfeltet.</p>
+
+<p>Matematikken her er relativt enkel. Vi vet at canvas er 1 enhet unna, og vi vet vinkelen på synsfeltet. Ved å dele synsfeltet i to får vi en rettvinklet trekant mellom øyet og canvas. Den bredden kan vi så beregne. Husk at <var>tangens til en vinkel er motstående katet delt på hosliggende katet</var>. Vi skal finne motstående katet <var>a</var> gitt vinkelen <var>fov</var> og hosliggende katet som er lik 1. Snur vi formelen får vi at <var>a = tan(fov / 2)</var>. Forholdet mellom høyde og bredde er gitt av <var>aspect_ratio = hsize / vsize</var>. </p>
+
+<p>Så er det en funksjon som kan beregne en stråle for hver pixel i bildet, gitt kameraet. Denne heter <code>ray_for_pixel(camera, px, py)</code> og returnerer en <code>ray(origin, direction)</code> for hver x og y-koordinat i bildet.</p>
+
+<p>Funksjonen <code>render(camera, world)</code> er neste, denne gjør det samme som jeg har gjort manuelt i tidligere kapitler's "Putt it Together", altså rendre et ferdig bilde, pixel for pixel ved hjelp av nettopp <code>ray(origin, direction)</code>. Siden det er noe feil med lyssettingen min er jeg spent på resultatet.</p>
+
+<h4>Putting it together</h4>
+<p>Jeg legger inn alt som det står beskrevet i boka, og tenker at dersom jeg får til det først, kan jeg eksperimentere mer etterpå. Det første jeg får ut er så vakkert at jeg nesten vil gråte... eller... jeg vil i hvert fall gråte...:</p>
+<p><img src="./chapter7_scene_first_attempt.png"/></p>
+<p>Jeg er inne på noe, og samtidig så fullstendig ute. Jeg må bryte det ned og se om jeg får til ett og ett objekt. Det *kan* bare være transformasjonene som legges på i feil rekkefølge...?</p>
+<p>Jeg finner ut av det. En bug i <code>hit()</code> funksjonen gjør at intersections sorteres feil og alt blir bare rot og tull. En annen bug i <code>Canvas()</code> klassen gjør at en pixel bare kan ha heltallsverdier og det passer dårlig når fargeverdiene er flyttall fra 0 til 1. Andre forsøk ser vesentlig mer ut som det jeg ønsket å oppnå:</p>
+<p><img src="./chapter7_scene_second_attempt.png"/></p>
+<p>Etter at jeg fikset <code>hit()</code> funksjonen ser det ut for at <code>color_at()</code> og <code>render()</code> også fungerer! Bonus! &#129321; (bare <code>lighting()</code> igjen da.. </p>
+<p></p>
+<p></p>
+<p>Testing math: $x = {-b \pm \sqrt{b^2-4ac} \over 2a}$</p>
+<p>Det over er et ledd i min søken etter "enkel" matte på web. <a href="https://stackoverflow.com/questions/67001012/problems-with-configuration-of-mathjax-3-demo-interactive-tex-input-and-html-out">Eksemplet her</a> fungerer utenfor denne dokumentasjonen, og jeg skal nok komme til bunns i det! </p>
+
 <p></p>
 <p></p>
 <p></p>
+
 <p></p>
 <p></p>
 <p></p>
+
 <p></p>
+<p></p>
+<p></p>
+
 <p></p>
 <p></p>
 <p></p>
@@ -569,15 +626,16 @@ is 0</pre>
 <p>TODO:
 <ul>
   
-  <li>Lage en Tranformation-matrix kalkulator. Alle transforms på en HTML side, legg inn tall for hver, vis kalkulasjonene, vis hver enkelt matrise og resultatet.</li>
   <li>Refaktorere minor(), determinant() og cofactor() som metoder på matrix() funksjonen.
   <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>
   <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og utgangshastighet.</li>
   <li>Kan jeg hente koden til en funksjon inn i dokumentasjonen direkte med JS? Istedet for å klippe og lime?</li>
-  <li>Skrive om JS funksjoner som returnerer Object.freeze({}) med ordentlige klasser og metoder.
+  <li>Skrive om JS funksjoner som returnerer Object.freeze({}) til ordentlige klasser og metoder. Bruk factory-metoder for å slippe å lage objekter med <code>new</code>
   <ul>
-    <li>Refaktorere canvas til class</li>
+    <li>Refaktorere matrix til class</li>
+    <li>Done! <del>Refaktorere canvas til class</del></li>
   </ul>
+  <li>Done! <del>Lage en Tranformation-matrix kalkulator. Alle transforms på en HTML side, legg inn tall for hver, vis kalkulasjonene, vis hver enkelt matrise og resultatet.</del></li>
     <li>Done! <del>Men krever at man kjører på webserver, noe jeg bare stundom har tilgjengelig, og derfor lagrer jeg koden i egne filer med suffix _worker. Kjøre raytracing som <a href="https://www.w3schools.com/js/js_api_web_workers.asp">bakgrunnsprosess</a>.</del></li>
     <li>Done. <del>Fikse det som er galt med transformations() når jeg legger på en rotation.</del></li>
   <li>Done. <del>Bytte navn på funksjonen scale() til scaling().</del></li>

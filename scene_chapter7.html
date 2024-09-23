@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width">
+<style>
+pre {
+  background-color: lightgrey;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 3rem;
+}
+</style>
+<title>The Raytracer Challenge - Chapter 7: Making a Scene</title>
+</head>
+<body>
+<script>
+window.onerror = function(errorMsg, url, lineNumber){
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+
+<h1>&#127750; MAKING A SCENE</h1>
+<p id="perf"></p>
+<div id="kansas"></div>
+<pre id="error"></pre>
+
+<script src="./js/functions.js"></script>
+
+<script>
+// *** RUN SCENE
+
+// Putting it together chapter 7. Scene from the book, page 106. 
+
+// Performance counter
+const start = performance.now()
+
+// *** DEFINE SCENE
+
+const size = 100
+
+const floor = sphere()
+floor.transform = scaling(10, 0.01, 10)
+floor.material.color = color(1, 0.9, 0.9)
+floor.material.specular = 0.0
+
+const left_wall = sphere()
+left_wall.transform = transformations(scaling(10, 0.01, 10), rotation_x(π/2), rotation_y(-π/4), translation(0, 0, 5))
+left_wall.material = floor.material
+
+right_wall = sphere()
+right_wall.transform = transformations(scaling(10, 0.01, 10), rotation_x(π/2),  rotation_y(π/4), translation(0, 0, 5))
+right_wall.material = floor.material
+
+const middle = sphere()
+middle.transform = translation(-0.5, 1, 0.5)
+middle.material.color = color(0.1, 1, 0.5)
+middle.material.diffuse = 0.7
+middle.material.specular = 0.3
+
+const right = sphere()
+right.transform = transformations(translation(2.8, 1, -0.5), scaling(0.5, 0.5, 0.5))
+right.material.color = color(0.5, 1, 0.1)
+right.material.diffuse = 0.7
+right.material.specular = 0.3
+
+const left = sphere()
+left.transform = transformations(translation(-5.5, 1, -0.75), scaling(0.33, 0.33, 0.33))
+left.material.color = color(1, 0.8, 0.1)
+left.material.diffuse = 0.7
+left.material.specular = 0.3
+
+const light = point_light(point(-10, 10, -10), color(1, 1, 1))
+
+const cam = camera(300, 200, π/3)
+const from = point(0, 1.5, -5)
+const to = point(0, 1, 0)
+const up = vector(0, 1, 0)
+cam.transform = view_transform(from, to, up)
+
+const myworld = world()
+
+myworld.addLight(light)
+myworld.addObject(floor)
+myworld.addObject(left_wall)
+myworld.addObject(right_wall)
+myworld.addObject(middle)
+myworld.addObject(right)
+myworld.addObject(left)
+
+const can = render(cam, myworld)
+
+// HTML canvas
+const html_can = html_canvas("kansas", can.width, can.height)
+var context = html_can.getContext("2d")
+context.fillStyle = "black"
+context.fillRect(0, 0, can.width, can.height)
+
+canvas_to_html_canvas(context, can)
+
+
+
+// Performance measurement
+const end = performance.now()
+const elapsed = end - start
+const counter_id = "scene"
+const cumulated_id = counter_id + "_running_time"
+const numberOfRuns_id = counter_id + "_runs"
+
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
+
+localStorage.setItem(numberOfRuns_id, Number(runs) + 1)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+
+log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
+log("perf", "Running time per pixel: " + Math.round(elapsed)/(cam.vsize * cam.hsize) + " ms.")
+log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+</script>
+
+</body>
+
+</html>
