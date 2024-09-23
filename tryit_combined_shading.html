@@ -641,7 +641,7 @@ function determinant(m) {
     det = (m.get(0,0) * m.get(1,1) - m.get(0,1) * m.get(1,0))
   } else {
     //log("error", ">2x>2 determinant")
-    for (let i = 0;i<m.rows;i++) {
+    for (let i = 0;i<m.cols;i++) {
       det = det + m.get(0,i) * cofactor(m, 0, i)
     }
   }
@@ -666,8 +666,8 @@ function minor(ma, row, col) {
   const sm = matrix(ma.rows-1, ma.cols-1)
   sm.putAll(ma.submatrix(row, col))
   const d = determinant(sm)
-  return d
   
+  return d
 }
 
 function cofactor(ma, r, c) {
@@ -1190,10 +1190,10 @@ const start = performance.now()
 const origin = point(0, 0, -5) // Ray origin
 const wall_z = 10 // Wall at z
 const wall_size = 7 // Size of the wall
-const size = 100 // Side length in pixels
+const size = 200 // Side length in pixels
 const pixel_size = wall_size / size
 const half = wall_size / 2
-const can = canvas(size, size)
+//const can = canvas(size, size)
 
 
 // Add a sphere and material, assign material
@@ -1201,13 +1201,21 @@ const shape = new Sphere()
 const mat = material()
 mat.color = color(0.8, 0.2, 0.8)
 mat.ambient = 0.3
-mat.specular = 0.8
+mat.specular = 0.9
 shape.material = mat
 
 // Add transformations
 
-// Transformations fail, due to inverse() throwing an exception when a matris is non-invertible (if determinant = 0)
-//shape.transform = transformations(translation(1, 1, 1), scaling(1, -1, 2), rotation_x(1, 1, 1), shearing(1,1,1,1,1,1))
+// Transformations fail, due to inverse() throwing an exception when a matrix is non-invertible (if determinant = 0)
+
+const tr = translation(0.3, -0.3, 0.6)
+const sh = shearing(0.5, 0.5, 0.5, 0.5, 0.5, 0.5)
+const rx = rotation_x(1.123678, 1.768867, 1.78997)
+const ry = rotation_y(1.123678, 1.768867, 0)
+const rz = rotation_z(1.123678, 1.768867, 1.78997)
+const sc = scaling(-0.456732, -0.79834, -0.63826)
+shape.transform = transformations(sh, rx, scaling(0.9, 1, 0.9))//, rx, ry, rz, sc)//, sh, rx, ry, rz, sc)
+
 
 // Add a light source
 const light_position = point(-10, 10, 10)

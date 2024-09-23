@@ -660,7 +660,7 @@ function determinant(m) {
     det = (m.get(0,0) * m.get(1,1) - m.get(0,1) * m.get(1,0))
   } else {
     //log("error", ">2x>2 determinant")
-    for (let i = 0;i<m.rows;i++) {
+    for (let i = 0;i<m.cols;i++) {
       det = det + m.get(0,i) * cofactor(m, 0, i)
     }
   }
@@ -685,8 +685,8 @@ function minor(ma, row, col) {
   const sm = matrix(ma.rows-1, ma.cols-1)
   sm.putAll(ma.submatrix(row, col))
   const d = determinant(sm)
-  return d
   
+  return d
 }
 
 function cofactor(ma, r, c) {
@@ -1140,7 +1140,7 @@ function lighting(material, light, point, eyev, normalv) {
   // The lighting function computes shading for pixels
   
   // Combine surface color with the light's color/intensity
-  const effective_color = multiply_colors(light.intensity, material.color)
+  const effective_color = multiply_colors(material.color, light.intensity)
   //log("error", "effective_color: " + effective_color)
   
   // Find the direction to the light source
@@ -1168,7 +1168,9 @@ function lighting(material, light, point, eyev, normalv) {
     
     // reflect_dot_eye represents the cosine of the angle between the reflection vector
     // and the eye vector. A negative number means the light reflects away from the eye.
-    const reflectv = reflect(lightv.negate(), normalv)
+    // According to the book, it should be -lightv. But I saw no specular highlight while that was the case.
+    // When I (by chance) changed it to lightv, the highlight is there!
+    const reflectv = reflect(lightv, normalv)
     //log("error", "reflectv: " + reflectv)
     
     const reflect_dot_eye = reflectv.dot(eyev)
@@ -1183,7 +1185,7 @@ function lighting(material, light, point, eyev, normalv) {
       specular = multiply_color(material.specular * factor, light.intensity)
       //log("error", "light.intensity: " + light.intensity)
       //log("error", "material.specular: " + material.specular)
-      //if (specular.red >= 0.1) {log("error", "specular.red: " + specular.red)}
+      //if (specular.red >= 0.01) {log("error", "specular.red: " + specular.red)}
     }
   }
   // Add the three contributions together to get the final shading
@@ -1805,7 +1807,7 @@ function test_transpose_matrix_function() {
 function test_transpose_identity_matrix() {
   //Transposing identity matrix should return identity matrix.
   
-  const t = transpose_matrix(idmatrix())
+  const t = idmatrix()
   
   return t.equals(transpose_matrix(t))
 }
@@ -2760,10 +2762,12 @@ function test_lighting_function() {
   const light5   = point_light(point(0, 0, 10), color(1, 1, 1))
   const r5       = lighting(m, light5, position, eyev5, normalv5)
   
-  return r1.equals(color(1.9, 1.9, 1.9)) 
+  // When lighting function negates lightv, specular dot disappears. When we don't negate, it works, but then this
+  // test fails. Documenting this here for now, and allowing test to fail.
+  return r1.equals(color(1.9, 1.9, 1.9)) // Should be 1.9, 1.9, 1.9, is 1.0, 1.0, 1.0
       && r2.equals(color(1.0, 1.0, 1.0))
       && r3.equals(color(0.7364, 0.7364, 0.7364))
-      && r4.equals(color(1.6364, 1.6364, 1.6364))
+      && r4.equals(color(1.6364, 1.6364, 1.6364)) // Should be 1.6364, 1.6364, 1.6364, is red: 0.73639, 0.73639, 0.73639
       && r5.equals(color(0.1, 0.1, 0.1))
 }
 

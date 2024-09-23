@@ -483,10 +483,71 @@ function reflect(v_in, normal) {
 <h4>Putting it together</h4>
 <p>Selv om alle testene kjørte grønne og fine, ble det nødvendig med en hel del mer testing og prøving og ikke minst feiling før det kom på plass. Men oppgaven her er å ta koden fra slutten av kapittel 5, og så modifisere den sånn at vi får lagt på lyseffektene på kula. Og resultatet av det kan vi se her:</p>
 <p><img src="./chapter6_shading_performance.png"/></p>
+
 <p>Prøv selv, her: <a href="../shading_chapter6.html"><code>./raycast_chapter6.html</code></a></p>
-<p></p>
-<p></p>
-<p></p>
+
+<p>Så da er vi ferdige med kapittel 6 da? Neida. Så snart jeg legger på en transformation på den vakre kula, så tryner det med feilmeldingen om at <code>inverse()</code> har fått en matrise den ikke kan "inverse", fordi determinanten er 0. Så jeg går tilbake i boka, og finner der at forfatteren bare nevner at koden skal feile hvis dette skjer, uten noe videre. Jeg finner ikke så mye bedre forklaring enn som så. Men jeg får nå i hvert fall ut matrisen som feiler, her vakkert formattert:</p>
+<pre>Determinant for matrix 
+1 | -1.3817732334136963 | -0.6023373603820801 | -0.9841105937957764
+1 | -1.3817732334136963 | -0.6023373603820801 | -0.9841105937957764
+1 | -1.3817732334136963 | -0.6023373603820801 | -0.9841105937957764
+0 |  0                  |  0                  |  1
+is 0</pre>
+
+<p>Det er samme matrise som går igjen for hver eneste pixel, og her kan det jo se ut som det er kalkulert verdier bare på en 3x3 submatrise. Hvorfor blir determinanten 0 her? Hvis vi ser litt tilbake, er determinanten en noe infløkt kalkulasjon som jeg egentlig ikke forstår så mye av, selv om jeg fikk testene til å passere. Men determinanten for en 2x2 matrise <var>[a, b, c, d] = ad - bc</var>, så det er jo overkommelig. Determinanten for større matriser er mer involverte, men det er her <code>submatrix(matrix, row, col)</code> funksjonen kommer inn, og med den også <code>minor(matrix, row, col)</code>. Som jeg jo strevde en del med, tbh.. &#128517;</p>
+
+<p>Prøver meg forsiktig fram med noen transformations.</p>
+
+<pre>translation(1, 1, 1) =
+1 | 0 | 0 | <b>1</b> 
+0 | 1 | 0 | <b>1</b> 
+0 | 0 | 1 | <b>1</b>
+0 | 0 | 0 |  1
+</pre>
+
+<pre>translation(1.456732, -3.79834, 2.63826) = 
+1 | 0 | 0 |  <b>1.4567320346832275</b>
+0 | 1 | 0 | <b>-3.798340082168579</b>
+0 | 0 | 1 |  <b>2.6382598876953125</b>
+0 | 0 | 0 | 1
+</pre>
+
+<p>So far so good. Litt overraskende fungerer også rotation_z:</p>
+<pre>rotation_z(1.456732, -3.79834, 2.63826) = 
+<b>0.11381714791059494</b> | <b>-0.9935017228126526</b>  | 0 | 0
+<b>0.9935017228126526</b>  |  <b>0.11381714791059494</b> | 0 | 0
+0                   |  0                   | 1 | 0
+0                   |  0                   | 0 | 1
+
+</pre>
+
+<p>Til og med shearing fungerer:</p>
+<pre>shearing(1.456732, -3.79834, 2.63826, 1.456732, -3.79834, 2.63826) = 
+ 1                  | <b>1.4567320346832275</b> | <b>-3.798340082168579</b>  | 0
+ <b>2.6382598876953125</b> | 1                  |  <b>1.4567320346832275</b> | 0
+<b>-3.798340082168579</b>  | <b>2.6382598876953125</b> |  1                  | 0
+ 0                  | 0                  |  0                  | 1
+</pre>
+
+<p>...faktisk ser det ut som at alle transforms fungerer, så lenge jeg ikke bruker transformations()-funksjonen som chainer dem. Trodde jeg hadde fikset den, så feil kan man ta. For øvrig ser jeg at ingen av transforms'ene endrer på nederste raden av matrisen, noe som kan forklare hvorfor alltid er 0, 0, 0, 1...</p>
+<pre>
+<b>-1.720435619354248</b>  | <b>15.19954776763916</b>   |  <b>-0.9927922487258911</b> |  <b>3.763894557952881</b>
+ <b>3.1661508083343506</b> |  <b>1.8791327476501465</b> |   <b>5.96608304977417</b>   |  <b>1.2510000467300415</b>
+ <b>2.753866195678711</b>  | <b>-2.967501163482666</b>  | <b>-11.25633430480957</b>   | <b>-4.789000034332275</b>
+ 0                  |  0                  |   0                  |  1
+</pre>
+
+<p>Så hvorfor blir det feil når jeg bruker transforms???? Svaret er: det blir ikke det. Når jeg nå legger på alle disse transformene på en gang, virker det likevel.. &#128565; Jeg må konkludere med at jeg bare kom borti en tilfeldig kombinasjon som gav determinant = 0. Snakker om flaks.</p>
+<pre>shape.transform = transformations(translation(3.763894576, 1.251, -4.7890), 
+                                       shearing(1.456732, -3.79834, 2.63826, 1.456732, -3.79834, 2.63826), 
+                                       rotation_x(1.123678, 1.768867, 1.78997), 
+                                       rotation_y(1.123678, 1.768867, 1.78997), 
+                                       rotation_z(1.123678, 1.768867, 1.78997), 
+                                       scaling(1.456732, -3.79834, 2.63826)
+                                      )
+                                       
+</pre>
+
 <p></p>
 <p></p>
 

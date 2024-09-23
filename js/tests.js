@@ -610,7 +610,7 @@ function test_transpose_matrix_function() {
 function test_transpose_identity_matrix() {
   //Transposing identity matrix should return identity matrix.
   
-  const t = transpose_matrix(idmatrix())
+  const t = idmatrix()
   
   return t.equals(transpose_matrix(t))
 }
@@ -1565,9 +1565,11 @@ function test_lighting_function() {
   const light5   = point_light(point(0, 0, 10), color(1, 1, 1))
   const r5       = lighting(m, light5, position, eyev5, normalv5)
   
-  return r1.equals(color(1.9, 1.9, 1.9)) 
+  // When lighting function negates lightv, specular dot disappears. When we don't negate, it works, but then this
+  // test fails. Documenting this here for now, and allowing test to fail.
+  return r1.equals(color(1.9, 1.9, 1.9)) // Should be 1.9, 1.9, 1.9, is 1.0, 1.0, 1.0
       && r2.equals(color(1.0, 1.0, 1.0))
       && r3.equals(color(0.7364, 0.7364, 0.7364))
-      && r4.equals(color(1.6364, 1.6364, 1.6364))
+      && r4.equals(color(1.6364, 1.6364, 1.6364)) // Should be 1.6364, 1.6364, 1.6364, is red: 0.73639, 0.73639, 0.73639
       && r5.equals(color(0.1, 0.1, 0.1))
 }
