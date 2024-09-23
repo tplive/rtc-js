@@ -49,7 +49,7 @@ footer {
 <body>
 
 <h1>&#128302; The Ray Tracer Challenge &#128302;</h1>
-<p>"En strålesporingsutfording".</p>
+<h5>"En strålesporingsutfordring".</h5>
 <div class="shadow floatleft"><img width="250" src="rtc.jpg"/></div>
 <p>Dette er en øvelse i minimalisme. Og tålmodighet. Og nøyaktighet. Jeg er vant til å ha full tilgang til Internett, til nedlasting av programvare; utallige artikler og videoer om alle tenkelige emner, rik programvare med tusenvis av hjelpemidler som gjør mye av jobben for meg. Jeg skal utdype disse begrensningene og hva jeg gjør for å komme rundt dem.</p>
 
@@ -58,7 +58,7 @@ footer {
 
 <h2>&#128644; Miljøet</h2>
 
-<p>Gitt begrensningene har jeg kun funnet èn mulig tilnærming til denne utfordringen, og det er med HTML, CSS og JS i nettleser. Ingen webserver, ingen API, ingenting annet enn lokale filer som kjører i Google Chrome. </p>
+<p>Gitt begrensningene har jeg kun funnet èn mulig tilnærming til denne utfordringen, og det er med HTML, CSS og Javascript (JS) i nettleser. Ingen webserver, ingen API, ingenting annet enn lokale filer som kjører i Google Chrome. </p>
 
 <p>Jeg har tilgang til nettsiden w3schools.com hvor de har en begrenset kode-editor som jeg vil bruke til å teste noe av koden.</p>
 
@@ -80,7 +80,7 @@ footer {
 Et "litt ikke-trivielt" eksempel: Jeg trenger en funksjon som, gitt to sider av en trekant, representert ved tallene a og b, returnerer lengden på hypotenusen, altså <var><span>&#8730;</span><span  style="border-top: 1px solid black">a<sup>2</sup> + b<sup>2</sup></span></var>.
 </p>
 
-<p>Først lager jeg en test som kjører denne ikke-eksisterende funksjonen, gir den to kjente tall u og v og sjekker hva funksjonen svarer, mot det forventede resultat som jeg har sjekket på kalkulatoren min <var><span>&#8730;</span><span  style="border-top: 1px solid black">5<sup>2</sup> + 3<sup>2</sup></span> = 5,830951895</var> og returnerer <var>true</var> eller <var>false</var> avhengig av resultatet av testen:</p>
+<p>Først lager jeg en test som kaller opp denne ikke-eksisterende funksjonen (<code>hypotenuse()</code>), gir den to kjente tall og sjekker hva funksjonen svarer, mot det forventede resultatet som jeg har sjekket på kalkulatoren min. <var><span>&#8730;</span><span style="border-top: 1px solid black">5<sup>2</sup> + 3<sup>2</sup></span> = 5,830951895</var>. Jeg skriver testen så den returnerer <var>true</var> eller <var>false</var> avhengig av resultatet:</p>
 
 <pre>
 function test_hypotenuse_function() {
@@ -90,36 +90,40 @@ function test_hypotenuse_function() {
 }
 </pre>
 
-<p>Siden funksjonen ikke finnes, vil testen feile. Så lager jeg funksjonen, men uten å gjøre den ferdig:</p>
+<p>Siden funksjonen <code>hypotenuse()</code> ikke finnes enda, vil ikke testen kjøre. Så lager jeg funksjonen, men uten å gjøre den ferdig:</p>
 
 <pre>function hypotenuse(a, b) {
   return 0
 }
 </pre>
 
-<p>Kjører testen på nytt, den feiler igjen. Jeg implementerer funksjonen ferdig:</p>
+<p>Jeg kjører testen på nytt, og den feiler som forventet igjen, siden funksjonen bare returnerer <code>0</code>. Jeg implementerer funksjonen ferdig:</p>
 
 <pre>function hypotenuse(a, b) {
   return Math.sqrt(a**2 + b**2)
 }
 </pre>
 
-<p>Og kjører testen igjen. Denne gang skal den vel returnere true? Eller?</p>
+<p>Og kjører testen igjen. Denne gang skal den vel gi suksess? Eller?</p>
 
-<p>Det er her elegansen i test-drevet utvikling kommer til syne: På grunn av forskjell i "flyt-talls-presisjonen" mellom JS og min kalkulator vil testen fortsatt feile. JS gir svaret <var>5.830951894845301</var>. En test som feiler betyr at "noe" er galt, og vi må se nærmere på årsaken. Hvis jeg nå endrer testen så den istedet sammenligner resultatet av funksjonen mot det mer nøyaktige <var><span>&#8730;</span><span  style="border-top: 1px solid black">34</span></var>, så passerer testen som den skal.</p>
+<p>Det er her elegansen i test-drevet utvikling kommer til syne: På grunn av forskjell i "flyt-talls-presisjonen" mellom JS og min kalkulator vil testen fortsatt feile. JS gir svaret <var>5.830951894845301</var>. </p>
 
-<p>Dette kan ved første øyekast virke tungrodd og masse ekstra kode for å teste EN kodelinje; hva er vitsen med å sammenligne <code>1 == 1</code>??? Når kompleksiteten øker og man begynner å kjøre tester på større operasjoner, vil testene kunne avdekke slike subtile feil som avrunding etc. Feil som ellers kunne gått ubemerket hen i lang tid og dukket opp i form av obskure problemer helt andre steder i koden.</p>
+<p>En test som feiler betyr at "noe" er galt, og vi må se nærmere på årsaken. Hvis jeg nå endrer testen så den istedet sammenligner resultatet av funksjonen mot det mer nøyaktige <var><span>&#8730;</span><span  style="border-top: 1px solid black">34</span></var>, så passerer testen som den skal.</p>
 
-<p>Når jeg senere gjør endringer i eksisterende kode (feks refaktorerer eller legger til / trekker fra funksjonalitet) som får tester til å feile som tidligere har fungert fint, blir feilene oppdaget tidlig og kan fikses mens man har endringen friskt i minne. Verdien av test-drevet utvikling øker eksponensielt med antall utviklere som jobber i og endrer kodebasen. Grundige tester fungerer som et sikkerhetsnett.</p>
+<p>Dette kan ved første øyekast virke tungrodd og masse ekstra kode for å teste EN kodelinje; hva er vitsen med å sammenligne <code>1 == 1</code>??? Når kompleksiteten øker og man begynner å kjøre tester på større operasjoner, vil testene kunne avdekke slike ting som avrunding etc, feil som ellers kunne gått ubemerket hen i lang tid og dukket opp i form av diffuse uforståelige feil helt andre steder i koden.</p>
+
+<p>Når jeg senere gjør endringer i eksisterende kode (feks refaktorerer eller legger til / trekker fra funksjonalitet) som får tester til å feile som tidligere har fungert fint, blir feilene oppdaget tidlig og kan fikses mens man har endringen friskt i minne. Verdien av test-drevet utvikling øker eksponensielt med antall utviklere som jobber i og endrer kodebasen. Grundige tester fungerer som et sikkerhetsnett og gir utviklerne trygghet for at de kan prøve og feile og eksperimentere på et helt annet nivå. Omfavn &#128150;TDD&#129392;!</p>
 
 <p>13.04.2024: Finner <a href="https://stackoverflow.com/questions/14481381/how-to-catch-all-javascript-warnings-and-errors-to-an-output-div#33321914">en funksjon som kan vise feilkoder i HTML her</a>… &#128512;</p>
 
 <h2>&#128221; Prosjektet</h2>
 <p>Jeg starter i begynnelsen av April 2024 med dette prosjektet. Jeg leser noen kapitler og tester litt miljøet jeg kan programmere i. Det er ikke vits å starte på noe dersom jeg for eksempel ikke kan kjøre JS i eksterne filer, eller ikke kan bruke HTML canvas elementet. Heldigvis ser det ikke ut til at det ikke er restriksjoner her.</p>
 
-<p>Rammeverket for testing blir sakte til mens jeg går. Jeg starter med manipulering av "hardkodede" HTML-elementer, men kommer fort på bedre tanker og lar hver test kjøre som en egen funksjon <code>runTest()</code> som både kjører testen og viser navnet på test-funksjonen og resultatet av testen i rød eller grønn tekst. Foreløpig holder dette.</p>
+<p>"Rammeverket" for testing blir sakte til mens jeg går. Jeg starter med manipulering av "hardkodede" HTML-elementer, men kommer fort på bedre tanker og lar hver test kjøre som en egen funksjon <code>runTest()</code> som både kjører testen og viser navnet på test-funksjonen og resultatet av testen i rød eller grønn tekst. Foreløpig holder dette.</p>
 
-<p><code>test_runner.html</code> laster JS-skriptene <code>js/functions.js</code> og <code>js/tests.js</code> som inneholder hhv funksjonene som skal testes og testene som benyttes.</p>
+<p><code>test_runner.html</code> laster JS-skriptene <code>js/functions.js</code> og <code>js/tests.js</code> som inneholder hhv funksjonene som skal testes og testene som benyttes. Det gir mening å skille disse i separate filer, for testene trenger jeg ikke å laste med mindre de skal kjøres. Og en antagelse fra meg: antall linjer kode i <code>tests.js</code> vs <code>functions.js</code> tenderer mot 2:1.</p>
+
+<p>&#129395; Let's get this party started! &#129395;</p>
 
 <h3>&#128640; Kapittel 1, Tuples, Points and Vectors</h3>
 <p>Det første kapitlet handler om de mest grunnleggende byggesteinene i dette systemet. En <code>tuple</code> er en datatype med x, y og z koordinater, samt en verdi w som forteller om dette er en vektor (w=0) eller et punkt (w=1). I første implementasjon er en vektor bare en tuple med w=0 og et punkt er bare en tuple med w=1. Det er ingen restriksjoner mellom de ulike datatypene. Dette kan det bli nødvendig å endre senere, men inntil videre er distinksjonen kun for egen klarhet.</p>
@@ -137,7 +141,7 @@ a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bi
 
 <p>Jeg fortsetter å implementere tuple-funksjoner og –tester til jeg er gjennom kapittel 1. På slutten av kapitlet er det en liten øvelse for å teste ting, der man skal lage en virtuell "kanon", og skyte prosjektiler. Prosjektilet har en posisjon og en hastighetsvektor. Miljøet har gravitasjon (vektor) og vind (vektor) som skal regnes med.</p>
 
-<p>Her går jeg for første gang på en Out Of Memory krasj, på grunn av en evig loop. Jeg får funksjonen til å regne posisjoner helt fint, og lagrer forsøket i <code>./projectile.html</code>.</p>
+<p>Her går jeg for første gang på en Out Of Memory krasj, på grunn av en evig loop. Jeg får funksjonen til å regne posisjoner helt fint, og lagrer forsøket i <a href="../projectile_chapter1.html"><code>./projectile_chapter1.html</code></a>.</p>
 
 <h3>&#128640; Kapittel 2, Drawing on a Canvas</h3>
 <p>Her starter vi med litt farge-teori, og noterer at fargenes r,g,b verdier til forveksling ligner på tuples! &#129321; Jeg ser at boka vil at vi skal lage PPM filer, som er et tekstbasert grafikk-format. De anbefaler at man bruker GIMP til å se disse på Windows, og jeg får sjekket at GIMP er installert på maskinen. Yey!</p>
@@ -181,7 +185,8 @@ a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bi
 <p>Men, med litt tweaking ser det da etter hvert omtrent ut som i boka:</p>
 <p><img src="projectile_plot2.png"/></p>
 
-<p>Og med litt "applied magic" så har jeg en link som lar meg lagre PPM fila med å klikke på en link. Nice. &#128170;</p>
+<p>Og med litt "applied magic" så har jeg en link som lar meg lagre PPM fila med å klikke på en link. Nice. &#128170; Løsningen er her: <a href="../projectile_chapter2.html"><code>projectile_chapter2.html</code></a></p>
+
 
 <h3>&#128055; Kapittel 3, Matrices</h3>
 
@@ -253,7 +258,7 @@ const trans_inverse = inverse(transpose_matrix(structuredClone(ma)))
 const inverse_trans = transpose_matrix(inverse(structuredClone(ma)))
 log("error", matrix_equal(trans_inverse, inverse_trans)) // true
 </pre>
-<p><i>4. Remember ho multiplying the identity matrix by a tuple gives you the tuple, unchanged? Now, try changing any single element of the identity matrix to a different number, and then multiplying it by a tuple. What happens to the tuple?</i> Svar: Hvis ett enkelt element i id matrix endres, blir det tatt med i matrisekalkuleringen. Endringer på rad 0 påvirker x-koordinatet. Endringer på rad 1 påvirker y-koordinatet osv. </p>
+<p><i>4. Remember how multiplying the identity matrix by a tuple gives you the tuple, unchanged? Now, try changing any single element of the identity matrix to a different number, and then multiplying it by a tuple. What happens to the tuple?</i> Svar: Hvis ett enkelt element i id matrix endres, blir det tatt med i matrisekalkuleringen. Endringer på rad 0 påvirker x-koordinatet. Endringer på rad 1 påvirker y-koordinatet osv. </p>
 
 <h3>&#128177; Kapittel 4, Matrix Transformations</h3>
 
@@ -342,9 +347,14 @@ const C = function() {
 <p>Jeg vil etter hvert også refaktorere så disse pinglete JS objektene med metoder blir ordentlige klasser som kan bygges ut etter behov.</p>
 
 <h4>Putting it together</h4>
-<p></p>
-<p></p>
-<p></p>
+<p>"Write a program that casts rays at a sphere and draws the picture to a canvas". Ja det hørtes ikke enkelt ut, men på "magisk vis" kommer det da etter litt knoting et bilde på skjerm:</p>
+<p><img src="./chapter5_raycast.png"/></p>
+<p>Prøv selv, her: <a href="../raycast_chapter5.html"><code>./raycast_chapter5.html</code></a></p>
+<p>For første gang merker jeg at raytracing er vanvittig CPU-intensivt. Bildet over tok ca 2m37s (141 944 ms) å generere! Jeg testet andre oppløsninger og tiden det tar er lineær med antall pixler på ca 1.4 - 1.5 ms/p. Men dette er jo ikke holdbart. Jeg må kunne kjøre dette i bakgrunnen. TODO.</p> 
+
+<p> Jeg ser nå at <code>transformations()</code> funksjonen ikke gjør det den skal. Som den er laget nå returnerer den en tuple, mens det jeg vil, er at den skal returnere en matrise som jeg så kan "apply" på en shape. Som dette: <code>shape.transform = transformations(scale(5, 5, 5), rotation_y(1, 2, 3))</code>. Jeg jobber mer med det og får det til, bortsett fra at når jeg legger til en rotasjon, så blir den NaN i alle felt. TODO.</p>
+
+<p>Angående bakgrunnskjøring... Det finnes en standardisert måte å kjøre JS i bakgrunnen på som kalles <a href="https://www.w3schools.com/js/js_api_web_workers.asp">Web Workers</a>. Implementasjonen er svært enkel, og vil løse problemene jeg har her. Det eneste hinderet er at den ikke støtter å kjøre under <code>file:///</code> protokollen, jeg må ha en lokal HTTP server. Og det finnes jo ikke på DFS, dermed stopper dette opp. En HTTP server følger med installasjoner av Python og Golang. Python sin versjon startes slik: <code>./python.exe -m SimpleHttpServer</code> og server filene fra <code>./</code> på <code>localhost:8080</code>. Dette er uproblematisk sikkerhetsmessig, men som nevnt ikke tilgjengelig på DFS. Jeg får lov å jobbe videre på det på skole-pcen, men a) den er uten nett og b) bare tilgjengelig på dagtid... Foreløpig framdrift lagres her: <code>./web_worker_raycast_chapter5.html</code> og <code>./web_worker_raycast_chapter5.js</code></p>
 <p></p>
 <p></p>
 <p></p>
@@ -352,11 +362,17 @@ const C = function() {
 <p></p>
 <p>TODO:
 <ul>
+  <li>Fikse det som er galt med transformations() når jeg legger på en rotation.</li>
+  <li>Kjøre raytracing som <a href="https://www.w3schools.com/js/js_api_web_workers.asp">bakgrunnsprosess</a>.</li>
+  <li>Bytte til <a href="https://stackoverflow.com/a/22004858/83148">typed arrays</a> i alle array-funksjoner. Vurdere også 1D arrays istedet for 2D.</li>
+  <li>Bytte navn på funksjonen scale() til scaling().</li>
   <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>
   <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og utgangshastighet.</li>
   <li>Kan jeg hente koden til en funksjon inn i dokumentasjonen direkte med JS? Istedet for å klippe og lime?</li>
   <li>Skrive om JS funksjoner som returnerer Object.freeze({}) med ordentlige klasser og metoder.
-  <ul><li>Refaktorere canvas til class</li></ul>
+  <ul>
+    <li>Refaktorere canvas til class</li>
+  </ul>
 <li>Done! <del>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny transform funksjon side 68.)</del></li>
   <li>Done! <del>Siste "Putting it together" oppgaven fra kapittel 3</del></li>
   <li>Done! Ja, det stemte.. &#128514; <del>Fikse PPM lagring til fil. Mistenker at piksel-verdier må avrundes til heltall.</del></li>

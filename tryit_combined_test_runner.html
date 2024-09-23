@@ -113,7 +113,7 @@ function equal(a, b) {
 function equal_tuples(a, b) {
   // Compare x, y, z coordinates of a tuple. JS does not distinguish these types of objects
   // so a tuple == vector == point at this time.
-  return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z))
+  return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z) && equal(a.w, b.w))
 }
 
 function add_tuples(a, b) {
@@ -172,7 +172,9 @@ function tuple(a, b, c, d) {
     y:b,
     z:c,
     w:d,
-    toString: function() { return `x:${this.x} y:${this.y} z:${this.z} w:${this.w}`}})
+    toString: function() { return `x:${this.x} y:${this.y} z:${this.z} w:${this.w}`}
+  })
+    
 }
 
 function vector(a,b,c) {
@@ -252,7 +254,52 @@ function html_canvas(parent, width, height) {
 }
 
 
-
+class Canvas {
+  // Create a canvas abstraction object. It has a width and a height and a pixel array.
+  // Each pixel is defined by three values, r, g, b.
+  // The format is a single array or bit stream.
+  // To make the array as efficient as possible, we make it a const and pre-initialize length.
+  // The RTC book assumes all x and y values are 0-based.
+  // So 0 < x < w - 1, and 0 < y < h - 1
+  
+  constructor(w, h) {
+    this.width = w
+    this.height = h
+    this.bits = 3 // Bits per pixel. rgb = 3. rgba = 4.
+    this.d = new Uint8ClampedArray(w * h * b).fill(0)
+  }
+  
+  get width() {return this.width}
+  get height() {return this.height}
+  get data() {return this.d}
+  
+  pixel_at(x, y) {
+    // Make sure pixels are within the canvas.
+    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) {
+      throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+    }
+    
+    const i = (this.width * y + x) * this.bits
+  
+    return color(this.d[i], this.d[i+1], this.d[i+2])
+  }
+  
+  write_pixel(x, y, color) {
+    // Ignore pixels outside the canvas.
+    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) {
+      return
+    }
+    
+    const i = (this.width * Math.round(y) + Math.round(x)) * this.bits
+    // For debugging
+    //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
+    
+    this.d[i]   = color.red
+    this.d[i+1] = color.green
+    this.d[i+2] = color.blue
+    //log("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
+  }
+}
 
 function canvas(w, h) {
   // Create a canvas abstraction object. It has a width and a height and a pixel array.
@@ -263,7 +310,12 @@ function canvas(w, h) {
   // So 0 < x < w - 1, and 0 < y < h - 1
   
   const b = 3 // Bits per pixel. rgb = 3. rgba = 4.
-  const d = Array(w * h * b).fill(0)
+  
+  //const d = Array(w * h * b).fill(0)
+  
+  // Typed Array
+  const d = new Uint8ClampedArray(w * h * b).fill(0)
+  
   //log("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
   
   return {
@@ -687,10 +739,9 @@ function shearing(xy, xz, yx, yz, zx, zy) {
   
 }
 
-function transformations(tup, trans) {
-  // Transformations given as parameters will be applied in the reverse order
+function transformations(trans) {
+  // Transformations given as parameters will be applied as given.
   // We can apply translation, scaling, rotation and shearing into a single operation.
-  
   let m = idmatrix()
   //log("error", "Start: " + m)
 
@@ -700,12 +751,12 @@ function transformations(tup, trans) {
     // Unless argument is a point or vector, multiply by m
     if (!(arguments[i].w === 1 || arguments[i].w === 0)) {
       //log("error", `Applying ${i}: ${arguments[i]}`)
-      m = multiply_matrices(arguments[i], m)
+      m = multiply_matrices(m, arguments[i])
       //log("error", "Result: " + m)
     }
   }
   
-  return multiply_matrix_by_tuple(m, tup)
+  return m
 }
 
 // *** RAY FUNCTIONS
@@ -715,7 +766,7 @@ function ray(o, d) {
   
   // Check that o is a point and d is a vector, by checking the w value of each
   if (!(o.w === 1 && d.w === 0) ) {
-    throw "ray(): Origin must be a point, and Direction must be a vector"
+    throw `ray(): Origin must be a point (was ${o.toString()}), and Direction must be a vector (was ${d.toString()})`
   }
   
   return Object.freeze({
@@ -858,13 +909,16 @@ function test_equal_function() {
 }
 
 function test_equal_tuples_function() {
-  // Test that tuple, vector and point coordinates are the same, even with slight diff outside PRECISION value
+  // Test that tuple, vector and point coordinates are the same, even with slight diff inside PRECISION value
 
-  var t = tuple(110.999, -23.11, 2, 2)
-  var v = vector(110.999, -23.11, 2.0)
-  var p = point(110.9990000001, -23.11, 2.00000001)
+  var t1 = tuple(110.999, -23.11, 2, 0)
+  var t2 = tuple(110.9990000001, -23.11, 2.00000001, 0)
+  var v1 = vector(110.999999, -23.11, 2.0)
+  var v2 = vector(111.000001, -23.11, 2.0)
+  var p1 = point(110.9990000002, -23.11, 2.00000001)
+  var p2 = point(110.9990000001, -23.11, 1.99999999)
 
-  return (equal_tuples(t, v) && equal_tuples(v, p) && equal_tuples(p, t))
+  return equal_tuples(t1, t2) && equal_tuples(v1, v2) && equal_tuples(p1, p2)
 }
 
 function test_add_tuples_function() {
@@ -873,9 +927,9 @@ function test_add_tuples_function() {
   var v = vector(1.999, 23.11, 22.001)
   var p = point(110.9990000001, -23.11, 2.00000001)
   
-  var result_tv = tuple(112.998, 0.0, 24.001, 1)
+  var result_tv = tuple(112.998, 0.0, 24.001, 0)
 
-  return (equal_tuples(add_tuples(t, v), result_tv))
+  return equal_tuples(add_tuples(t, v), result_tv)
 }
 
 function test_subtract_tuples_function() {
@@ -1765,20 +1819,43 @@ function test_shearing_function() {
 }
 
 function test_transformations_function() {
-  // Transformations are applied in the reverse order of the one given
+  // Test chaining multiple transformations
   
   let p = point(1, 0, 1)
+  let s = new Sphere()
   
-  const result = transformations(
-    p, 
+  const result1 = transformations(
     rotation_x(Math.PI / 2),
     scale(5, 5, 5),
     translation(10, 5, 7)
   )
   
-  //log("error", result)
+  const result2 = transformations(
+    scale(5, 5, 5),
+    rotation_x(Math.PI / 2),
+    translation(10, 5, 7)
+  )
   
-  return equal_tuples(result, point(15, 0, 7))
+  const result3 = transformations(
+    scale(5, 5, 5),
+    translation(10, 5, 7),
+    rotation_x(Math.PI / 2)
+  )
+  
+  //log("error", result1)
+  //log("error", result2)
+  //log("error", result3)
+  
+  p2 = multiply_matrix_by_tuple(result1, p)
+  s.transform = result3
+  
+  //log("error", p2)
+  //log("error", s.transform)
+  
+  
+  return 
+  //equal_tuples(p2, point(15, 0, 7)) 
+    matrix_equal(s.transform, [[5,0,0,10],[0,3.061616997868383e-16,-5,5],[0,5,3.061616997868383e-16,7],[0,0,0,1]])
 }
 
 function test_apply_individual_transformations() {
@@ -2047,7 +2124,18 @@ function test_transform_sphere() {
   
   //log("error", s2.toString)
   
-  return default_transform_equals_idmatrix && new_transform_is_set && test_intersecting_scaled_sphere_with_ray
+  // Test transformations function on a sphere
+  s2.transform = translation(2, 3, 4)
+  const s3 = new Sphere()
+  s3.transform = transformations(scale(2, 2, 2), translation(2, 3, 4), rotation_z(Math.pi / 2))
+  const transformations_applied_to_sphere = matrix_equal(s2.transform, s3.transform)
+  //log("error", s3.toString)
+  //log("error", transformations_applied_to_sphere)
+    
+  return default_transform_equals_idmatrix 
+    && new_transform_is_set 
+    && test_intersecting_scaled_sphere_with_ray 
+    && transformations_applied_to_sphere
 }
 </script>
 <script>

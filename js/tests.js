@@ -941,66 +941,25 @@ function test_shearing_function() {
 }
 
 function test_transformations_function() {
-  // Transform is a function that makes it possible to chain 
-  // translation, scaling, rotation and shearing into a single operation.
+  // Transformations are applied in the reverse order of the one given
   
-  const t = new transformations() //
+  let p = point(1, 0, 1)
+  let s = new Sphere()
   
-  //const result = t.rotate_x(Math.PI / 4)//.rotate_y(Math.PI / 2)//.rotate_z(Math.PI / 3)//.scale(5, 5, 5).translate()
+  const result = transformations(
+    rotation_x(Math.PI / 2),
+    scale(5, 5, 5),
+    translation(10, 5, 7)
+  )
   
-  //log("error", result.join("\n"))
+  //log("error", result)
+  p2 = multiply_matrix_by_tuple(result, p)
+  s.transform = result
   
-  return false // TO BE CONTINUED
-}
-
-function transformations() {
-  // Transform is a function that makes it possible to chain 
-  // translation, scaling, rotation and shearing into a single operation.
+  //log("error", s.transform)
   
-  this.m = idmatrix()
-  
-  this.rotate_x = function(rad) {
-    log("error", "This is rotate_x: " + rad)
-    this.m = multiply_matrices(this.m, rotation_x(rad))
-    return this
-  }
-  
-  this.rotate_y = function(rad) {
-    log("error", "This is rotate_y: " + rad)
-    this.m = multiply_matrices(this.m, rotation_y(rad))
-    return this
-  }
-  this.rotate_z = function(rad) {
-    log("error", "This is rotate_z: " + rad)
-    this.m = multiply_matrices(this.m, rotation_z(rad))
-    return this
-  }
-      
-   if (this instanceof transformations) {
-        return this.transformations
-    } else {
-        return new transformations()
-    }
-}
-
-function test_apply_individual_transformations() {
-  // Test applying individual transformations
-  
-  const p1 = point(1, 0, 1)
-  const rx = rotation_x(Math.PI / 2)
-  const s = scale(5, 5, 5)
-  const t = translation(10, 5, 7)
-  
-  // Apply rotation first
-  const p2 = multiply_matrix_by_tuple(rx, p1)
-  
-  // Then apply scaling
-  const p3 = multiply_matrix_by_tuple(s, p2)
-  
-  // Then apply translation
-  const p4 = multiply_matrix_by_tuple(t, p3)
-  
-  return equal_tuples(p4, point(15, 0, 7))
+  return equal_tuples(p2, point(15, 0, 7)) 
+    && matrix_equal(s.transform, [[5,0,0,10],[0,3.061616997868383e-16,-5,5],[0,5,3.061616997868383e-16,7],[0,0,0,1]])
 }
 
 function test_apply_individual_transformations() {
@@ -1269,5 +1228,13 @@ function test_transform_sphere() {
   
   //log("error", s2.toString)
   
-  return default_transform_equals_idmatrix && new_transform_is_set && test_intersecting_scaled_sphere_with_ray
+  // Test transformations function on a sphere
+  s2.transform = translation(2, 3, 4)
+  const s3 = new Sphere()
+  s3.transform = transformations(translation(2, 3, 4), scale(2, 2, 2))
+  const transformations_applied_to_sphere = matrix_equal(s2.transform, s3.transform)
+  //log("error", s3.toString)
+  //log("error", transformations_applied_to_sphere)
+    
+  return default_transform_equals_idmatrix && new_transform_is_set && test_intersecting_scaled_sphere_with_ray && transformations_applied_to_sphere
 }
