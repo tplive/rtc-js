@@ -1829,7 +1829,7 @@ const symbols = [
   category: "Vegetables",
   name: "Aubergine",
   symbol: "🍆",
-  keywords: ["eggplant","purple","penis"]
+  keywords: ["eggplant","purple","penis","dick","cock","sex","fuck"]
 },
 {
   decimal: 127825,
@@ -1837,7 +1837,7 @@ const symbols = [
   category: "Fruit",
   name: "Peach",
   symbol: "🍑",
-  keywords: ["butt","pussy"]
+  keywords: ["butt","pussy","vagina","sex","slit","fuck"]
 },
 {
   decimal: 128000,
@@ -3439,6 +3439,78 @@ const symbols = [
   name: "Pear",
   symbol: "🍐",
   keywords: ["green","shaped","failure"]
+},
+{
+  decimal: 127826,
+  hex: 0x00,
+  category: "Fruit",
+  name: "Cherries",
+  symbol: "🍒",
+  keywords: ["red","committed","relationship","twins","best","friends"]
+},
+{
+  decimal: 127827,
+  hex: 0x00,
+  category: "Fruit",
+  name: "Strawberry",
+  symbol: "🍓",
+  keywords: ["red","cute","berry"]
+},
+{
+  decimal: 127828,
+  hex: 0x00,
+  category: "Food",
+  name: "Hamburger",
+  symbol: "🍔",
+  keywords: ["patty","bun","cheese","bacon","fast","food","junk","craving","hunger"]
+},
+{
+  decimal: 127829,
+  hex: 0x00,
+  category: "Food",
+  name: "Pizza",
+  symbol: "🍕",
+  keywords: ["slice"]
+},
+{
+  decimal: 127830,
+  hex: 0x00,
+  category: "Food",
+  name: "Meat on Bone",
+  symbol: "🍖",
+  keywords: ["food","steak","grill","barbeque","bbq"]
+},
+{
+  decimal: 127831,
+  hex: 0x00,
+  category: "Food",
+  name: "Poulty Leg",
+  symbol: "🍗",
+  keywords: ["food","grill","barbeque","bbq","drumstick","chicken","duck","turkey","bone"]
+},
+{
+  decimal: 127832,
+  hex: 0x00,
+  category: "Food",
+  name: "Rice Cracker",
+  symbol: "🍘",
+  keywords: ["food","japanese","nori","seaweed","sensei","senbei"]
+},
+{
+  decimal: 127833,
+  hex: 0x00,
+  category: "Food",
+  name: "Rice Ball",
+  symbol: "🍙",
+  keywords: ["food","japanese","onigiri","nori","seaweed"]
+},
+{
+  decimal: 127834,
+  hex: 0x00,
+  category: "Food",
+  name: "Cooked Rice",
+  symbol: "🍚",
+  keywords: ["food","japanese","bowl"]
 },
 
 

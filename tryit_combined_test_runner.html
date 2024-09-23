@@ -504,6 +504,9 @@ class Cylinder extends AbstractShape {
   
   constructor() {
     super()
+    this._minimum = -Infinity
+    this._maximum = Infinity
+    this._closed = false
   }
     
   _intersect(local_ray) {
@@ -517,18 +520,46 @@ class Cylinder extends AbstractShape {
     
     const c = local_ray.origin.x ** 2 + local_ray.origin.z ** 2 - 1
     
-    const disc = b**2-4*a*c
+    const disc = b ** 2 - 4 * a * c
     
     // ray does not intersect the cylinder
     if (disc < 0) { return [] }
     
-    //placeholder to ensure tests that expect ray to miss, passes
-    return [ intersection(1, this) ]    
+    let t0 = (-b - Math.sqrt(disc)) / (2 * a)
+    let t1 = (-b + Math.sqrt(disc)) / (2 * a)
+    
+    // Swap
+    if (t0 > t1) {
+      const tmp = t0
+      t0 = t1
+      t1 = tmp
+    }
+    
+    const xs = []
+    
+    const y0 = local_ray.origin.y + t0 * local_ray.direction.y
+    if (this._minimum < y0 && y0 < this._maximum ) { xs.push(intersection(t0, this)) }
+    
+    const y1 = local_ray.origin.y + t1 * local_ray.direction.y
+    if (this._minimum < y1 && y1 < this._maximum ) { xs.push(intersection(t1, this)) }
+    
+    //log("error", `${this._minimum} < ${y0} < ${this._maximum}, ${this._minimum} < ${y1} < ${this._maximum}`)
+    
+    return xs
   }
   
   _normal_at(local_normal) {
     
+    return vector(local_normal.x, 0, local_normal.z)
   }
+  
+  get minimum()  { return this._minimum }
+  get maximum()  { return this._maximum }
+  get closed()   { return this._closed  }
+  
+  set minimum(v) { this._minimum = v    }
+  set maximum(v) { this._maximum = v    }
+  set closed(v)  { this._closed = v     }
   
   get toString() { return `Cylinder(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
@@ -4830,14 +4861,14 @@ function test_normal_on_cube() {
   
   const c = cube()
   const points = [
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-	ray(point(1, 0.5, -0.8), vector(1, 0, 0))
+    ray(point(1, 0.5, -0.8), vector( 1, 0, 0)),
+    ray(point(-1, -0.2, 0.9), vector(-1, 0, 0)),
+    ray(point(-0.4, 1, -0.1), vector(0, 1, 0)),
+    ray(point(0.3, -1, -0.7), vector(0, -1, 0)),
+    ray(point(-0.6, 0.3, 1), vector(0, 0, 1)),
+    ray(point(0.4, 0.4, -1), vector(0, 0, -1)),
+    ray(point(1, 1, 1), vector(1, 0, 0)),
+	ray(point(-1, -1, -1), vector(-1, 0, 0))
   ]
   
   const res = []
@@ -4880,6 +4911,133 @@ function test_ray_misses_cylinder() {
   }
   
   return !results.includes(false)  
+}
+
+function test_ray_hits_cylinder() {
+  // Test the case where the ray hits the cylinder
+  
+  const cyl = cylinder()
+  
+  const cases = [
+        ray(point(1, 0, -5),  vector(0, 0, 1)),
+        ray(point(0, 0, -5),  vector(0, 0, 1)),
+        ray(point(0.5, 0, -5), vector(0.1, 1, 1)),  
+  ]
+  
+  const expected = [
+        intersections(intersection(5, cyl), intersection(5, cyl)),
+        intersections(intersection(4, cyl), intersection(6, cyl)),
+        intersections(intersection(6.80798, cyl), intersection(7.08872, cyl))
+  ]
+  
+  const results = []
+  
+  for (let i = 0; i < cases.length; i++) {
+    const direction = cases[i].direction.normalize()
+    const r = ray(cases[i].origin, direction)
+    const xs = cyl._intersect(r)
+        
+    if ( xs.length === 2 
+      && equal(xs[0].t, expected[i][0].t)
+      && equal(xs[1].t, expected[i][1].t) ) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+  }
+  
+  return !results.includes(false)  
+}
+
+function test_normal_on_cylinder() {
+  // Test that the normal vector is computed correctly on a cylinder.
+  
+  const cyl = cylinder()
+  
+  const cases = [
+        point(1, 0,  0),
+        point(0, 5, -1),
+        point(0, -2, 1),
+        point(-1, 1, 0)
+  ]
+  
+  const expected = [
+        vector(1, 0,  0),
+        vector(0, 0, -1),
+        vector(0, 0,  1),
+        vector(-1, 0, 0)
+  ]
+  
+  const results = []
+  
+  for (let i = 0; i < cases.length; i++) {
+    
+    const n = cyl._normal_at(cases[i])
+    
+    if ( n.equals(expected[i]) ) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+  }
+  
+  return !results.includes(false)
+}
+
+function test_default_minmax_on_cylinder() {
+  // Test that the cylinder has default minimum and maximum bounds
+  // that equal to -Infinity and Infinity, respectively
+  
+  const cyl = cylinder()
+  
+  return cyl.minimum === -Infinity && cyl.maximum === Infinity
+}
+
+function test_truncated_cylinders() {
+  // Test intersecting a constrained cylinder
+  
+  const cyl = cylinder()
+  cyl.minimum = 1
+  cyl.maximum = 2
+  
+  const cases = [
+        ray(point(0, 1.5, 0), vector(0.1, 1, 0)),
+        ray(point(0, 3, -5), vector(0, 0, 1)),
+        ray(point(0, 0, -5), vector(0, 0, 1)),
+        ray(point(0, 2, -5), vector(0, 0, 1)),
+        ray(point(0, 1, -5), vector(0, 0, 1)),
+        ray(point(0, 1.5, -2), vector(0, 0, 1))
+  ]
+  
+  const expected = [0, 0, 0, 0, 0, 2]
+  
+  const results = []
+  
+  for (let i = 0; i < cases.length; i++) {
+    const direction = cases[i].direction.normalize()
+    const r = ray(cases[i].origin, direction)
+    const xs = cyl._intersect(r)
+    
+    //log("error", xs.length)    
+    if ( xs.length === expected[i] ) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+  }
+  
+  //log("error", results)
+  
+  return !results.includes(false)  
+
+}
+
+function test_default_open_cylinder() {
+  // Test that the cylinder has a parameter "closed", and that it defaults to false.
+  
+  const cyl = cylinder()
+  
+  if (cyl.closed === false) { return true } else { return false }
 }
 
 </script>
@@ -5053,6 +5211,11 @@ runTest("cubes_list", test_ray_misses_cube)
 runTest("cubes_list", test_normal_on_cube)
 
 runTest("cylinders_list", test_ray_misses_cylinder)
+runTest("cylinders_list", test_ray_hits_cylinder)
+runTest("cylinders_list", test_normal_on_cylinder)
+runTest("cylinders_list", test_default_minmax_on_cylinder)
+runTest("cylinders_list", test_truncated_cylinders)
+runTest("cylinders_list", test_default_open_cylinder)
 
 
 

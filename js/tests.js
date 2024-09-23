@@ -2754,14 +2754,14 @@ function test_normal_on_cube() {
   
   const c = cube()
   const points = [
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
-	ray(point(1, 0.5, -0.8), vector(1, 0, 0))
+    ray(point(1, 0.5, -0.8), vector( 1, 0, 0)),
+    ray(point(-1, -0.2, 0.9), vector(-1, 0, 0)),
+    ray(point(-0.4, 1, -0.1), vector(0, 1, 0)),
+    ray(point(0.3, -1, -0.7), vector(0, -1, 0)),
+    ray(point(-0.6, 0.3, 1), vector(0, 0, 1)),
+    ray(point(0.4, 0.4, -1), vector(0, 0, -1)),
+    ray(point(1, 1, 1), vector(1, 0, 0)),
+	ray(point(-1, -1, -1), vector(-1, 0, 0))
   ]
   
   const res = []
@@ -2804,4 +2804,131 @@ function test_ray_misses_cylinder() {
   }
   
   return !results.includes(false)  
+}
+
+function test_ray_hits_cylinder() {
+  // Test the case where the ray hits the cylinder
+  
+  const cyl = cylinder()
+  
+  const cases = [
+        ray(point(1, 0, -5),  vector(0, 0, 1)),
+        ray(point(0, 0, -5),  vector(0, 0, 1)),
+        ray(point(0.5, 0, -5), vector(0.1, 1, 1)),  
+  ]
+  
+  const expected = [
+        intersections(intersection(5, cyl), intersection(5, cyl)),
+        intersections(intersection(4, cyl), intersection(6, cyl)),
+        intersections(intersection(6.80798, cyl), intersection(7.08872, cyl))
+  ]
+  
+  const results = []
+  
+  for (let i = 0; i < cases.length; i++) {
+    const direction = cases[i].direction.normalize()
+    const r = ray(cases[i].origin, direction)
+    const xs = cyl._intersect(r)
+        
+    if ( xs.length === 2 
+      && equal(xs[0].t, expected[i][0].t)
+      && equal(xs[1].t, expected[i][1].t) ) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+  }
+  
+  return !results.includes(false)  
+}
+
+function test_normal_on_cylinder() {
+  // Test that the normal vector is computed correctly on a cylinder.
+  
+  const cyl = cylinder()
+  
+  const cases = [
+        point(1, 0,  0),
+        point(0, 5, -1),
+        point(0, -2, 1),
+        point(-1, 1, 0)
+  ]
+  
+  const expected = [
+        vector(1, 0,  0),
+        vector(0, 0, -1),
+        vector(0, 0,  1),
+        vector(-1, 0, 0)
+  ]
+  
+  const results = []
+  
+  for (let i = 0; i < cases.length; i++) {
+    
+    const n = cyl._normal_at(cases[i])
+    
+    if ( n.equals(expected[i]) ) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+  }
+  
+  return !results.includes(false)
+}
+
+function test_default_minmax_on_cylinder() {
+  // Test that the cylinder has default minimum and maximum bounds
+  // that equal to -Infinity and Infinity, respectively
+  
+  const cyl = cylinder()
+  
+  return cyl.minimum === -Infinity && cyl.maximum === Infinity
+}
+
+function test_truncated_cylinders() {
+  // Test intersecting a constrained cylinder
+  
+  const cyl = cylinder()
+  cyl.minimum = 1
+  cyl.maximum = 2
+  
+  const cases = [
+        ray(point(0, 1.5, 0), vector(0.1, 1, 0)),
+        ray(point(0, 3, -5), vector(0, 0, 1)),
+        ray(point(0, 0, -5), vector(0, 0, 1)),
+        ray(point(0, 2, -5), vector(0, 0, 1)),
+        ray(point(0, 1, -5), vector(0, 0, 1)),
+        ray(point(0, 1.5, -2), vector(0, 0, 1))
+  ]
+  
+  const expected = [0, 0, 0, 0, 0, 2]
+  
+  const results = []
+  
+  for (let i = 0; i < cases.length; i++) {
+    const direction = cases[i].direction.normalize()
+    const r = ray(cases[i].origin, direction)
+    const xs = cyl._intersect(r)
+    
+    //log("error", xs.length)    
+    if ( xs.length === expected[i] ) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+  }
+  
+  //log("error", results)
+  
+  return !results.includes(false)  
+
+}
+
+function test_default_open_cylinder() {
+  // Test that the cylinder has a parameter "closed", and that it defaults to false.
+  
+  const cyl = cylinder()
+  
+  if (cyl.closed === false) { return true } else { return false }
 }

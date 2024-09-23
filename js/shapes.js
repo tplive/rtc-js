@@ -254,6 +254,9 @@ class Cylinder extends AbstractShape {
   
   constructor() {
     super()
+    this._minimum = -Infinity
+    this._maximum = Infinity
+    this._closed = false
   }
     
   _intersect(local_ray) {
@@ -267,18 +270,46 @@ class Cylinder extends AbstractShape {
     
     const c = local_ray.origin.x ** 2 + local_ray.origin.z ** 2 - 1
     
-    const disc = b**2-4*a*c
+    const disc = b ** 2 - 4 * a * c
     
     // ray does not intersect the cylinder
     if (disc < 0) { return [] }
     
-    //placeholder to ensure tests that expect ray to miss, passes
-    return [ intersection(1, this) ]    
+    let t0 = (-b - Math.sqrt(disc)) / (2 * a)
+    let t1 = (-b + Math.sqrt(disc)) / (2 * a)
+    
+    // Swap
+    if (t0 > t1) {
+      const tmp = t0
+      t0 = t1
+      t1 = tmp
+    }
+    
+    const xs = []
+    
+    const y0 = local_ray.origin.y + t0 * local_ray.direction.y
+    if (this._minimum < y0 && y0 < this._maximum ) { xs.push(intersection(t0, this)) }
+    
+    const y1 = local_ray.origin.y + t1 * local_ray.direction.y
+    if (this._minimum < y1 && y1 < this._maximum ) { xs.push(intersection(t1, this)) }
+    
+    //log("error", `${this._minimum} < ${y0} < ${this._maximum}, ${this._minimum} < ${y1} < ${this._maximum}`)
+    
+    return xs
   }
   
   _normal_at(local_normal) {
     
+    return vector(local_normal.x, 0, local_normal.z)
   }
+  
+  get minimum()  { return this._minimum }
+  get maximum()  { return this._maximum }
+  get closed()   { return this._closed  }
+  
+  set minimum(v) { this._minimum = v    }
+  set maximum(v) { this._maximum = v    }
+  set closed(v)  { this._closed = v     }
   
   get toString() { return `Cylinder(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
