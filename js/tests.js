@@ -945,3 +945,82 @@ function test_rotation_z_function() {
   )
 
 }
+
+function test_shearing_function() {
+  //Test applying shearing to a point
+  // shearing applies like this
+  // x in proportion to y
+  // x in proportion to z
+  // y in proportion to x
+  // y in proportion to z
+  // z in proportion to x
+  // z in proportion to y
+  // and is given like this shearing(xy, xz, yx, yz, zx, zy)
+  
+  const p = point(2, 3, 4)
+  
+  // 1. A shearing transformation moves x in proportion to y
+  const t1 = shearing(1, 0, 0, 0, 0, 0)
+  
+  const r1 = multiply_matrix_by_tuple(t1, p)
+  
+  // 2. A shearing transformation moves x in proportion to z
+  const t2 = shearing(0, 1, 0, 0, 0, 0)
+  const r2 = multiply_matrix_by_tuple(t2, p)
+  
+  // 3. A shearing transformation moves y in proportion to x
+  const t3 = shearing(0, 0, 1, 0, 0, 0)
+  const r3 = multiply_matrix_by_tuple(t3, p)
+  
+  // 4. A shearing transformation moves y in proportion to z
+  const t4 = shearing(0, 0, 0, 1, 0, 0)
+  const r4 = multiply_matrix_by_tuple(t4, p)
+  
+  // 5. A shearing transformation moves z in proportion to x
+  const t5 = shearing(0, 0, 0, 0, 1, 0)
+  const r5 = multiply_matrix_by_tuple(t5, p)
+  
+  // 6. A shearing transformation moves z in proportion to y
+  const t6 = shearing(0, 0, 0, 0, 0, 1)
+  const r6 = multiply_matrix_by_tuple(t6, p)
+  
+  return equal_tuples(r1, point(5, 3, 4)) 
+      && equal_tuples(r2, point(6, 3, 4)) 
+      && equal_tuples(r3, point(2, 5, 4)) 
+      && equal_tuples(r4, point(2, 7, 4))
+      && equal_tuples(r5, point(2, 3, 6))
+      && equal_tuples(r6, point(2, 3, 7))
+}
+
+function test_transform_function() {
+  // Transform is a function that makes it possible to chain 
+  // translation, scaling, rotation and shearing into a single operation.
+  
+  const t = new transform() //
+  
+  //const result = t.rotate_x(Math.PI / 4)//.rotate_y(Math.PI / 2)//.rotate_z(Math.PI / 3)//.scale(5, 5, 5).translate()
+  
+  //log("error", result.join("\n"))
+  
+  return false // TO BE CONTINUED
+}
+
+function test_apply_individual_transformations() {
+  // Test applying individual transformations
+  
+  const p1 = point(1, 0, 1)
+  const rx = rotation_x(Math.PI / 2)
+  const s = scale(5, 5, 5)
+  const t = translation(10, 5, 7)
+  
+  // Apply rotation first
+  const p2 = multiply_matrix_by_tuple(rx, p1)
+  
+  // Then apply scaling
+  const p3 = multiply_matrix_by_tuple(s, p2)
+  
+  // Then apply translation
+  const p4 = multiply_matrix_by_tuple(t, p3)
+  
+  return equal_tuples(p4, point(15, 0, 7))
+}

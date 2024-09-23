@@ -542,11 +542,18 @@ log("error", matrix_equal(trans_inverse, inverse_trans)) // true
 </ul>
 </p>
 <p>Implementeringen er relativt enkel, det er dog noe magi i matrisehåndteringene som jeg ikke skjønner noe av så klart. Hvorfor blir det sånn og sånn når man setter inn tall dit og der i matrisen, og så multipliserer matrise med et punkt?? Aner ikke. Men det trenger jeg heller ikke, instruksjonene er greie nok de, og jeg får både koden for til å virke og testene til å verifisere resultatet. Her er det stort potensiale for å refaktorere kode senere - men man skal jo som kjent ikke bedrive "prematur optimalisering" (<a href="https://en.wikipedia.org/wiki/Program_optimization">det er iflg Donald Knuth "the root of all evil"</a>), så da lar vi det være... &#128513;</p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
+<p>En ekstra utfordring er å finne en måte å "chaine" disse operasjonene etter hverandre, noe sånt som:</p>
+
+<pre>
+const t = new transform()
+const chained = t.rotate_x(Math.PI / 4).rotate_y(Math.PI / 2).rotate_z(Math.PI / 3).scale(5, 5, 5).translate(10, 5, 7)
+</pre>
+<p>Jeg finner noen som har <a href="https://stackoverflow.com/questions/1099628/how-does-basic-object-function-chaining-work-in-javascript">gjort noe lignende i JS</a> før, men klarer ikke helt å naile det for min funksjon. Så jeg bestemmer meg for å la det ligge, og lar testen stå igjen som FAILED til jeg eventuelt senere finner ut av det. Det er egentlig mange operasjoner jeg gjerne skulle kombinert sånn, så det kan vel bli senere..</p>
+
+<p>I stedet skriver jeg en test for å legge til operasjonene èn etter èn, og den fungerer.</p>
+
+<h4>Putting it together</h4>
+<p>Dette blir en interessant challenge. Her skal jeg tegne opp en analog "clock face" på skjerm, med et punkt for hver time på klokka, 1 - 12.</p>
 <p></p>
 <p></p>
 <p></p>
