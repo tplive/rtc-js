@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script>
+window.onerror = function(errorMsg, url, lineNumber){
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+<h2>Resultater</h2>
+
+
+
+<div id="app"></div>
+<pre id="error"></pre>
+<script>
+
+const data = {
+  "deltakere": [
+    {
+      startnr: 11,
+      navn: "Geir",
+      brakke: "R",
+    },
+    {
+      startnr: 12,
+      navn: "Ola",
+      brakke: "S",
+    },
+  ]
+}
+
+const app = document.querySelector("#app")
+app.innerHTML = "app.innerHTML"
+
+const table = document.createElement("table")
+app.appendChild(table)
+
+
+const headerRow = document.createElement("row")
+table.appendChild(headerRow)
+
+
+headerRow.appendChild(addHeader("Startnummer"))
+headerRow.appendChild(addHeader("Navn"))
+headerRow.appendChild(addHeader("Brakke"))
+
+
+
+
+
+
+for (i in data.deltakere) {
+  const row = document.createElement("tr")
+  table.appendChild(row)
+  
+  const cell1 = document.createElement("td")
+  const cell2 = document.createElement("td")
+  const cell3 = document.createElement("td")
+  
+  cell1.innerHTML = data.deltakere[i].startnr
+  cell1.style.border = "1px solid black"
+  row.appendChild(cell1)
+  
+  cell2.innerHTML = data.deltakere[i].navn
+  cell2.style.border = "1px solid black"
+  row.appendChild(cell2)
+  
+  cell3.innerHTML = data.deltakere[i].brakke
+  cell3.style.border = "1px solid black"
+  row.appendChild(cell3)
+}
+
+
+
+
+function addHeader(text) {
+  const th = document.createElement("th")
+  th.style.border = "1px solid black"
+  th.innerHTML = text
+  
+  return th
+}
+
+function addCell(text) {
+  const td = document.createElement("td")
+  td.innerHTML = text
+  
+  return td
+}
+
+
+
+</script>
+</body>
+</html> 

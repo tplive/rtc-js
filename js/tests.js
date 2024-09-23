@@ -2589,3 +2589,81 @@ function test_refracted_color_with_a_refracted_ray() {
   //log("error", c)
   return c.equals(color(0, 0.99888, 0.04721)) // book sez 0.04725. I take it as a rounding error.
 }
+
+function test_shade_hit_handles_refraction() {
+  // Test that shade_hit will handle refraction correctly
+  
+  const w = default_world()
+  const floor = plane()
+  floor.transform = translation(0, -1, 0)
+  floor.material.transparency = 0.5
+  floor.material.refractive_index = 1.5
+  w.addObject(floor)
+  
+  const ball = sphere()
+  ball.material.color = color(1, 0, 0)
+  ball.material.ambient = 0.5
+  ball.transform = translation(0, -3.5, -0.5)
+  w.addObject(ball)
+  
+  const r = ray(point(0, 0, -3), vector(0, -Math.sqrt(2)/2, Math.sqrt(2)/2))
+  const xs = intersections(intersection(Math.sqrt(2), floor))
+  const comps = prepare_computations(xs[0], r, xs)
+  const c = shade_hit(w, comps, 5)
+  
+  return c.equals(color(0.93642, 0.68642, 0.68642))
+}
+
+function test_shlick_function() {
+  // Test the Schlick approximation function
+  
+  // Under Total Internal Reflection
+  const shape = glass_sphere()
+  const r1 = ray(point(0, 0, Math.sqrt(2)/2), vector(0, 1, 0))
+  const xs1 = intersections(intersection(-Math.sqrt(2)/2, shape), intersection(Math.sqrt(2)/2, shape))
+  const comps1 = prepare_computations(xs1[1], r1, xs1)
+  const reflectance1 = schlick(comps1)
+  
+  // Determine reflectance of a perpendicular ray
+  const r2 = ray(point(0, 0, 0), vector(0, 1, 0))
+  const xs2 = intersections(intersection(-1, shape), intersection(1, shape))
+  const comps2 = prepare_computations(xs2[1], r2, xs2)
+  const reflectance2 = schlick(comps2)
+  
+  // Determine reflectance when n2 > n1
+  const r3 = ray(point(0, 0.99, -2), vector(0, 0, 1))
+  const xs3 = intersections(intersection(1.8589, shape))
+  const comps3 = prepare_computations(xs3[0], r3, xs3)
+  const reflectance3 = schlick(comps3)
+  
+  return equal(reflectance1, 1.0)
+      && equal(reflectance2, 0.04)
+      && equal(reflectance3, 0.48873)
+}
+
+function test_shade_hit_with_reflective_transparent_material() {
+  // Test that shade_hit() check if surface material is both transparent and reflective,
+  // and use Schlick approximation to combine them.
+  
+  const w = default_world()
+  const r = ray(point(0, 0, -3), vector(0, -Math.sqrt(2)/2, Math.sqrt(2)/2))
+  const floor = plane()
+  floor.transform = translation(0, -1, 0)
+  floor.material.reflective = 0.5
+  floor.material.transparency = 0.5
+  floor.material.refractive_index = 1.5
+  
+  w.addObject(floor)
+  
+  const ball = sphere()
+  ball.material.color = color(1, 0, 0)
+  ball.material.ambient = 0.5
+  ball.transform = translation(0, -3.5, -0.5)
+  w.addObject(ball)
+  
+  const xs = intersections(intersection(Math.sqrt(2), floor))
+  const comps = prepare_computations(xs[0], r, xs)
+  const c = shade_hit(w, comps, 5)
+  
+  return c.equals(color(0.93391, 0.69643, 0.69243))
+}
