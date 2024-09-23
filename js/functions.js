@@ -443,6 +443,45 @@ class Matrix {
     return new Tuple(res[0], res[1], res[2], res[3] )
   }
   
+  times_matrix(t) {
+    // Multiply matrices.
+    // Only supports 4x4 matrices.
+    
+    if (this._r === 4 && this._c === 4 && t.rows === 4 && t.cols === 4 ) {
+      
+      const m = matrix(4, 4)
+      
+      for (let r=0; r < 4; r++) {
+        for (let c=0; c < 4; c++) {
+          m.put(r,c,
+            this.get(r,0) * t.get(0,c) + 
+            this.get(r,1) * t.get(1,c) + 
+            this.get(r,2) * t.get(2,c) + 
+            this.get(r,3) * t.get(3,c)
+          )
+        }
+      }
+  
+      return m
+    } else {
+      throw `Only supports multiplying 4x4 matrices. a = ${a.rows}, b = ${b.cols}`
+    }
+  }
+  
+  transpose() {
+    // Turn rows into columns.
+  
+    const t = matrix(4, 4)
+  
+    for ( let r=0; r < 4; r++) {
+      for (let c=0; c < 4; c++) {
+        t.put(r,c,this.get(c,r))
+      }
+    }
+  
+    return t
+  }
+  
   equals(m) {
     const structural_equality = this._r === m.rows && this._c === m.cols 
     const elements_equal = []
@@ -474,7 +513,8 @@ function matrix(rows, cols) {
 function multiply_matrices(a, b) {
   // Multiply matrices.
   // Only supports 4x4 matrices.
-    
+  throw(`multiply_matrices() is deprecated. Use matrix.times_matrix(m) instead.`)
+  
   if (a.rows * a.cols != 16 || b.rows * b.cols != 16) {
     throw `Only supports multiplying 4x4 matrices. a = ${a.rows}, b = ${b.cols}`
   }
@@ -508,7 +548,8 @@ function idmatrix() {
 
 function transpose_matrix(m) {
   // Turn rows into columns.
-  
+  throw(`transpose_matrix() is deprecated. Use matrix.transpose() instead.`)
+
   const t = matrix(4, 4)
   
   for (let r=0;r<m.rows;r++) {
@@ -768,7 +809,7 @@ function transformations(trans) {
   
   for (e in t) {
     // To set the result of the multiplied matrices, add .d
-    m.putAll(multiply_matrices(m, t[e]).d)
+    m.putAll(m.times_matrix(t[e]).d)
     // log("error", `transformations(): ${e} ${t[e].d}`)
   }
   //log("error", "transformations(): m.d " + m.d)
@@ -782,7 +823,7 @@ function recursive_transformations(arr) {
   const i = arr.pop()
   if (arr.length === 0) {
     //log("error", "recursive_transformations(): " + "array.length=0")
-    return multiply_matrices(m, i )
+    return m.times_matrix(i)
   } else {
     //log("error", "recursive_transformations(): " + "arr.length!=0")
     m.putAll(recursive_transformations(arr ) )
@@ -838,7 +879,7 @@ class Sphere {
     
   set transform(value) {
     if (value.d != undefined) {
-      this._transform = multiply_matrices(this._transform, value)
+      this._transform = this._transform.times_matrix(value)
     }
   }
   
@@ -926,7 +967,7 @@ function normal_at(obj, world_point) {
   
   const object_point = inverse(obj.transform).times_tuple(world_point)
   const object_normal = object_point.minus(point(0, 0, 0))
-  const world_normal = transpose_matrix(inverse(obj.transform)).times_tuple(object_normal)
+  const world_normal = inverse(obj.transform).transpose().times_tuple(object_normal)
   
   return vector(world_normal.x, world_normal.y, world_normal.z).normalize()
 }
@@ -1289,7 +1330,7 @@ function view_transform(from, to, up) {
                               0,          0,          0, 1,
                     ])
   
-  return multiply_matrices(orientation, translation(-from.x, -from.y, -from.z))
+  return orientation.times_matrix(translation(-from.x, -from.y, -from.z))
 }
 
 class Camera {
@@ -1324,7 +1365,7 @@ class Camera {
   
   set transform(value) {
     if (value.d != undefined) {
-      this._transform = multiply_matrices(this._transform, value)
+      this._transform = this._transform.times_matrix(value)
     }
   }
   

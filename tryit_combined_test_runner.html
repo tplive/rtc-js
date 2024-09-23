@@ -497,6 +497,70 @@ class Matrix {
     return new Tuple(res[0], res[1], res[2], res[3] )
   }
   
+  times_matrix(t) {
+    // Multiply matrices.
+    // Only supports 4x4 matrices.
+    
+    if (this._r === 4 && this._c === 4 && t.rows === 4 && t.cols === 4 ) {
+      
+      const m = matrix(4, 4)
+      
+      for (let r=0; r < 4; r++) {
+        for (let c=0; c < 4; c++) {
+          m.put(r,c,
+            this.get(r,0) * t.get(0,c) + 
+            this.get(r,1) * t.get(1,c) + 
+            this.get(r,2) * t.get(2,c) + 
+            this.get(r,3) * t.get(3,c)
+          )
+        }
+      }
+  
+      return m
+    } else {
+      throw `Only supports multiplying 4x4 matrices. a = ${a.rows}, b = ${b.cols}`
+    }
+  }
+  
+  transpose() {
+    // Turn rows into columns.
+  
+    const t = matrix(4, 4)
+  
+    for ( let r=0; r < 4; r++) {
+      for (let c=0; c < 4; c++) {
+        t.put(r,c,this.get(c,r))
+      }
+    }
+  
+    return t
+  }
+  
+  determinant() {
+  // Mansplained: Calculate the determinant of a matrix.
+  // For a 2x2 matrix
+  //   matrix = [a,b,c,d]
+  // the calculation is ad - bc.
+  // For larger matrices, take the first row and multiply each element with its cofactor.
+  // Inputs:
+  // m: matrix to calculate determinant for
+  // Returns Determinant for matrix, as a number.
+  
+  let det = 0
+  
+  if (m.d.length == 4) {
+    //log("error", "2x2 determinant")
+    det = (m.get(0,0) * m.get(1,1) - m.get(0,1) * m.get(1,0))
+  } else {
+    //log("error", ">2x>2 determinant")
+    for (let i = 0;i<m.cols;i++) {
+      det = det + m.get(0,i) * cofactor(m, 0, i)
+    }
+  }
+  
+  return det
+  }
+  
   equals(m) {
     const structural_equality = this._r === m.rows && this._c === m.cols 
     const elements_equal = []
@@ -525,33 +589,11 @@ function matrix(rows, cols) {
   return new Matrix(rows, cols)
 }
 
-function matrix_equal(ma, mb) {
-  throw(`matrix_equal() is deprecated. Use matrix().equals(m) instead.`)
-  // Test equality. A === B if Arows === Brows and Acols === Bcols
-  //log("error", `matrix_equal(): Running`)
-  
-  const structural_equality = ma.rows === mb.rows && ma.cols === mb.cols 
-  const elements_equal = []
-  if (structural_equality) {
-   
-    for (let i=0;i<ma.d.length;i++) {
-    
-      if ( !equal(ma.d[i], mb.d[i]) ) {
-        //log("error", `These fuckers aren't equal: ${ma.d[i]} and ${mb.d[i]}`)
-        elements_equal.push(false)
-      } else {
-        elements_equal.push(true)
-      }
-    }
-  }
-  //log("error", elements_equal)
-  return !elements_equal.includes(false)
-}
-
 function multiply_matrices(a, b) {
   // Multiply matrices.
   // Only supports 4x4 matrices.
-    
+  throw(`multiply_matrices() is deprecated. Use matrix.times_matrix(m) instead.`)
+  
   if (a.rows * a.cols != 16 || b.rows * b.cols != 16) {
     throw `Only supports multiplying 4x4 matrices. a = ${a.rows}, b = ${b.cols}`
   }
@@ -572,23 +614,6 @@ function multiply_matrices(a, b) {
   return m
 }
 
-function multiply_matrix_by_tuple(ma, t) {
-  throw(`multiply_matrix_by_tuple() is deprecated. Use matrix().times_tuple(t) instead.`)
-  // Multiply matrix by tuple.
-  // Returns a tuple.
-  
-  const result = []
-  for (let r = 0; r <= 3; r++) {
-    result[r] = 
-     ma.get(r,0) * t.x + 
-     ma.get(r,1) * t.y + 
-     ma.get(r,2) * t.z + 
-     ma.get(r,3) * t.w
-  }
-  
-  return tuple(result[0], result[1], result[2], result[3])
-}
-
 function idmatrix() {
   // Return an id_matrix
   const m = matrix(4, 4)
@@ -602,7 +627,8 @@ function idmatrix() {
 
 function transpose_matrix(m) {
   // Turn rows into columns.
-  
+  throw(`transpose_matrix() is deprecated. Use matrix.transpose() instead.`)
+
   const t = matrix(4, 4)
   
   for (let r=0;r<m.rows;r++) {
@@ -862,7 +888,7 @@ function transformations(trans) {
   
   for (e in t) {
     // To set the result of the multiplied matrices, add .d
-    m.putAll(multiply_matrices(m, t[e]).d)
+    m.putAll(m.times_matrix(t[e]).d)
     // log("error", `transformations(): ${e} ${t[e].d}`)
   }
   //log("error", "transformations(): m.d " + m.d)
@@ -876,7 +902,7 @@ function recursive_transformations(arr) {
   const i = arr.pop()
   if (arr.length === 0) {
     //log("error", "recursive_transformations(): " + "array.length=0")
-    return multiply_matrices(m, i )
+    return m.times_matrix(i)
   } else {
     //log("error", "recursive_transformations(): " + "arr.length!=0")
     m.putAll(recursive_transformations(arr ) )
@@ -932,7 +958,7 @@ class Sphere {
     
   set transform(value) {
     if (value.d != undefined) {
-      this._transform = multiply_matrices(this._transform, value)
+      this._transform = this._transform.times_matrix(value)
     }
   }
   
@@ -1020,7 +1046,7 @@ function normal_at(obj, world_point) {
   
   const object_point = inverse(obj.transform).times_tuple(world_point)
   const object_normal = object_point.minus(point(0, 0, 0))
-  const world_normal = transpose_matrix(inverse(obj.transform)).times_tuple(object_normal)
+  const world_normal = inverse(obj.transform).transpose().times_tuple(object_normal)
   
   return vector(world_normal.x, world_normal.y, world_normal.z).normalize()
 }
@@ -1383,7 +1409,7 @@ function view_transform(from, to, up) {
                               0,          0,          0, 1,
                     ])
   
-  return multiply_matrices(orientation, translation(-from.x, -from.y, -from.z))
+  return orientation.times_matrix(translation(-from.x, -from.y, -from.z))
 }
 
 class Camera {
@@ -1418,7 +1444,7 @@ class Camera {
   
   set transform(value) {
     if (value.d != undefined) {
-      this._transform = multiply_matrices(this._transform, value)
+      this._transform = this._transform.times_matrix(value)
     }
   }
   
@@ -2040,7 +2066,7 @@ function test_multiply_matrices_function() {
   mb.putAll([-2,1,2,3,3,2,1,-1,4,3,6,5,1,2,7,8])
   mc.putAll([20,22,50,48,44,54,114,108,40,58,110,102,16,26,46,42])
   
-  return mc.equals(multiply_matrices(ma, mb))
+  return mc.equals(ma.times_matrix(mb))
 }
 
 function test_multiply_matrix_by_tuple_function() {
@@ -2094,7 +2120,7 @@ function test_multiply_by_identity_matrix_function() {
   // This is the multiplicative identity for matrices:
   const id_matrix = idmatrix()
   
-  return t.equals(id_matrix.times_tuple(t)) && m.equals(multiply_matrices(m, id_matrix))
+  return t.equals(id_matrix.times_tuple(t)) && m.equals(m.times_matrix(id_matrix))
   
 }
 
@@ -2117,7 +2143,7 @@ function test_transpose_matrix_function() {
   const mt = matrix(4, 4)
   mt.putAll([0,9,1,0,9,8,8,0,3,0,5,5,0,8,3,8])
   
-  return mt.equals(transpose_matrix(ma))
+  return mt.equals(ma.transpose())
   
 }
 
@@ -2126,7 +2152,7 @@ function test_transpose_identity_matrix() {
   
   const t = idmatrix()
   
-  return t.equals(transpose_matrix(t))
+  return t.equals(t.transpose())
 }
 
 function test_calculate_determinant_of_2x2_matrix() {
@@ -2377,9 +2403,9 @@ function test_multiply_by_inverse() {
   const mb = matrix(4, 4)
   mb.putAll([8,2,2,2,3,-1,7,0,7,0,5,4,6,-2,0,5])
   
-  const mc = multiply_matrices(ma, mb)
+  const mc = ma.times_matrix(mb)
   
-  return ma.equals(multiply_matrices(mc, inverse(mb)))
+  return ma.equals(mc.times_matrix(inverse(mb)))
 }
 
 function test_translation_function() {
@@ -2588,7 +2614,7 @@ function test_transformations_function() {
   //log("error", `Transformations tr sc rx rz ry: ${chained1.d}`)
   
   // Manually applying tranformations in reverse order:
-  const chained2 = multiply_matrices(
+  /*const chained2 = multiply_matrices(
                      idmatrix(), 
                        multiply_matrices(ry, 
                          multiply_matrices(rz, 
@@ -2598,6 +2624,9 @@ function test_transformations_function() {
                          )
                        )
                      )
+  */
+  const chained2 = idmatrix().times_matrix(ry.times_matrix(rz.times_matrix(rx.times_matrix(sc.times_matrix(tr)))))
+
   //log("error", "test_transformations_function(): chained1: " + chained1.d)
   //log("error", "test_transformations_function(): chained2: " + chained2.d)
   
@@ -2906,12 +2935,8 @@ function test_transform_sphere() {
   s3.transform = t1
   
   // Manually add transformations to s4
-  const chained = multiply_matrices(
-                    idmatrix(), 
-                      multiply_matrices(rz,
-                          multiply_matrices(sc, tr)
-                      )
-                    )
+  const chained = idmatrix().times_matrix(rz.times_matrix(sc.times_matrix(tr)))
+
   s4.transform = chained
   
   const transformations_applied_to_sphere = s3.transform.equals(s4.transform)
