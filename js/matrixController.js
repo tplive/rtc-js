@@ -54,3 +54,5 @@ var controller = app.controller('matrixCtrl', function($scope) {
   }
   
 })
+
+function format_matrix(m) { return m.map( n => `${n.toLocaleString('undefined')}`) }

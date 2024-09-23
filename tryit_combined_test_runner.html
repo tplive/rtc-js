@@ -1232,6 +1232,9 @@ class World {
       return this._objects.filter(e => e.transform.equals(object.transform) && e.material.equals(object.material) )
     }
   }
+  toString() {
+    return `World: ${this._objects}`
+  }
 }
 
 function world() {
@@ -1306,34 +1309,36 @@ class PrepareComputations {
   // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
   
   constructor(i, r) {
-    this._i = i
-    this._t = i.t
-    this._r = r
-    this._p = position(this._r, this._t)
-    this._e = this._r.direction.negate()
-    this._nv = normal_at(this._i.object, this._p)
-  }
-  
-  get t() { return this._t }
-  get object() { return this._i.object }
-  get point() { return this._p }
-  get eyev() { return this._e }
-  get normalv() { return this._nv }
-  get inside() {
-    if (this.normalv.dot(this.eyev) < 0 ) {
-      //log("error", "Inside true before negate(): " + this.normalv)
-      this.normalv = this.normalv.negate()
-      //log("error", "Inside true: " + this.normalv)
-      return true
+    // i must be a singular intersection(t, object), not an array!
+    if (!isNaN(i.t)) {
+      this._i = i
+      this._r = r
+      this._p = position(this._r, this._i.t)
+      this._e = this._r.direction.negate()
+      this._n = normal_at(this._i.object, this._p)
+      this._inside = this.is_inside()
+
     } else {
-      //log("error", "Inside false: " + this.normalv)
-      return false
+      throw(`Cannot construct a PrepareComputations object without a valid intersection, i.t was: ${i.t}`)
     }
   }
   
-  set normalv(v) {
-    this._nv = v
+  get t() { return this._i.t }
+  get object() { return this._i.object }
+  get point() { return this._p }
+  get eyev() { return this._e }
+  get normalv() { return this._n }
+  get inside() { return this._inside }
+  
+  is_inside() {
+    if (this._n.dot(this._e) < 0 ) {
+      this._n = this._n.negate()
+      return true
+    } else {
+      return false
+    }
   }
+  toString() { return `PrepareComputations(intersection, ray): t=${this.t} object.id=${this.object.id} point=${this.point} eyev=${this.eyev} normalv=${this.normalv} inside=${this.inside}` }
 }
 
 function prepare_computations(i, r) {
@@ -1351,24 +1356,29 @@ function color_at(w, r) {
   // The color_at function uses intersect(), prepare_computations()
   // and shade_hit() to compute the color at the resulting intersection
   
-  var comps
   const xs = intersect_world(w, r)
   
-  for (x in xs) {
-    for (shape in w.objects) {
-      const i = intersect(xs[x], shape)
-      comps = prepare_computations(i, r)
-    }
+  if (xs.length === 0) {
+    // Ray did not intersect any objects in this world
+    return color(0, 0, 0)
+  } else {
+    
+    // Find the hit
+    const i = hit(xs)
+    
+    // We prepare the computations
+    comps = prepare_computations(i, r)
+    
+    // We calculate the color
+    return shade_hit(w, comps)
   }
-  
-  const h = shade_hit(w, comps)
-  
-  return lighting(comps.object.material, w.light[0], comps.point, comps.eyev, comps.normalv)
 }
 
 </script>
 <script>
 // *** TESTS
+`@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@`
+
 function test_tuple_function() {
   // Constructing a tuple with x=1, y=2, z=3, w=1 should return a tuple object with matching values
 
@@ -3006,12 +3016,10 @@ function test_prepare_computations_function() {
   const i = intersection(4, s)
   
   const comps = prepare_computations(i, r)
+  //log("error", " comps.t: " + comps.t)
+  //log("error", " comps.eyev: " + comps.eyev)
+  //log("error", " comps: " + comps.toString())
   
-  //log("error", comps.t)
-  //log("error", comps.object.transform.d)
-  //log("error", comps.point)
-  //log("error", comps.eyev)
-  //log("error", comps.normalv)
   
   return comps.t === i.t
       && comps.object.equals(i.object)
@@ -3033,6 +3041,7 @@ function test_hit_inside_object() {
   const s2 = new Sphere()
   const i2 = intersection(1, s2)
   const comps2 = prepare_computations(i2, r2)
+
   const res2 = comps2.point.equals(point(0, 0, 1)) 
             && comps2.eyev.equals(vector(0, 0, -1))
             && comps2.inside
@@ -3085,11 +3094,23 @@ function test_color_at_function() {
   const c1 = color_at(w, r1)
   
   // The color when a ray hits
-  const r2 = ray(point(0, 0, 5), vector(0, 1, 0))
+  const r2 = ray(point(0, 0, -5), vector(0, 0, 1))
   const c2 = color_at(w, r2)
   
-  //return c1.equals(color(0, 0, 0)) 
-  //    && c2.equals(color(0.38066, 0.47583, 0.2855))
+  // The color with an intersection behind the ray
+  w.objects[0].material.ambient = 1.0
+  const outer = w.objects[0]
+  w.objects[1].material.ambient = 1.0
+  const inner = w.objects[1]
+  
+  const r3 = ray(point(0, 0, 0.75), vector(0, 0, -1))
+  const c3 = color_at(w, r3)
+  log("error", c3)
+  log("error", inner.material.color)
+  
+  return c1.equals(color(0, 0, 0)) 
+      && c2.equals(color(0.38066, 0.47583, 0.2855))
+      && c3.equals(inner.material.color)
 }
 
 </script>
@@ -3211,7 +3232,7 @@ runTest("scene_list", test_intersect_world_function)
 runTest("scene_list", test_prepare_computations_function)
 runTest("scene_list", test_hit_inside_object)
 runTest("scene_list", test_shade_hit_function)
-//runTest("scene_list", test_color_at_function)
+runTest("scene_list", test_color_at_function)
 
 
 

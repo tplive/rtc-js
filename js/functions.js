@@ -1178,6 +1178,9 @@ class World {
       return this._objects.filter(e => e.transform.equals(object.transform) && e.material.equals(object.material) )
     }
   }
+  toString() {
+    return `World: ${this._objects}`
+  }
 }
 
 function world() {
@@ -1189,7 +1192,7 @@ function default_world() {
   // Creates a default world
   
   // Create world object
-  const w = new World()
+  const w = world()
   
   // Create a default light object
   const light = point_light(point(-10, 10, -10), color(1, 1, 1))
@@ -1252,33 +1255,36 @@ class PrepareComputations {
   // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
   
   constructor(i, r) {
-    this._i = i
-    this._t = i.t
-    this._r = r
-    this._p = position(this._r, this._t)
-    this._e = this._r.direction.negate()
-    this._nv = normal_at(this._i.object, this._p)
+    // i must be a singular intersection(t, object), not an array!
+    if (!isNaN(i.t)) {
+      this._i = i
+      this._r = r
+      this._p = position(this._r, this._i.t)
+      this._e = this._r.direction.negate()
+      this._n = normal_at(this._i.object, this._p)
+      this._inside = this.is_inside()
+
+    } else {
+      throw(`Cannot construct a PrepareComputations object without a valid intersection, i.t was: ${i.t}`)
+    }
   }
   
-  get t() { return this._t }
+  get t() { return this._i.t }
   get object() { return this._i.object }
   get point() { return this._p }
   get eyev() { return this._e }
-  get normalv() { return this._nv }
-  get inside() { 
-    if (this.normalv.dot(this.eyev) < 0 ) {
-        this.normalv = this.normalv.negate()
-        //log("error", "Inside true")
-        return true
-      } else {
-        //log("error", "Inside false")
-        return false
-      }
-  }
+  get normalv() { return this._n }
+  get inside() { return this._inside }
   
-  set normalv(v) {
-    this._nv = v
+  is_inside() {
+    if (this._n.dot(this._e) < 0 ) {
+      this._n = this._n.negate()
+      return true
+    } else {
+      return false
+    }
   }
+  toString() { return `PrepareComputations(intersection, ray): t=${this.t} object.id=${this.object.id} point=${this.point} eyev=${this.eyev} normalv=${this.normalv} inside=${this.inside}` }
 }
 
 function prepare_computations(i, r) {
@@ -1289,6 +1295,27 @@ function prepare_computations(i, r) {
 
 function shade_hit(w, c) {
   // Call lighting() function with the intersected object's material and the prepared computations
-  
   return lighting(c.object.material, w.lights[0], c.point, c.eyev, c.normalv)
+}
+
+function color_at(w, r) {
+  // The color_at function uses intersect(), prepare_computations()
+  // and shade_hit() to compute the color at the resulting intersection
+  
+  const xs = intersect_world(w, r)
+  
+  if (xs.length === 0) {
+    // Ray did not intersect any objects in this world
+    return color(0, 0, 0)
+  } else {
+    
+    // Find the hit
+    const i = hit(xs)
+    
+    // We prepare the computations
+    comps = prepare_computations(i, r)
+    
+    // We calculate the color
+    return shade_hit(w, comps)
+  }
 }

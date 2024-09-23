@@ -1,4 +1,6 @@
 // *** TESTS
+`@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@`
+
 function test_tuple_function() {
   // Constructing a tuple with x=1, y=2, z=3, w=1 should return a tuple object with matching values
 
@@ -1636,12 +1638,10 @@ function test_prepare_computations_function() {
   const i = intersection(4, s)
   
   const comps = prepare_computations(i, r)
+  //log("error", " comps.t: " + comps.t)
+  //log("error", " comps.eyev: " + comps.eyev)
+  //log("error", " comps: " + comps.toString())
   
-  //log("error", comps.t)
-  //log("error", comps.object.transform.d)
-  //log("error", comps.point)
-  //log("error", comps.eyev)
-  //log("error", comps.normalv)
   
   return comps.t === i.t
       && comps.object.equals(i.object)
@@ -1650,7 +1650,7 @@ function test_prepare_computations_function() {
       && comps.normalv.equals(vector(0, 0, -1))
 }
 
-function test_hit_inside_function() {
+function test_hit_inside_object() {
   // Test hit when an intersection occurs on the outside
   
   const r1 = ray(point(0, 0, -5), vector(0, 0, 1))
@@ -1663,28 +1663,7 @@ function test_hit_inside_function() {
   const s2 = new Sphere()
   const i2 = intersection(1, s2)
   const comps2 = prepare_computations(i2, r2)
-  const res2 = comps2.point.equals(point(0, 0, 1)) 
-            && comps2.eyev.equals(vector(0, 0, -1))
-            && comps2.inside
-            //&& comps2.normalv.equals(vector(0, 0, -1)) // Would have been 0, 0, 1, but it's inverted!
-  
-  
-  return !comps1.inside && res2
-}
 
-function test_hit_inside_function() {
-  // Test hit when an intersection occurs on the outside
-  
-  const r1 = ray(point(0, 0, -5), vector(0, 0, 1))
-  const s1 = new Sphere()
-  const i1 = intersection(4, s1)
-  const comps1 = prepare_computations(i1, r1)
-  
-  // Test hit when an intersection occurs on the inside
-  const r2 = ray(point(0, 0, 0), vector(0, 0, 1))
-  const s2 = new Sphere()
-  const i2 = intersection(1, s2)
-  const comps2 = prepare_computations(i2, r2)
   const res2 = comps2.point.equals(point(0, 0, 1)) 
             && comps2.eyev.equals(vector(0, 0, -1))
             && comps2.inside
@@ -1725,4 +1704,21 @@ function test_shade_hit_function() {
   const res2 = c2.equals(color(0.90498, 0.90498, 0.90498))
   
   return res1 && res2
+}
+
+function test_color_at_function() {
+  // Test that the color_at function gives the correct color when applied to a default world
+  
+  const w = default_world()
+  
+  // First, when ray misses
+  const r1 = ray(point(0, 0, -5), vector(0, 1, 0))
+  const c1 = color_at(w, r1)
+  
+  // The color when a ray hits
+  const r2 = ray(point(0, 0, -5), vector(0, 0, 1))
+  const c2 = color_at(w, r2)
+  
+  return c1.equals(color(0, 0, 0)) 
+      && c2.equals(color(0.38066, 0.47583, 0.2855))
 }
