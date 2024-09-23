@@ -54,6 +54,7 @@ const EPSILON = 1.0*10**(-PRECISION)
 // *** HELPER FUNCTIONS
 
 function log(domId, msg) {
+    
   const para = document.createElement("p");
   const node = document.createTextNode(msg);
   para.appendChild(node);
@@ -319,25 +320,29 @@ function matrix(rows, cols) {
   let a = Array(rows).fill(null).map(()=>Array(cols).fill(0)) // Was: Array(rows).fill(Array(cols).fill(0))
   //log("error", a.join("\n"))
 
-  return a
+  return structuredClone(a)
 }
 
 function matrix_equal(ma, mb) {
-  // Test equality. A === B if Arows == Brows and Acols == Bcols
+  // Test equality. A === B if Arows === Brows and Acols === Bcols
+  
   
   const masize = ma.length * ma[0].length
   const mbsize = mb.length * mb[0].length
+  
+  // Ensure structural equality first.
   if ( masize === mbsize && masize / ma[0].length === mbsize / mb[0].length ) {
     
     //log("error", `masize (${masize}) / ma[0].length (${ma[0].length}) === mbsize (${mbsize}) / mb[0].length (${mb[0].length})`)
     
+    // This for loop is preferable (less chance of OBOB) when we don't calculate anything from r and c, as they are strings...
     for (let r in ma) {
       //log("error", ma[r])
       //log("error", mb[r])
       for (let c in ma[r]) {
         //log("error", `${ma[r][c]} === ${mb[r][c]}`)
         if (!(equal(ma[r][c], mb[r][c]))) {
-          log("error", "These fuckers aren't equal: " + ma[r][c] + " and " + mb[r][c])
+          //log("error", "These fuckers aren't equal: " + ma[r][c] + " and " + mb[r][c])
           return false
         }
       }
@@ -355,9 +360,9 @@ function multiply_matrices(a, b) {
   }
   const m = matrix(4, 4)
   
-  for (let r = 0; r <= 3; r++) {
+  for (let r in m) {
     //log("error", "r: " + r)
-    for (let c = 0; c <= 3; c++) {
+    for (let c in m) {
      //log("error", "    c: " + c)
      m[r][c] = 
        a[r][0] * b[0][c] + 
@@ -402,9 +407,10 @@ function transpose_matrix(m) {
   
   const t = matrix(4, 4)
   
-  for (let r = 0; r <= 3; r++) {
+  // This for loop is ok when we are not computing values from r or c; they are strings.
+  for (let r in m) {
     //log("error", "r: " + r)
-    for (let c = 0; c <= 3; c++) {
+    for (let c in m) {
      //log("error", "    c: " + c)
      t[r][c] = m[c][r]
     }
@@ -426,12 +432,11 @@ function determinant(m) {
   
   let det = 0
   
-  let mc = structuredClone(m)
-  
   if (m.length == 2) {
     det = (m[0][0] * m[1][1] - m[0][1] * m[1][0])
   } else {
-    for (let i in m[0]) {
+    let mc = structuredClone(m)
+    for (let i = 0; i <= m[0].length - 1;i++) {
       det = det + m[0][i] * cofactor(mc, 0, i)
     }
   }
@@ -447,25 +452,30 @@ function submatrix(mat, row, col) {
   // col: column to remove
   // Calculates and returns submatrix with row r and col c removed
   
-  const sml = mat.length -1
-  const m = structuredClone(mat)
+  let m = structuredClone(mat)
   
   //log("error", `Matrix is ${m.length} x ${m[0].length}`)
   //log("error", m.join("\n"))
   
+  
+  // Loop over all elements, r * c, remove full column first.
+  for (let r in m) {
+    for (let c in m[r]) {
+      if ( c == col) {
+        //log("error", "Found col to remove: " + c + " in row " + r + " which reads " + m[r][c])
+        m[r].splice(c, 1)
+      }
+    }
+  }
+  
+  // Loop over all rows, remove matching row.
   for (let r in m) {
     if ( r == row) {
       //log("error", "Found row to remove: " + r)
       m.splice(r, 1)
     }
-    
-    for (let c in m[r]) {
-      if ( c == col) {
-        //log("error", "Found col to remove: " + c)
-        m[r].splice(c, 1)
-      }
-    }
   }
+  
   //log("error", `Submatrix is ${m.length} x ${m[0].length}`)
   //log("error", m.join("\n"))
   
@@ -480,9 +490,8 @@ function minor(ma, row, col) {
   //   col: submatrix column
   // Returns the determinant of the submatrix.
   
-  const m = structuredClone(ma)
   //log("error", ma.join("\n"))
-  const sm = submatrix(m, row, col)
+  const sm = submatrix(ma, row, col)
   const d = determinant(sm)
   return d
   
@@ -515,17 +524,21 @@ function inverse(ma) {
     throw "Matrix is not invertible, determinant is 0"
   }
   
-  m = structuredClone(ma)
-  d = determinant(m)
-  m2 = structuredClone(m)
+  let m = structuredClone(ma)
+  let d = determinant(m)
+  let m2 = structuredClone(ma)
+  //log("error", "m\n" + m.join("\n"))
+  //log("error", "m2\n" + m2.join("\n"))
   
-  for (r in m) {
+  // DO NOT use (for x in y) as x and y will be strings.
+  // DO remember to do "length -1".
+  for (let r = 0; r <= m.length-1; r++) {
     //log("error", m[r])
-    for (c in m[r]) {
+    for (let c = 0; c <= m.length-1; c++) {
       //log("error", c)
       const cof = cofactor(m, r, c)
-      //log("error", "Cofactor: " + cof)
-      m2[c][r] = cof / d//determinant(m)
+      //log("error", "Cofactor: " + cof + ", c: " + c + " r: " + r)
+      m2[c][r] = cof / d
       //log("error", "New value: " + m2[c][r])
     }
   }
@@ -968,9 +981,9 @@ function test_create_matrix_function() {
   // Test create and verify matrices of 2x2, 3x3, 4x4, 3x5 and 5x3
   // matrix[row][col], row and col are 0-based indexes.
   
-  //const m4x4 = create_matrix(4, 4)
   const m4x4 = matrix(4, 4)
   
+  // One way of setting array elements:
   m4x4[0] = [1,2,3,4]
   m4x4[1] = [5.5,6.5,7.5,8.5]
   m4x4[2] = [9,10,11,12]
@@ -1005,15 +1018,19 @@ function test_matrix_equal_function() {
   
   let ma = matrix(4, 4)
   
+  // When we want to populate a matrix like this, we cannot make it a conststant variable.
   ma = [[1,2,3,4],[5,6,7,8],[9,8,7,6],[5,4,3,2]]
   
-  mb = structuredClone(ma)
+  // Make a copy that doesn't reference the original array using structuredClone()
+  const mb = structuredClone(ma)
   
   const is_equal = matrix_equal(ma, mb)
   
-  // Some values not equal but within the PRECISION threshold
-  // Should still be equal
+  // Change some values so they are not exactly equal but still within the PRECISION threshold
+  // Should still be evaluated to equal
   ma[0][1] = 1.999999
+  
+  // (Individual elements can still be set on a const array:
   mb[1][0] = 5.00001
   
   const close_enough = matrix_equal(ma, mb)
@@ -1089,6 +1106,7 @@ function test_multiply_by_identity_matrix_function() {
   // "multiplicative identity". There also exists an "identity matrix", and this test
   // demonstrates the "non-effect" of multiplying matrix and tuple by the identity matrix.
   
+  // If we make the matrix a const, we can skip using matrix()
   const ma = [[7,9,3,5],[2,2,0,8],[2,6,2,9],[2,2,2,2]]
   const t = tuple(7, 6, 5, 4)
   
@@ -1116,7 +1134,7 @@ function test_transpose_identity_matrix() {
   
   const t = transpose_matrix([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
   
-    return matrix_equal(t, transpose_matrix(t))
+  return matrix_equal(t, transpose_matrix(t))
 
 }
 
@@ -1125,10 +1143,11 @@ function test_calculate_determinant_of_2x2_matrix() {
   
   const m = matrix(2, 2)
   
-  m[0] = [1,5]
-  m[1][0] = -3
-  m[1][1] = 2
+  m[0] = [1,5] //  | a, b |
+  m[1] = [-3,2] // | c, d |
   
+  // d = ad - bc = 1*2 - 5*(-3) = 17
+    
   return (determinant(m) === 17)
 }
 
@@ -1144,10 +1163,10 @@ function test_submatrix_function() {
   // The expected result:
   m4c = [[-6,1,6],[-8,8,6],[-7,-1,1]]
   
-  const sm3 = submatrix(m4, 2, 1)
+  const sm3 = submatrix(m4, 2, 1) // From m4, remove row 2 and column 1
   
-  //log("error", sm3.join("\n"))
-  //log("error", m4c.join("\n"))
+  //log("error", "sm3:\n" + sm3.join("\n"))
+  //log("error", "m4c:\n" + m4c.join("\n"))
   //log("error", "Equal: " + matrix_equal(sm3, m4c))
   
   // 3x3 ==> 2x2
@@ -1173,11 +1192,11 @@ function test_minor_function() {
   
   m3 = [[3,5,0],[2,-1,-7],[6,-1,5]]
   
-  const m2 = submatrix(structuredClone(m3), 1, 0)
+  const m2 = submatrix(m3, 1, 0)
   
-  const d = determinant([[5,0],[-1,5]])
+  const d = determinant(m2) // [[5,0],[-1,5]]
   
-  const min = minor(structuredClone(m3), 1, 0)
+  const min = minor(m3, 1, 0)
   
   //log("error", `d: ${d}, minor: ${min}`)
   return (d === min)
@@ -1191,8 +1210,22 @@ function test_cofactor_function() {
   // | + - + |
   // Also, doing a "negate if row + col is odd number" should work.
   
-  let m = matrix(3, 3)
   const m3 = [[3,5,0],[2,-1,-7],[6,-1,5]]
+  let coughs = matrix(3,3)
+  let mins = matrix(3,3)
+  // Test every single cofactor
+  for (let r=0; r<= m3.length-1;r++) {
+    for (let c=0; c<= m3.length-1;c++) {
+      mins[r][c] = minor(structuredClone(m3), r, c)
+      coughs[r][c] = cofactor(structuredClone(m3), r, c)
+    }
+  }
+  
+  const expected_cofactors = [[-12,-52,4],[-25,15,33],[-35,21,-13]]
+  
+  //log("error", "expected_cofactors\n" + expected_cofactors.join("\n"))
+  //log("error", "coughs\n" + coughs.join("\n"))
+  //log("error", "mins\n" + mins.join("\n"))
   
   const min1 = minor(structuredClone(m3), 0, 0) // = -12
   const cof1 = cofactor(structuredClone(m3), 0, 0) //= -12
@@ -1200,9 +1233,8 @@ function test_cofactor_function() {
   const min2 = minor(structuredClone(m3), 1, 0) // = 25
   const cof2 = cofactor(structuredClone(m3), 1, 0) //= -25
   
-  //log("error", `${min1}, ${cof1}, ${min2}, ${cof2}`)
-  
-  return (min1 === cof1 && min2 === -cof2)
+  //log("error", `${min1} === ${cof1}, ${min2} === ${-cof2}`)
+  return (min1 === cof1 && min2 === -cof2 && matrix_equal(coughs, expected_cofactors))
   
 }
 
@@ -1212,10 +1244,10 @@ function test_calculate_determinant_of_3x3_matrix() {
   
   const m = [[1,2,6],[-5,8,-4],[2,6,4]]
   
-  cof1 = cofactor(structuredClone(m), 0, 0) // = 56
-  cof2 = cofactor(structuredClone(m), 0, 1) // = 12
-  cof3 = cofactor(structuredClone(m), 0, 2) // = -46
-  d1 = determinant(structuredClone(m)) // = -196
+  cof1 = cofactor(m, 0, 0) // = 56
+  cof2 = cofactor(m, 0, 1) // = 12
+  cof3 = cofactor(m, 0, 2) // = -46
+  d1 = determinant(m) // = -196
   
   //log("error", "cofactor (0,0) = " + cof1)
   //log("error", "cofactor (0,1) = " + cof2)
@@ -1260,9 +1292,11 @@ function test_inverse_matrix_function() {
   const im = inverse(structuredClone(m))
   const det = determinant(structuredClone(m)) // = 532
   const cof1 = cofactor(structuredClone(m), 2, 3) // = -160
-  const e1 = im[3][2] // = -160/532 ???
+  const e1 = im[3][2] // = -160/532 
+  //log("error", e1 + " equals -160/532=" + -160/532)
   const cof2 = cofactor(structuredClone(m), 3, 2) // 105
   const e2 = im[2][3] // = 105/532 ???
+  //log("error", e2 + " equals 105/532=" + 105/532)
   
   const expected_inverse = [
     [0.21805,0.45113,0.24060,-0.04511],
@@ -1271,21 +1305,56 @@ function test_inverse_matrix_function() {
     [-0.52256,-0.81391,-0.30075,0.30639]
   ]
   
-  // FEIL FORTEGN I FLERE ELEMENTER! COFACTOR FUNKSJONEN ER FUBAR!!
-  const full_values = [ 
-    [0.21804511278195488,-0.45112781954887216,0.24060150375939848,0.045112781954887216],
-    [-0.8082706766917294,1.4567669172932332,-0.44360902255639095,-0.5206766917293233],
-    [-0.07894736842105263,0.2236842105263158,-0.05263157894736842,-0.19736842105263158],
-    [-0.5225563909774437,0.8139097744360902,-0.3007518796992481,-0.30639097744360905]
-  ]
-  
   const is_inverse = matrix_equal(im, expected_inverse)
+    
+  //log("error", m.join("\n"))
+  //log("error", im.join("\n"))
   
-  log("error", equal(0.21805, 0.21804511278195488))
+  return ( is_inverse && equal(cof1, -160) && equal(cof2, 105) && equal(e1, -160/532) && equal(e2, 105/532))
+}
+
+function test_inverse_matrix_function_2() {
+  // Test inverting another couple of matrices for good measure.
   
-  log("error", m.join("\n"))
-  log("error", im.join("\n"))
+  const m1 = [[8,-5,9,2],[7,5,6,1],[-6,0,9,6],[-3,0,-9,-4]]
+  const m2 = [[9,3,0,9],[-5,-2,-6,-3],[-4,9,6,4],[-7,6,6,2]]
   
+  // Expected result of inverse(m1):
+  const exp_m1i = [[-0.15385,-0.15385,-0.28205,-0.53846],
+    [-0.07692,0.12308,0.02564,0.03077],
+    [0.35897,0.35897,0.43590,0.92308],
+    [-0.69231,-0.69231,-0.76923,-1.92308]]
+  
+  const exp_m2i = [[-0.04074,-0.07778,0.14444,-0.22222],
+    [-0.07778,0.03333,0.36667,-0.33333],
+    [-0.02901,-0.14630,-0.10926,0.12963],
+    [0.17778,0.06667,-0.26667,0.33333]]
+  
+  const m1i = inverse(m1)
+  const m2i = inverse(m2)
+  
+  //log("error", m2i.join("\n"))
+  
+  return (matrix_equal(m1i, exp_m1i) && matrix_equal(m2i, exp_m2i))
+}
+
+function test_multiply_by_inverse() {
+  // Test that it is indeed possible to 
+  // multiply matrix A by matrix B to produce matrix C
+  // and then multiplying C by the inverse of B to get A again!
+  
+  const ma = [[3,-9,7,3],[3,-8,2,-9],[-4,4,4,1],[-6,5,-1,1]]
+  const mb = [[8,2,2,2],[3,-1,7,0],[7,0,5,4],[6,-2,0,5]]
+  
+  const mc = multiply_matrices(ma, mb)
+  
+  log("error", multiply_matrices(ma, inverse(ma)).join("\n"))
+  
+  const trans_inverse = inverse(transpose_matrix(structuredClone(ma)))
+  const inverse_trans = transpose_matrix(inverse(structuredClone(ma)))
+  log("error", matrix_equal(trans_inverse, inverse_trans))
+  
+  return (matrix_equal(multiply_matrices(mc, inverse(mb)), ma))
 }
 
 </script>
@@ -1366,6 +1435,8 @@ runTest("matrix_list", test_cofactor_function)
 runTest("matrix_list", test_calculate_determinant_of_3x3_matrix)
 runTest("matrix_list", test_is_matrix_invertible)
 runTest("matrix_list", test_inverse_matrix_function)
+runTest("matrix_list", test_inverse_matrix_function_2)
+runTest("matrix_list", test_multiply_by_inverse)
 
 
 const end = performance.now()

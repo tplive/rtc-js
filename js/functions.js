@@ -9,6 +9,7 @@ const EPSILON = 1.0*10**(-PRECISION)
 // *** HELPER FUNCTIONS
 
 function log(domId, msg) {
+    
   const para = document.createElement("p");
   const node = document.createTextNode(msg);
   para.appendChild(node);
@@ -274,24 +275,29 @@ function matrix(rows, cols) {
   let a = Array(rows).fill(null).map(()=>Array(cols).fill(0)) // Was: Array(rows).fill(Array(cols).fill(0))
   //log("error", a.join("\n"))
 
-  return a
+  return structuredClone(a)
 }
 
 function matrix_equal(ma, mb) {
-  // Test equality. A === B if Arows == Brows and Acols == Bcols
+  // Test equality. A === B if Arows === Brows and Acols === Bcols
+  
   
   const masize = ma.length * ma[0].length
   const mbsize = mb.length * mb[0].length
+  
+  // Ensure structural equality first.
   if ( masize === mbsize && masize / ma[0].length === mbsize / mb[0].length ) {
     
     //log("error", `masize (${masize}) / ma[0].length (${ma[0].length}) === mbsize (${mbsize}) / mb[0].length (${mb[0].length})`)
     
+    // This for loop is preferable (less chance of OBOB) when we don't calculate anything from r and c, as they are strings...
     for (let r in ma) {
       //log("error", ma[r])
       //log("error", mb[r])
       for (let c in ma[r]) {
         //log("error", `${ma[r][c]} === ${mb[r][c]}`)
         if (!(equal(ma[r][c], mb[r][c]))) {
+          //log("error", "These fuckers aren't equal: " + ma[r][c] + " and " + mb[r][c])
           return false
         }
       }
@@ -309,9 +315,9 @@ function multiply_matrices(a, b) {
   }
   const m = matrix(4, 4)
   
-  for (let r = 0; r <= 3; r++) {
+  for (let r in m) {
     //log("error", "r: " + r)
-    for (let c = 0; c <= 3; c++) {
+    for (let c in m) {
      //log("error", "    c: " + c)
      m[r][c] = 
        a[r][0] * b[0][c] + 
@@ -356,9 +362,10 @@ function transpose_matrix(m) {
   
   const t = matrix(4, 4)
   
-  for (let r = 0; r <= 3; r++) {
+  // This for loop is ok when we are not computing values from r or c; they are strings.
+  for (let r in m) {
     //log("error", "r: " + r)
-    for (let c = 0; c <= 3; c++) {
+    for (let c in m) {
      //log("error", "    c: " + c)
      t[r][c] = m[c][r]
     }
@@ -385,7 +392,7 @@ function determinant(m) {
   if (m.length == 2) {
     det = (m[0][0] * m[1][1] - m[0][1] * m[1][0])
   } else {
-    for (let i in m[0]) {
+    for (let i =0; i <= m[0].length -1;i++) {
       det = det + m[0][i] * cofactor(mc, 0, i)
     }
   }
@@ -401,25 +408,30 @@ function submatrix(mat, row, col) {
   // col: column to remove
   // Calculates and returns submatrix with row r and col c removed
   
-  const sml = mat.length -1
-  const m = structuredClone(mat)
+  let m = structuredClone(mat)
   
   //log("error", `Matrix is ${m.length} x ${m[0].length}`)
   //log("error", m.join("\n"))
   
+  
+  // Loop over all elements, r * c, remove full column first.
+  for (let r in m) {
+    for (let c in m[r]) {
+      if ( c == col) {
+        //log("error", "Found col to remove: " + c + " in row " + r + " which reads " + m[r][c])
+        m[r].splice(c, 1)
+      }
+    }
+  }
+  
+  // Loop over all rows, remove matching row.
   for (let r in m) {
     if ( r == row) {
       //log("error", "Found row to remove: " + r)
       m.splice(r, 1)
     }
-    
-    for (let c in m[r]) {
-      if ( c == col) {
-        //log("error", "Found col to remove: " + c)
-        m[r].splice(c, 1)
-      }
-    }
   }
+  
   //log("error", `Submatrix is ${m.length} x ${m[0].length}`)
   //log("error", m.join("\n"))
   
@@ -429,9 +441,9 @@ function submatrix(mat, row, col) {
 function minor(ma, row, col) {
   // Mansplained: The minor of an element at row i and column j is the determinant of the submatrix at (i, j).
   // Inputs:
-  // ma: 3x3 array to calculate minor on.
-  // row: submatrix row
-  // col: submatrix column
+  //   ma: 3x3 array to calculate minor on.
+  //   row: submatrix row
+  //   col: submatrix column
   // Returns the determinant of the submatrix.
   
   //log("error", ma.join("\n"))
@@ -450,9 +462,9 @@ function cofactor(ma, r, c) {
   // | + - + |
   // Also, doing a "negate if row + col is odd number" should work.
   // Inputs:
-  // ma: The matrix to calculate cofactor on
-  // r: row to calculate cofactor on
-  // c: col to calculate cofactor on
+  //   ma: The matrix to calculate cofactor on
+  //   r: row to calculate cofactor on
+  //   c: col to calculate cofactor on
   // Returns cofactor of matrix at row, col.
   
   const min = minor(ma, r, c)
@@ -460,3 +472,33 @@ function cofactor(ma, r, c) {
   // Determine if indexes at row+col (r-1 + c-1) is an odd number and if so, return the negative value of min, else return min.
   return (r + c) % 2 == 0 ? min : min * -1
 }
+
+function inverse(ma) {
+  // Mansplained: Calculate the inverse of a matrix
+  
+  if (determinant(ma) === 0) {
+    throw "Matrix is not invertible, determinant is 0"
+  }
+  
+  let m = structuredClone(ma)
+  let d = determinant(m)
+  let m2 = structuredClone(ma)
+  //log("error", "m\n" + m.join("\n"))
+  //log("error", "m2\n" + m2.join("\n"))
+  
+  // DO NOT use (for x in y) as x and y will be strings.
+  for (let r = 0; r <= m.length-1; r++) {
+    //log("error", m[r])
+    for (let c = 0; c <= m.length-1; c++) {
+      //log("error", c)
+      const cof = cofactor(m, r, c)
+      //log("error", "Cofactor: " + cof + ", c: " + c + " r: " + r)
+      m2[c][r] = cof / d
+      //log("error", "New value: " + m2[c][r])
+    }
+  }
+  
+  return m2
+  
+}
+
