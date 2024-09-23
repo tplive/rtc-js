@@ -458,18 +458,38 @@ function matrix(rows, cols) {
       const result = []
       for (let r = 0; r <= 3; r++) {
         result[r] = 
-          _a.get(r,0) * t.x + 
-          _a.get(r,1) * t.y + 
-          _a.get(r,2) * t.z + 
-          _a.get(r,3) * t.w
+          this.get(r,0) * t.x + 
+          this.get(r,1) * t.y + 
+          this.get(r,2) * t.z + 
+          this.get(r,3) * t.w
       }
       
       return tuple(result[0], result[1], result[2], result[3])
+    },
+    equals: function(m) {
+      const structural_equality = this.rows === m.rows && this.cols === m.cols 
+      const elements_equal = []
+      if (structural_equality) {
+        for (let i=0;i<this.d.length;i++) {
+          if ( !equal(this.d[i], m.d[i]) ) {
+            //log("error", `These fuckers aren't equal: ${ma.d[i]} and ${mb.d[i]}`)
+            elements_equal.push(false)
+          } else {
+            elements_equal.push(true)
+          }
+        }
+      } else { 
+        // Return if structural_equality is false
+        return false 
+      }
+    //log("error", elements_equal)
+    return !elements_equal.includes(false)
     },
   })
 }
 
 function matrix_equal(ma, mb) {
+  throw(`matrix_equal() is deprecated. Use matrix().equals(m) instead.`)
   // Test equality. A === B if Arows === Brows and Acols === Bcols
   //log("error", `matrix_equal(): Running`)
   
@@ -488,8 +508,7 @@ function matrix_equal(ma, mb) {
     }
   }
   //log("error", elements_equal)
-  return structural_equality 
-    && !elements_equal.includes(false)
+  return !elements_equal.includes(false)
 }
 
 function multiply_matrices(a, b) {
@@ -517,6 +536,7 @@ function multiply_matrices(a, b) {
 }
 
 function multiply_matrix_by_tuple(ma, t) {
+  throw(`multiply_matrix_by_tuple() is deprecated. Use matrix().times_tuple(t) instead.`)
   // Multiply matrix by tuple.
   // Returns a tuple.
   
@@ -810,8 +830,8 @@ function ray(o, d) {
     direction:d,
     transform: function(matr) {
       return ray(
-        multiply_matrix_by_tuple(matr, o), 
-        multiply_matrix_by_tuple(matr, d)
+        matr.times_tuple(o), 
+        matr.times_tuple(d)
       )
     },
     toString: function() { return `origin: point(${this.origin}) direction: vector(${this.direction})`}
