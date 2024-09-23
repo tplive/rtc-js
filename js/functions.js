@@ -1515,3 +1515,10 @@ function schlick(comps) {
   
   return r0 + (1 - r0) * (1 - cos)**5
 }
+
+function cube() {
+  // Factory function for Cube
+  // Class is implemented in shapes.js
+  
+  return new Cube()
+}

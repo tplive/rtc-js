@@ -2303,7 +2303,14 @@ const symbols = [
   symbol: "🛬",
   keywords: ["plane","landing","sky","skies","blue","aero"]
 },
-
+{
+  decimal: 129482,
+  hex: 0x1F9CA,
+  category: "Food",
+  name: "Ice cube",
+  symbol: "🧊",
+  keywords: ["glass","melt","water"]
+},
 
 
 ]

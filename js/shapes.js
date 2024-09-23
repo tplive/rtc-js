@@ -183,3 +183,52 @@ class Plane extends AbstractShape {
   
   get toString() { return `Plane(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
+
+class Cube extends AbstractShape {
+  // The cube is defined as an AABB - Axis-Aligned Bounding Box. That is, a shape where sides are
+  // aligned with the scene's axes - two are aligned with the x-axis, two with the y-axis and two
+  // with the z-axis. They always start centered in the origin and extend -1 and +1 in each direction.
+  // Then we use transformation matrices to scale, rotate and translate any way we want.
+  
+  constructor() {
+    super()
+  }
+  
+  _check_axis(origin, direction) {
+    const tmin_numerator = -1 - origin
+    const tmax_numerator = 1 - origin
+    
+    let tmin, tmax
+    
+    if (Math.abs(direction) >= C.EPSILON ) {
+      tmin = tmin_numerator / direction
+      tmax = tmax_numerator / direction
+    } else {
+      tmin = tmin_numerator * Infinity
+      tmax = tmax_numerator * Infinity
+    }
+    
+    if (tmin > tmax) {
+      [tmin, tmax] = [tmax, tmin]
+    }
+    
+    return { min: tmin, max: tmax }
+  }
+  
+  _intersect(local_ray) {
+    const xt = this._check_axis(local_ray.origin.x, local_ray.direction.x)
+    const yt = this._check_axis(local_ray.origin.y, local_ray.direction.y)
+    const zt = this._check_axis(local_ray.origin.z, local_ray.direction.z)
+    
+    const tmin = Math.max(xt.min, yt.min, zt.min)
+    const tmax = Math.min(xt.max, yt.max, zt.max)
+    
+    return [ intersection(tmin, this), intersection(tmax, this) ]
+  }
+  
+  _normal_at(local_normal) {
+  
+  }
+  
+  get toString() { return `Cube(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}

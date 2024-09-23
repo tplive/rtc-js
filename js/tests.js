@@ -2681,3 +2681,42 @@ function test_object_can_omit_casting_shadow() {
   
   return has_shadow && no_shadow
 }
+
+function test_ray_intersects_cube() {
+  // Test intersection of new primitive; the cube.
+  
+  const c = cube()
+  const rays = [
+    ray(point(5, 0.5, 0), vector(-1, 0, 0)),
+    ray(point(-5, 0.5, 0), vector(1, 0, 0)),
+    ray(point(0.5, 5, 0), vector(0, -1, 0)),
+    ray(point(0.5, -5, 0), vector(0, 1, 0)),
+    ray(point(0.5, 0, 5), vector(0, 0, -1)),
+    ray(point(0.5, 0, -5), vector(0, 0, 1)),
+    ray(point(0, 0.5, 0), vector(0, 0, 1))
+  ]
+  const expect = [
+    {t1: 4, t2: 6},
+    {t1: 4, t2: 6},
+    {t1: 4, t2: 6},
+    {t1: 4, t2: 6},
+    {t1: 4, t2: 6},
+    {t1: 4, t2: 6},
+    {t1: -1, t2: 1}  
+  ]
+  
+  const res = []
+
+  for (let i = 0; i < rays.length; i++) {
+    const xs = c._intersect(rays[i])
+    if ( xs.length === 2 
+      && xs[0].t === expect[i].t1 
+      && xs[1].t === expect[i].t2) {
+      res.push(true)
+    } else { 
+      res.push(false) 
+    }
+  }
+  
+  return !res.includes(false)
+}

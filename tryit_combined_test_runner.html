@@ -56,6 +56,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#128150; Testing Reflection and Refraction functions</h2>
 <ul id="reflect_list"></ul>
 
+<h2>&#129482; Testing Cubes functions</h2>
+<ul id="cubes_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -426,6 +429,55 @@ class Plane extends AbstractShape {
   _normal_at(local_normal) { return this._normal }
   
   get toString() { return `Plane(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}
+
+class Cube extends AbstractShape {
+  // The cube is defined as an AABB - Axis-Aligned Bounding Box. That is, a shape where sides are
+  // aligned with the scene's axes - two are aligned with the x-axis, two with the y-axis and two
+  // with the z-axis. They always start centered in the origin and extend -1 and +1 in each direction.
+  // Then we use transformation matrices to scale, rotate and translate any way we want.
+  
+  constructor() {
+    super()
+  }
+  
+  _check_axis(origin, direction) {
+    const tmin_numerator = -1 - origin
+    const tmax_numerator = 1 - origin
+    
+    let tmin, tmax
+    
+    if (Math.abs(direction) >= C.EPSILON ) {
+      tmin = tmin_numerator / direction
+      tmax = tmax_numerator / direction
+    } else {
+      tmin = tmin_numerator * Infinity
+      tmax = tmax_numerator * Infinity
+    }
+    
+    if (tmin > tmax) {
+      [tmin, tmax] = [tmax, tmin]
+    }
+    
+    return { min: tmin, max: tmax }
+  }
+  
+  _intersect(local_ray) {
+    const xt = this._check_axis(local_ray.origin.x, local_ray.direction.x)
+    const yt = this._check_axis(local_ray.origin.y, local_ray.direction.y)
+    const zt = this._check_axis(local_ray.origin.z, local_ray.direction.z)
+    
+    const tmin = Math.max(xt.min, yt.min, zt.min)
+    const tmax = Math.min(xt.max, yt.max, zt.max)
+    
+    return [ intersection(tmin, this), intersection(tmax, this) ]
+  }
+  
+  _normal_at(local_normal) {
+  
+  }
+  
+  get toString() { return `Cube(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
 
 
@@ -1949,6 +2001,13 @@ function schlick(comps) {
   const r0 = ((comps.n1 - comps.n2) / (comps.n1 + comps.n2))**2
   
   return r0 + (1 - r0) * (1 - cos)**5
+}
+
+function cube() {
+  // Factory function for Cube
+  // Class is implemented in shapes.js
+  
+  return new Cube()
 }
 
 </script>
@@ -4637,6 +4696,45 @@ function test_object_can_omit_casting_shadow() {
   return has_shadow && no_shadow
 }
 
+function test_ray_intersects_cube() {
+  // Test intersection of new primitive; the cube.
+  
+  const c = cube()
+  const rays = [
+    ray(point(5, 0.5, 0), vector(-1, 0, 0)),
+    ray(point(-5, 0.5, 0), vector(1, 0, 0)),
+    ray(point(0.5, 5, 0), vector(0, -1, 0)),
+    ray(point(0.5, -5, 0), vector(0, 1, 0)),
+    ray(point(0.5, 0, 5), vector(0, 0, -1)),
+    ray(point(0.5, 0, -5), vector(0, 0, 1)),
+    ray(point(0, 0.5, 0), vector(0, 0, 1))
+  ]
+  const expect = [
+    {t1: 4, t2: 6},
+    {t1: 4, t2: 6},
+    {t1: 4, t2: 6},
+    {t1: 4, t2: 6},
+    {t1: 4, t2: 6},
+    {t1: 4, t2: 6},
+    {t1: -1, t2: 1}  
+  ]
+  
+  const res = []
+
+  for (let i = 0; i < rays.length; i++) {
+    const xs = c._intersect(rays[i])
+    if ( xs.length === 2 
+      && xs[0].t === expect[i].t1 
+      && xs[1].t === expect[i].t2) {
+      res.push(true)
+    } else { 
+      res.push(false) 
+    }
+  }
+  
+  return !res.includes(false)
+}
+
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -4803,7 +4901,7 @@ runTest("reflect_list", test_shlick_function)
 runTest("reflect_list", test_shade_hit_with_reflective_transparent_material)
 runTest("reflect_list", test_object_can_omit_casting_shadow)
 
-
+runTest("cubes_list", test_ray_intersects_cube)
 
 const end = performance.now()
 const elapsed = end - start

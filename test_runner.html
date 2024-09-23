@@ -62,6 +62,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#128150; Testing Reflection and Refraction functions</h2>
 <ul id="reflect_list"></ul>
 
+<h2>&#129482; Testing Cubes functions</h2>
+<ul id="cubes_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -234,6 +237,9 @@ runTest("reflect_list", test_shade_hit_handles_refraction)
 runTest("reflect_list", test_shlick_function)
 runTest("reflect_list", test_shade_hit_with_reflective_transparent_material)
 runTest("reflect_list", test_object_can_omit_casting_shadow)
+
+runTest("cubes_list", test_ray_intersects_cube)
+
 
 
 
