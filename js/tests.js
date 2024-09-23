@@ -1090,7 +1090,7 @@ function test_shearing_function() {
       && r6.equals(point(2, 3, 7))
 }
 
-function test_transformations_function() {
+function test_chained_transformations() {
   // Test chaining multiple transformations
   
   // Objects to transform
@@ -1120,30 +1120,19 @@ function test_transformations_function() {
   //log("error", `Rotated and scaled and translated: ${p3}`)
   
   // These transformations should be applied in reverse order; tr, sc, rx
-  const chained1 = transformations(tr, sc, rx, rz, ry)
+  const chained  = tr
+  const chained1 = chained.times_matrix(sc)
+  const chained2 = chained1.times_matrix(rx)
+  const chained3 = chained2.times_matrix(rz)
+  const chained4 = chained3.times_matrix(ry)
   //log("error", `Transformations tr sc rx rz ry: ${chained1.d}`)
   
-  // Manually applying tranformations in reverse order:
-  /*const chained2 = multiply_matrices(
-                     idmatrix(), 
-                       multiply_matrices(ry, 
-                         multiply_matrices(rz, 
-                           multiply_matrices(rx, 
-                             multiply_matrices(sc, tr)
-                           )
-                         )
-                       )
-                     )
-  */
-  const chained2 = idmatrix().times_matrix(ry.times_matrix(rz.times_matrix(rx.times_matrix(sc.times_matrix(tr)))))
-
-  //log("error", "test_transformations_function(): chained1: " + chained1.d)
-  //log("error", "test_transformations_function(): chained2: " + chained2.d)
+  const one_op = tr.times_matrix(sc.times_matrix(rx.times_matrix(rz.times_matrix(ry))))
   
   return r1 
       && r2 
       && r3 
-      && chained1.equals(chained2)
+      && chained4.equals(one_op)
 
 }
 
@@ -1442,11 +1431,11 @@ function test_transform_sphere() {
   const s4 = sphere()
   
   // Add chained transformations to s3
-  const t1 = transformations(tr, sc, rz)
+  const t1 = tr.times_matrix(sc.times_matrix(rz))
   s3.transform = t1
   
   // Manually add transformations to s4
-  const chained = idmatrix().times_matrix(rz.times_matrix(sc.times_matrix(tr)))
+  const chained = tr.times_matrix(sc.times_matrix(rz))
 
   s4.transform = chained
   
@@ -1499,7 +1488,7 @@ function test_normal_on_transformed_sphere() {
   // Test computing the normal on a transformed sphere
   const s2 = sphere()
   
-  const transforms = transformations(rotation_z(Math.PI/5), scaling(1, 0.5, 1))
+  const transforms = scaling(1, 0.5, 1).times_matrix(rotation_z(Math.PI/5))
   
   s2.transform = transforms
   const n2 = s2.normalAt(point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
@@ -1912,7 +1901,7 @@ function test_ray_for_pixel_function() {
   
   // Constructing a ray when the camera is transformed
   const c3 = camera(201, 101, π / 2)
-  c3.transform = transformations(translation(0, -2, 5), rotation_y(π/4))
+  c3.transform = rotation_y(π/4).times_matrix(translation(0, -2, 5))
   const r3 = ray_for_pixel(c3, 100, 50)
   const res3 = r3.origin.equals(point(0, 2, -5)) 
             && r3.direction.equals( vector( Math.sqrt(2)/2, 0, -Math.sqrt(2)/2 ) )
@@ -2300,4 +2289,136 @@ function test_chequered_pattern_function() {
             && pattern._at(point(0, 0, 1.01)).equals(black)
   
   return res1 && res2 && res3
+}
+
+// REFLECTION AND REFRACTION TESTS
+
+function test_material_reflective_attribute() {
+  // Test that the material has a reflective attribute that can be assigned.
+  
+  const m = material()
+  
+  const res1 = m.reflective === 0.0
+  
+  m.reflective = 1.12
+  
+  const res2 = m.reflective === 1.12
+  
+  return res1 && res2
+}
+
+function test_prepare_computations_reflectv() {
+  // Test that prepare_computations will compute the reflect vector.
+  
+  // Precomputing the reflection vector
+  const shape = plane()
+  const r = ray(point(0, 1, -1), vector(0, -Math.sqrt(2)/2, Math.sqrt(2)/2))
+  const i = intersection(Math.sqrt(2), shape)
+  const comps = prepare_computations(i, r)
+  
+  return comps.reflectv.equals(vector(0, Math.sqrt(2)/2, Math.sqrt(2)/2))
+}
+
+function test_reflected_color_function() {
+  // Test that hitting a non-reflective surface, reflected_color() returns black.
+  
+  // The reflected color for a non-reflective material
+  const w1 = default_world()
+  const r1 = ray(point(0, 0, 0), vector(0, 0, 1))
+  
+  const shape1 = w1.objects[1]
+  shape1.material.ambient = 1
+  
+  const i1 = intersection(1, shape1)
+  const comps1 = prepare_computations(i1, r1)
+  c1 = reflected_color(w1, comps1)
+  const res1 = c1.equals(color(0, 0, 0))
+  
+  // The reflected color for a reflective material
+  const w2 = default_world()
+  const shape2 = plane()
+  shape2.material.reflective = 0.5
+  shape2.transform = translation(0, -1, 0)
+  
+  w2.addObject(shape2)
+  const r2 = ray(point(0, 0, -3), vector(0, -Math.sqrt(2)/2, Math.sqrt(2)/2))
+  const i2 = intersection(Math.sqrt(2), shape2)
+  const comps2 = prepare_computations(i2, r2)
+  c2 = reflected_color(w2, comps2)
+  const res2 = c2.equals(color(0.19033, 0.237915, 0.14275))
+  
+  // Testing shade_hit() with a reflective material
+  const w3 = default_world()
+  const shape3 = plane()
+  shape3.material.reflective = 0.5
+  shape3.transform = translation(0, -1, 0)
+  
+  w3.addObject(shape3)
+  const r3 = ray(point(0, 0, -3), vector(0, -Math.sqrt(2)/2, Math.sqrt(2)/2))
+  const i3 = intersection(Math.sqrt(2), shape3)
+  const comps3 = prepare_computations(i3, r3)
+  const c3 = shade_hit(w3, comps3)
+  const res3 = c3.equals(color(0.8767577, 0.9243408, 0.82918))
+    
+  return res1 && res2 && res3
+}
+
+function test_avoid_infinite_recursion_reflection() {
+  // Test that code is safe against infinite reflections.
+  // May halt the bowser and cause stack overflow or out of memory situations.
+  
+  // color_at() with mutually reflective surfaces
+  const w = world()
+  w.addLight(point_light(point(0, 0, 0), color(1, 1, 1)))
+  
+  const lower = plane()
+  lower.material.reflective = 1.0
+  lower.transform = translation(0, -1, 0)
+  w.addObject(lower)
+  
+  const upper = plane()
+  upper.material.reflective = 1.0
+  upper.transform = translation(0, 1, 0)
+  w.addObject(upper)
+  
+  const r = ray(point(0, 0, 0), vector(0, 1, 0))
+  
+  try {
+    const c1 = color_at(w, r) // should terminate successfully
+    //log("error", c1)
+    return true
+  } catch (e) {
+    log("error", e)
+    return false
+  }
+}
+
+function test_limit_recursion_of_reflection() {
+  // Test that code is safe against infinite reflections.
+  // May halt the browser and cause stack overflow or out of memory situations.
+  
+  // color_at() with mutually reflective surfaces
+  const w = world()
+  w.addLight(point_light(point(0, 0, 0), color(1, 1, 1)))
+  
+  const lower = plane()
+  lower.material.reflective = 1.0
+  lower.transform = translation(0, -1, 0)
+  w.addObject(lower)
+  
+  const upper = plane()
+  upper.material.reflective = 1.0
+  upper.transform = translation(0, 1, 0)
+  w.addObject(upper)
+  
+  const r = ray(point(0, 0, 0), vector(0, 1, 0))
+  
+  try {
+    const c1 = reflected_color(w, r, 0) // should terminate successfully
+    //log("error", c1)
+    return c1.equals(color(0, 0, 0))
+  } catch (e) {
+    //log("error", e)
+    return false
+  }
 }

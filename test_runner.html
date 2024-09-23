@@ -59,6 +59,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#127937; Testing Pattern functions</h2>
 <ul id="pattern_list"></ul>
 
+<h2>&#128150; Testing Reflection and Refraction functions</h2>
+<ul id="reflect_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -97,9 +100,14 @@ function runTest(domId, callback) {
   li.appendChild(li_result)
   var text = (result) ? "Test Passed! &#127774;":"Test Failed! &#128165;"
   var color = (result) ? "green":"red"
-  li_result.innerHTML = text + ` (in ${elapsed.toFixed(2)} ms.)`
   li_result.style.color = color
-
+  li_result.innerHTML = text //+ ` (in ${elapsed.toFixed(2)} ms.)`
+  
+  li_time = document.createElement("span")
+  li.appendChild(li_time)
+  var time_color = elapsed > 1 ? "red" : "green"
+  li_time.style.color = time_color
+  li_time.innerHTML = ` (in ${elapsed.toFixed(2)} ms.)`
 }
 
 runTest("test_list", test_tuple_function)
@@ -211,6 +219,13 @@ runTest("pattern_list", test_pattern_has_inherited_from_abstract_class)
 runTest("pattern_list", test_gradient_pattern_function)
 runTest("pattern_list", test_ring_pattern_function)
 runTest("pattern_list", test_chequered_pattern_function)
+
+runTest("reflect_list", test_material_reflective_attribute)
+runTest("reflect_list", test_prepare_computations_reflectv)
+runTest("reflect_list", test_reflected_color_function)
+runTest("reflect_list", test_avoid_infinite_recursion_reflection)
+runTest("reflect_list", test_limit_recursion_of_reflection)
+
 
 
 

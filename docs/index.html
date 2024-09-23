@@ -1062,9 +1062,12 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
 <p>Jeg gjentar dette for Shape, og HER skjer det ting! 42M matriser, på 44 sekunder! 87 per pixel.</p>
 <p>Oppildnet av suksessen gjentar jeg det en gang til på Camera og da kommer bildet tilbake på 4,1 sekund! Fortsatt 2,7M matriser, eller 6 matriser per pixel. OMG for en forskjell! &#129327; Det er en reduksjonsfaktor på 103:1 fra første til siste endring. Nesten merkelig at boka ikke nevner dette. Ikke enda i hvert fall. </p>
 
-<p></p>
-<p></p>
-<p></p>
+<h4>Putting it together</h4>
+<p>Jeg blir så gira av å kunne rendre igjen, at jeg istedet for å lage flere patterns setter opp en scene med snooker-kuler, og rendrer et bilde <a href="./chapter10_first_ever_full_hd_1920x1080.png">i full HD oppløsning</a>. Det får være nok, jeg vil videre til neste kapittel! &#129315; Men sånn ser det nå i alle fall ut:</p>
+<p><img src="./chapter10_snooker_table_setup.png" /></p>
+
+<h3>&#128150; Kapittel 11, Reflection and Refraction</h3>
+<p>Omg, dette har jeg gledet meg til! På tidlig 90-tall var det Amiga som var best på grafikk. Selv om jeg aldri ble noen utvikler på den plattformen, ei heller gjorde noe 3D-modellering eller raytracing på den, så var det her jeg fikk min første intro til 3D-grafikk og raytracing. Jeg husker til og med at jeg og en kompis snakket om hvor *sjukt* mye datakraft man måtte hatt dersom man skulle gjort realtime raytracing. Nå om dagen gjør Nvidia det med sine RTX-kort helt trivielt, i 60fps. Denne Javascript implementasjonen av raytracing kommer nok aldri opp i sånn fart, men jeg skal nå likevel få rendret lysbryting. Og kanskje til og med flere frames, og så sette det sammen til en videosekvens! Vi får se. Vi lære å reflektere og bryte lys før vi kan utfordre Nvidia... &#129315;</p>
 <p></p>
 <p></p>
 <p></p>
@@ -1080,7 +1083,7 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
 
   <p>TODO:
   <ul>
-
+    <li>Gå tilbake til kapittel 10 og lage et 2D sjakkmønster og/eller blend patterns.</li>
     <li>Kode for å lese (og skrive?) JSON-fil med beskrivelse av scene.</li>
     <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>
     <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og

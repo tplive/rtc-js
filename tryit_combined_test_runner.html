@@ -53,6 +53,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#127937; Testing Pattern functions</h2>
 <ul id="pattern_list"></ul>
 
+<h2>&#128150; Testing Reflection and Refraction functions</h2>
+<ul id="reflect_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -443,6 +446,7 @@ const C = function() {
   return {
     PRECISION:_precision,
     EPSILON:_epsilon,
+    RECURSIONS: 5,
     unique_id: function unique_id() {return _counter++}
   }
 }();
@@ -1338,6 +1342,7 @@ function angle(v) {
 function transformations(trans) {
   // Transformations given as parameters will be applied in the reverse order
   // We can apply translation, scaling, rotation and shearing into a single operation.
+  throw new Error(`transformations(trans) has been deprecated. Use transformation.times_matrix(transformation) instead.`)
   
   const m = idmatrix()
   
@@ -1358,7 +1363,7 @@ function transformations(trans) {
   for (e in t) {
     // To set the result of the multiplied matrices, add .d
     m.putAll(m.times_matrix(t[e]).d)
-    // log("error", `transformations(): ${e} ${t[e].d}`)
+    //log("error", `transformations(): ${e} ${t[e].d}`)
   }
   //log("error", "transformations(): m.d " + m.d)
   
@@ -1367,6 +1372,7 @@ function transformations(trans) {
 
 function recursive_transformations(arr) {
   //log("error", "recursive_transformations()" )
+  throw new Error(`recursive_transrformations(arr) has been deprecated. Use transformation.times_matrix(transformation) instead.`)
   const m = idmatrix()
   const i = arr.pop()
   if (arr.length === 0) {
@@ -1572,13 +1578,15 @@ class Material {
     this._diffuse = 0.9
     this._specular = 0.9
     this._shininess = 200.0
+    this._reflective = 0.0
   }
   
-  get color() { return this._color}
-  get ambient() { return this._ambient}
-  get diffuse() { return this._diffuse}
-  get specular() { return this._specular}
-  get shininess() { return this._shininess}
+  get color() { return this._color }
+  get ambient() { return this._ambient }
+  get diffuse() { return this._diffuse }
+  get specular() { return this._specular }
+  get shininess() { return this._shininess }
+  get reflective() { return this._reflective }
   get pattern() { return this._pattern }
   
   set color(col) { this._color = color(col.red, col.green, col.blue) }
@@ -1587,6 +1595,7 @@ class Material {
   set diffuse(dif) { this._diffuse = dif }
   set specular(spe) { this._specular = spe }
   set shininess(shi) { this._shininess = shi }
+  set reflective(ref) { this._reflective = ref }
   set pattern(pat) { this._pattern = pat }
   
   hasPattern() { return this._pattern != undefined }
@@ -1778,6 +1787,7 @@ class PrepareComputations {
       this._e = this._r.direction.negate()
       this._n = this._i.object.normalAt(this._p)
       this._inside = this.is_inside()
+      this._reflectv = reflect(r.direction, this._n)
 
     } else {
       throw(`Cannot construct a PrepareComputations object without a valid intersection, i.t was: ${i.t}`)
@@ -1790,6 +1800,7 @@ class PrepareComputations {
   get eyev() { return this._e }
   get normalv() { return this._n }
   get inside() { return this._inside }
+  get reflectv() { return this._reflectv }
   get over_point() { 
     
     return this.point.plus(this.normalv.by_scalar(C.EPSILON)) 
@@ -1813,15 +1824,18 @@ function prepare_computations(i, r) {
   return new PrepareComputations(i, r)
 }
 
-function shade_hit(w, c) {
+function shade_hit(w, c, remaining = 5) {
   // Call lighting() function with the intersected object's material and the prepared computations
   
   const shadowed = is_shadowed(w, c.over_point)
   
-  return lighting(c.object.material, c.object, w.lights[0], c.point, c.eyev, c.normalv, shadowed)
+  const surface = lighting(c.object.material, c.object, w.lights[0], c.point, c.eyev, c.normalv, shadowed)
+  const reflected = reflected_color(w, c, remaining)
+
+  return surface.plus(reflected)
 }
 
-function color_at(w, r) {
+function color_at(w, r, remaining = 5) {
   // The color_at function uses intersect(), prepare_computations()
   // and shade_hit() to compute the color at the resulting intersection
   
@@ -1839,7 +1853,7 @@ function color_at(w, r) {
     comps = prepare_computations(i, r)
     
     // We calculate the color
-    return shade_hit(w, comps)
+    return shade_hit(w, comps, remaining)
   }
 }
 
@@ -2041,6 +2055,20 @@ function chequered_pattern(c1, c2) {
   return new ChequeredPattern(c1, c2)
 }
 
+function reflected_color(w, comps, remaining = 5) {
+  // This function returns the color black when the material's reflective attribute is 0
+  
+  if (remaining <= 0) { return color(0, 0, 0) }
+  if (comps.object.material.reflective === 0.0 ) { return color(0, 0, 0) }
+  
+  const reflect_ray = ray(comps.over_point, comps.reflectv)
+  
+  const col = color_at(w, reflect_ray, remaining - 1)
+  
+  //log("error", comps.object.material.reflective)
+  //log("error", col)
+  return col.by_scalar(comps.object.material.reflective)
+}
 
 </script>
 <script>
@@ -3136,7 +3164,7 @@ function test_shearing_function() {
       && r6.equals(point(2, 3, 7))
 }
 
-function test_transformations_function() {
+function test_chained_transformations() {
   // Test chaining multiple transformations
   
   // Objects to transform
@@ -3166,30 +3194,19 @@ function test_transformations_function() {
   //log("error", `Rotated and scaled and translated: ${p3}`)
   
   // These transformations should be applied in reverse order; tr, sc, rx
-  const chained1 = transformations(tr, sc, rx, rz, ry)
+  const chained  = tr
+  const chained1 = chained.times_matrix(sc)
+  const chained2 = chained1.times_matrix(rx)
+  const chained3 = chained2.times_matrix(rz)
+  const chained4 = chained3.times_matrix(ry)
   //log("error", `Transformations tr sc rx rz ry: ${chained1.d}`)
   
-  // Manually applying tranformations in reverse order:
-  /*const chained2 = multiply_matrices(
-                     idmatrix(), 
-                       multiply_matrices(ry, 
-                         multiply_matrices(rz, 
-                           multiply_matrices(rx, 
-                             multiply_matrices(sc, tr)
-                           )
-                         )
-                       )
-                     )
-  */
-  const chained2 = idmatrix().times_matrix(ry.times_matrix(rz.times_matrix(rx.times_matrix(sc.times_matrix(tr)))))
-
-  //log("error", "test_transformations_function(): chained1: " + chained1.d)
-  //log("error", "test_transformations_function(): chained2: " + chained2.d)
+  const one_op = tr.times_matrix(sc.times_matrix(rx.times_matrix(rz.times_matrix(ry))))
   
   return r1 
       && r2 
       && r3 
-      && chained1.equals(chained2)
+      && chained4.equals(one_op)
 
 }
 
@@ -3488,11 +3505,11 @@ function test_transform_sphere() {
   const s4 = sphere()
   
   // Add chained transformations to s3
-  const t1 = transformations(tr, sc, rz)
+  const t1 = tr.times_matrix(sc.times_matrix(rz))
   s3.transform = t1
   
   // Manually add transformations to s4
-  const chained = idmatrix().times_matrix(rz.times_matrix(sc.times_matrix(tr)))
+  const chained = tr.times_matrix(sc.times_matrix(rz))
 
   s4.transform = chained
   
@@ -4347,6 +4364,139 @@ function test_chequered_pattern_function() {
   
   return res1 && res2 && res3
 }
+
+// REFLECTION AND REFRACTION TESTS
+
+function test_material_reflective_attribute() {
+  // Test that the material has a reflective attribute that can be assigned.
+  
+  const m = material()
+  
+  const res1 = m.reflective === 0.0
+  
+  m.reflective = 1.12
+  
+  const res2 = m.reflective === 1.12
+  
+  return res1 && res2
+}
+
+function test_prepare_computations_reflectv() {
+  // Test that prepare_computations will compute the reflect vector.
+  
+  // Precomputing the reflection vector
+  const shape = plane()
+  const r = ray(point(0, 1, -1), vector(0, -Math.sqrt(2)/2, Math.sqrt(2)/2))
+  const i = intersection(Math.sqrt(2), shape)
+  const comps = prepare_computations(i, r)
+  
+  return comps.reflectv.equals(vector(0, Math.sqrt(2)/2, Math.sqrt(2)/2))
+}
+
+function test_reflected_color_function() {
+  // Test that hitting a non-reflective surface, reflected_color() returns black.
+  
+  // The reflected color for a non-reflective material
+  const w1 = default_world()
+  const r1 = ray(point(0, 0, 0), vector(0, 0, 1))
+  
+  const shape1 = w1.objects[1]
+  shape1.material.ambient = 1
+  
+  const i1 = intersection(1, shape1)
+  const comps1 = prepare_computations(i1, r1)
+  c1 = reflected_color(w1, comps1)
+  const res1 = c1.equals(color(0, 0, 0))
+  
+  // The reflected color for a reflective material
+  const w2 = default_world()
+  const shape2 = plane()
+  shape2.material.reflective = 0.5
+  shape2.transform = translation(0, -1, 0)
+  
+  w2.addObject(shape2)
+  const r2 = ray(point(0, 0, -3), vector(0, -Math.sqrt(2)/2, Math.sqrt(2)/2))
+  const i2 = intersection(Math.sqrt(2), shape2)
+  const comps2 = prepare_computations(i2, r2)
+  c2 = reflected_color(w2, comps2)
+  const res2 = c2.equals(color(0.19033, 0.237915, 0.14275))
+  
+  // Testing shade_hit() with a reflective material
+  const w3 = default_world()
+  const shape3 = plane()
+  shape3.material.reflective = 0.5
+  shape3.transform = translation(0, -1, 0)
+  
+  w3.addObject(shape3)
+  const r3 = ray(point(0, 0, -3), vector(0, -Math.sqrt(2)/2, Math.sqrt(2)/2))
+  const i3 = intersection(Math.sqrt(2), shape3)
+  const comps3 = prepare_computations(i3, r3)
+  const c3 = shade_hit(w3, comps3)
+  const res3 = c3.equals(color(0.8767577, 0.9243408, 0.82918))
+    
+  return res1 && res2 && res3
+}
+
+function test_avoid_infinite_recursion_reflection() {
+  // Test that code is safe against infinite reflections.
+  // May halt the bowser and cause stack overflow or out of memory situations.
+  
+  // color_at() with mutually reflective surfaces
+  const w = world()
+  w.addLight(point_light(point(0, 0, 0), color(1, 1, 1)))
+  
+  const lower = plane()
+  lower.material.reflective = 1.0
+  lower.transform = translation(0, -1, 0)
+  w.addObject(lower)
+  
+  const upper = plane()
+  upper.material.reflective = 1.0
+  upper.transform = translation(0, 1, 0)
+  w.addObject(upper)
+  
+  const r = ray(point(0, 0, 0), vector(0, 1, 0))
+  
+  try {
+    const c1 = color_at(w, r) // should terminate successfully
+    //log("error", c1)
+    return true
+  } catch (e) {
+    log("error", e)
+    return false
+  }
+}
+
+function test_limit_recursion_of_reflection() {
+  // Test that code is safe against infinite reflections.
+  // May halt the browser and cause stack overflow or out of memory situations.
+  
+  // color_at() with mutually reflective surfaces
+  const w = world()
+  w.addLight(point_light(point(0, 0, 0), color(1, 1, 1)))
+  
+  const lower = plane()
+  lower.material.reflective = 1.0
+  lower.transform = translation(0, -1, 0)
+  w.addObject(lower)
+  
+  const upper = plane()
+  upper.material.reflective = 1.0
+  upper.transform = translation(0, 1, 0)
+  w.addObject(upper)
+  
+  const r = ray(point(0, 0, 0), vector(0, 1, 0))
+  
+  try {
+    const c1 = reflected_color(w, r, 0) // should terminate successfully
+    //log("error", c1)
+    return c1.equals(color(0, 0, 0))
+  } catch (e) {
+    //log("error", e)
+    return false
+  }
+}
+
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -4378,13 +4528,17 @@ function runTest(domId, callback) {
   li.appendChild(li_result)
   var text = (result) ? "Test Passed! &#127774;":"Test Failed! &#128165;"
   var color = (result) ? "green":"red"
-  li_result.innerHTML = text + ` (in ${elapsed.toFixed(2)} ms.)`
   li_result.style.color = color
-
+  li_result.innerHTML = text //+ ` (in ${elapsed.toFixed(2)} ms.)`
+  
+  li_time = document.createElement("span")
+  li.appendChild(li_time)
+  var time_color = elapsed > 1 ? "red" : "green"
+  li_time.style.color = time_color
+  li_time.innerHTML = ` (in ${elapsed.toFixed(2)} ms.)`
 }
 
 runTest("test_list", test_tuple_function)
-
 runTest("test_list", test_vector_function)
 runTest("test_list", test_point_function)
 runTest("test_list", test_equal_function)
@@ -4392,7 +4546,6 @@ runTest("test_list", test_equal_tuples_function)
 runTest("test_list", test_add_tuples_function)
 runTest("test_list", test_subtract_tuples_function)
 runTest("test_list", test_negate_tuple_function)
-
 runTest("test_list", test_multiply_vector_function)
 runTest("test_list", test_divide_vector_function)
 runTest("test_list", test_magnitude_function)
@@ -4423,7 +4576,6 @@ runTest("matrix_list", test_idmatrix_function)
 runTest("matrix_list", test_multiply_by_identity_matrix_function)
 runTest("matrix_list", test_transpose_matrix_function)
 runTest("matrix_list", test_transpose_identity_matrix)
-
 runTest("matrix_list", test_calculate_determinant_of_2x2_matrix)
 runTest("matrix_list", test_submatrix_function)
 runTest("matrix_list", test_minor_function)
@@ -4440,7 +4592,7 @@ runTest("matrix_list", test_rotation_y_function)
 runTest("matrix_list", test_rotation_z_function)
 runTest("matrix_list", test_shearing_function)
 runTest("matrix_list", test_angle_function)
-runTest("matrix_list", test_transformations_function)
+runTest("matrix_list", test_chained_transformations)
 runTest("matrix_list", test_apply_individual_transformations)
 
 runTest("ray_list", test_creating_ray_function)
@@ -4492,6 +4644,13 @@ runTest("pattern_list", test_pattern_has_inherited_from_abstract_class)
 runTest("pattern_list", test_gradient_pattern_function)
 runTest("pattern_list", test_ring_pattern_function)
 runTest("pattern_list", test_chequered_pattern_function)
+
+runTest("reflect_list", test_material_reflective_attribute)
+runTest("reflect_list", test_prepare_computations_reflectv)
+runTest("reflect_list", test_reflected_color_function)
+runTest("reflect_list", test_avoid_infinite_recursion_reflection)
+runTest("reflect_list", test_limit_recursion_of_reflection)
+runTest("reflect_list", test_limit_recursion_of_reflection)
 
 
 
