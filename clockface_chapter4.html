@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<style>
+pre {
+  background-color: lightgrey;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 3rem;
+}
+</style>
+<body>
+<script>
+window.onerror = function(errorMsg, url, lineNumber){
+    // any action you want goes here
+    // errorMsg is the error message itself.
+    // url should be the file presenting the error, though i have
+    //    found that it only presents to me the address of the site.
+    // lineNumber is the line number the error occoured on.
+    // here is an example of what you could do with it:
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+
+<h1>&#128354; Clock face</h1>
+<p id="perf"></p>
+<ul id="test_list"></ul>
+<p id="error"></ul>
+
+<script src="./js/functions.js"></script>
+
+<script>
+// *** RUN CLOCKY MCCLOCKFACE
+
+// Challenge chapter 4: Write a program that uses a rotation matrix to compute the posistion of
+// those hours on the clock face, and draw a pixel onto the canvas for each of them.
+
+// Performance counter
+const start = performance.now()
+
+const size = 300 // Size of canvas
+
+const radius = 6/8 * size/2 // Clock face radius
+
+// My canvas
+//const can = canvas(size, size)
+const c1 = color(1.0, 1.0, 1.0)
+const s = scale_color(c1)
+
+// HTML canvas
+const html_can = html_canvas("error", size, size)
+var context = html_can.getContext("2d")
+context.fillStyle = "black"
+context.fillRect(0, 0, size, size)
+context.fillStyle = "white"
+
+const hours = []
+
+for (let i=0; i < 12; i++) {
+
+  let p = point(0,0,0)
+  
+  const t = translation(radius, 0, 0)
+  p = multiply_matrix_by_tuple(t, p)
+  
+  const r = rotation_z(i*2 * Math.PI / 12)
+  p = multiply_matrix_by_tuple(r, p)
+
+  p = point(p.x + size/2, p.y + size/2, 0)
+  
+  hours.push(p)
+}
+
+for (let j=0; j < hours.length; j++) {
+  p = hours[j]
+  log("error", `${j} X, Y: ${p.x}, ${p.y}`)
+  //can.write_pixel(p.x, p.y, s)
+  context.fillStyle = `rgb(${s.red}, ${s.green}, ${s.blue}`
+  context.fillRect(p.x, p.y, 2, 2)
+}
+
+// How about we create the entire canvas and set the pixels just in time?
+//const ppm = canvas_to_ppm(can)
+// Show canvas
+//log("error", ppm)
+//downloadPPMfile(ppm, "plot")
+
+
+// Performance measurement
+const end = performance.now()
+const elapsed = end - start
+const cumulated_id = "clockface_running_time"
+const numberOfRuns_id = "clockface_runs"
+
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
+
+localStorage.setItem(numberOfRuns_id, Number(runs) + 1)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+
+log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
+log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+</script>
+
+</body>
+
+</html>

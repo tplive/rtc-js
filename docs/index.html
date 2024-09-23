@@ -553,12 +553,26 @@ const chained = t.rotate_x(Math.PI / 4).rotate_y(Math.PI / 2).rotate_z(Math.PI /
 <p>I stedet skriver jeg en test for å legge til operasjonene èn etter èn, og den fungerer.</p>
 
 <h4>Putting it together</h4>
-<p>Dette blir en interessant challenge. Her skal jeg tegne opp en analog "clock face" på skjerm, med et punkt for hver time på klokka, 1 - 12.</p>
+<p>Dette blir en interessant challenge. Her skal jeg tegne opp en analog urskive på skjerm, med et punkt for hver time på klokka, 1 - 12, ved hjelp av en rotasjonsmatrise! Må beregne hvilke akser jeg roterer rundt, og så beregne hvor på skjermen punktene skal stå, for 0,0 skal være midt på canvas'en.</p>
+<p>Jeg knoter en del med å forstå hvordan dette fungerer. Jeg har jo sett for meg rotasjon av et punkt som om at det er selve punktet som roterer, og det gir jo ingen mening. En vektor kan rotere, så klart, men ikke punktet. Når jeg bare husker at punktets eksistens kun gir mening i et koordinatsystem, blir det enklere å forstå.</p>
+<p>JS sitt Math-bibliotek benytter radianer som standard, og det gjør de også i boka. Så for den del trenger jeg ikke konverere til/fra grader, men det betyr at jeg må begynne å tenke på sirkelen delt inn i 2&pi; radianer. Slik ser enhetssirkelen ut, for referanse:</p>
+<p><a href="https://calcworkshop.com/radian-measure/degrees-to-radians/"><img height="600" alt="Lånt fra calcworkshop.com" src="unit-circle-radians-degrees.png"/></a></p>
+<p>Det blir da litt utfordrende å å skjønne hvordan jeg skal få koordinatene til å falle på plass, men "plutselig" har jeg noe som ser ut som det skal! &#128517; Jeg legger til litt perf-testing og pynter med litt CSS og vòila! Resultatet ser du her: <a href="../clockface_chapter4.html"><code>clockface_chapter4.html</code></a></p>
+<p>Jeg oppdager også at lagring til PPM-fil alldeles ikke fungerer som det skal. Men jeg er litt irritert på de greiene der, PPM er et idiotisk format uansett, 300x300 px blir jo over 500kB! Må da gå an å gjøre en bedre jobb enn som så... </p>
+<p>Jeg ser også at rendring av urskiven tar sånn circa 150 ms i snitt, ved 300x300 piksler. Det er 12 * 2 transformasjoner, og 12 write_pixel kall og 12 fillRect. Når jeg kommenterer ut håndtering av PPM, kjører vi på 1 ms. Bare sånn for senere referanse.</p>
 <p></p>
 <p></p>
 <p></p>
 <p></p>
 <p></p>
+<p></p>
+<p>TODO:
+<ul>
+  <li>Fikse chaining transform function</li>
+  <li>Fikse PPM lagring til fil</li>
+  <li>Siste "Putting it together" oppgaven fra kapittel 3</li>
+</ul>
+</p>
 
 
 <footer><center>Copyright (c) 2024 Thomas &#129395;</center>
