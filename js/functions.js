@@ -771,7 +771,11 @@ function sphere() {
   return new Sphere()
 }
 
-function intersection(t_value, shape) {
+function intersection(t, object) {
+  return {t, object}
+}
+
+function old_intersection(t_value, shape) {
   // The intersection function encapsulates t value and object
   
   return Object.freeze({
@@ -780,27 +784,47 @@ function intersection(t_value, shape) {
   })
 }
 
-function intersections() {
-  // This method takes an arbitrary number of intersection objects as input and
-  // aggregates them in an array
-  let arr = []
-  for (let i = 0; i < arguments.length; i++) {
-    arr.push(arguments[i])
-  }
+function intersections(... intersects) {
 
-  return arr
+  return intersects
 }
 
-function hit(xs_array) {
+function old_intersections() {
+  // This method takes an arbitrary number of intersection objects as input and
+  // aggregates them in an array
+
+  if (arguments.length == 0) { 
+    
+    return [] 
+  } else {
+    let arr = []
+    for (let i = 0; i < arguments.length; i++) {
+      arr.push(arguments[i])
+    }
+  
+    return arr
+  }
+}
+
+function hit(intersections) {
+  let best;
+  for(const x of intersections){
+    if(x.t < 0) continue
+    if(!best || best.t > x.t)
+      best = x
+  }
+  return best
+}
+
+function old_hit(xs_array) {
   // This function returns the intersection with the lowest non-negative number from a list of intersections
   
   if (xs_array.length == 0) { return [] } // There are no intersections, return empty array
 
-  xs_array = xs_array.filter(item => { if (item.t > 0) { return item } })
+  return xs_array.filter(item => { if (item.t > 0) { return item } })
     .sort(function (a, b) { return a.t - b.t })
-
-  return xs_array
 }
+
 
 // *** SHADING FUNCTIONS
 function reflect(v_in, normal) {
@@ -1073,7 +1097,7 @@ function intersect_world(w, r) {
 class PrepareComputations {
   // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
   
-  constructor(i, r, insects) {
+  constructor(i, r, intersects) {
     // i must be a singular intersection(t, object), not an array!
     try {
       this._i = i
@@ -1083,12 +1107,10 @@ class PrepareComputations {
       this._n = this._i.object.normalAt(this._p)
       this._inside = this.is_inside()
       this._reflectv = reflect(r.direction, this._n)
-      this._insects = Array.isArray(insects) ? insects : [this._i]
+      this._intersects = Array.isArray(intersects) ? intersects : [this._i]
       this._over_point =  this._p.plus( this._n.by_scalar(C.EPSILON))
       this._under_point = this._p.minus(this._n.by_scalar(C.EPSILON))
-      this._containers = []
       this._calc_n1n2()
-      
     } catch (e) {
       log("error", `Error creating PrepareComputations object: ${e}`)
     }
@@ -1114,47 +1136,50 @@ class PrepareComputations {
       return false
     }
   }
-  
+    
   _calc_n1n2() {
+    
+    const _containers = []
         
-    for (e in this._insects) {
-      log("error", `insects[${e}].object.id: ${this._insects[e].object.id}`)
-      log("error", `insects[${e}].t: ${this._insects[e].t}`)
-      if (this._i.t === this._insects[e].t) {
-        if (this._containers.length == 0) {
-          this._n1 = 1.0
-          log("error", `containers.length was 0, this._n1 = ${this._n1}`)
-        } else {
-          this._n1 = this._containers.at(-1).material.refractive_index
-          log("error", `else this._n1 = ${this._n1}`)
-        }
-      }
-      
-      const idx = this._containers.indexOf(this._i.object)
-      if (idx > -1) { 
-        this._containers.splice(idx, 1) 
+    // Iterate over all intersections
+    for (const i of this._intersects) {
+    
+    // If the current intersection is the one we are iterating
+    const the_hit = this._i === i
+    
+    if (the_hit) {
+      if (_containers.length > 0) {
+        this._n1 = _containers.at(-1).object.material.refractive_index
       } else {
-        this._containers.push(this._i.object)
+        this._n1 = 1.0
+      }
+    }
+            
+    const idx = _containers.map(j => j.object.id).indexOf(i.object.id)
+      
+    if (idx != -1) {
+        _containers.splice(idx, 1)
+      } else {
+        _containers.push(i)
       }
       
-      if (this._i.t === this._insects[e].t) {
-        if (this._containers.length == 0) {
+      if (the_hit) {
+        if (_containers.length === 0 ) {
           this._n2 = 1.0
         } else {
-          this._n2 = this._containers.at(-1).material.refractive_index
+          this._n2 = _containers.at(-1).object.material.refractive_index
         }
-        break
       }
     }
   }
 
-  toString() { return `PrepareComputations(intersection, ray):\nt = ${this.t} \nobject.id=${this.object.id} \npoint=${this.point} \neyev=${this.eyev} \nnormalv=${this.normalv} \ninside=${this.inside} \nreflectv=${this.reflectv} \nover_point=${this.over_point} \nintersections:${this._insects.map(i => `t-value = ${i.t}, object.id=${i.object.id}`)} \nn1 = ${this._n1} \nn2 = ${this._n2}` }
+  toString() { return `PrepareComputations(intersection, ray, intersections):\nt = ${this.t} \nobject.id=${this.object.id} \npoint=${this.point} \neyev=${this.eyev} \nnormalv=${this.normalv} \ninside=${this.inside} \nreflectv=${this.reflectv} \nover_point=${this.over_point} \nintersections:${this._intersects.map(i => `t-value = ${i.t}, object.id=${i.object.id}`)} \nn1 = ${this._n1} \nn2 = ${this._n2}` }
 }
-
-function prepare_computations(i, r) {
+  
+function prepare_computations(i, r, xs) {
   // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
   
-  return new PrepareComputations(i, r)
+  return new PrepareComputations(i, r, xs)
 }
 
 function shade_hit(w, c, remaining = C.RECURSIONS) {
@@ -1181,17 +1206,12 @@ function color_at(w, r, remaining = C.RECURSIONS) {
     // Ray did not intersect any objects in this world
     return color(0, 0, 0)
   } else {
-    // Find the hit, returned as a sorted array
+    // Find the hit, the intersection with the lowest non-negative t-value
     const i = hit(xs)
     
-    if (i.length >= 1) {
-      // We prepare the computations, the hit is (for now) always the closest entry
-      comps = prepare_computations(i[0], r)
-      // We calculate the color
-      return shade_hit(w, comps, remaining)
-    } else {
-      return color(0, 0, 0)
-    }
+    comps = prepare_computations(i, r)
+    
+    return shade_hit(w, comps, remaining)
   }
 }
 
@@ -1433,10 +1453,27 @@ function glass_sphere() {
 }
 
 function refracted_color(w, comps, remaining = C.RECURSIONS) {
-  // Calculate refraction
+  // Calculate refraction using Snell's Law, which states
+  // sin(theta_i)/sin(theta_t) = n_2 / n_1
   
   if (comps.object.material.transparency === 0.0) { return color(0, 0, 0) }
   if (remaining <= 0) { return color(0, 0, 0) }
   
-  return color(1, 1, 1)
+  // Find ratio of the first index of refraction to the second
+  const n_ratio = comps.n1 / comps.n2
+  
+  //cos(theta_i) is the same as the dot-product of the two vectors
+  const cos_i = comps.eyev.dot(comps.normalv)
+  
+  const sin2_t = n_ratio**2 * (1 - cos_i**2)
+  
+  if (sin2_t > 1) { return color(0, 0, 0) } // We have total internal reflection
+  
+  const cos_t = Math.sqrt(1.0 - sin2_t)
+  
+  const direction = comps.normalv.by_scalar(n_ratio * cos_i - cos_t).minus(comps.eyev.by_scalar(n_ratio))
+  const refract_ray = ray(comps.under_point, direction)
+  const c = color_at(w, refract_ray, remaining - 1)
+  
+  return c.by_scalar(comps.object.material.transparency)
 }

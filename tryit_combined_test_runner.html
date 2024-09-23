@@ -1542,7 +1542,6 @@ class PrepareComputations {
       this._over_point =  this._p.plus( this._n.by_scalar(C.EPSILON))
       this._under_point = this._p.minus(this._n.by_scalar(C.EPSILON))
       this._calc_n1n2()
-      //log("error", "Array.isArray(insects): " + Array.isArray(insects))
     } catch (e) {
       log("error", `Error creating PrepareComputations object: ${e}`)
     }
@@ -1572,69 +1571,37 @@ class PrepareComputations {
   _calc_n1n2() {
     
     const _containers = []
-    
-    // If this intersection is the hit (the intersection with the lowest non-negative t-value), then the_hit = true
-    
-    const the_hit = this._i === hit(this._intersects)
-    
+        
     // Iterate over all intersections
     for (const i of this._intersects) {
-      
-      // If the current intersection i is the hit, and the list of objects is empty, we are entering the first object. In this case, set n1 = 1.0. If there are already objects in the list, set n1 to the ri of the last object in that list.
-      if (the_hit) {
-        log("error", "This is the hit, t = " + this._i.t)
-        if (_containers.length > 0) {
-          log("error", "Exiting object " + _containers.at(-1).object.id)
-          this._n1 = _containers.at(-1).object.material.refractive_index
-        } else {
-          log("error", "Entering first object, n1 is 1.0")
-          this._n1 = 1.0
-        }
-      } else if (_containers.length > 0) {
-        // If the current intersection i is not the hit and there are objects in the list, we are moving through overlapping objects. In this case, set n1 to be the ri of the last object in the list:        
+    
+    // If the current intersection is the one we are iterating
+    const the_hit = this._i === i
+    
+    if (the_hit) {
+      if (_containers.length > 0) {
         this._n1 = _containers.at(-1).object.material.refractive_index
-        
-        // and n2 to be the current intersection's object's ri
-        this._n2 = i.object.material.refractive_index
-        
-        log("error", "Exiting object " + _containers.at(-1).object.id + ", n1 is " + this._n1 + ", n2 is " + this._n2)
+      } else {
+        this._n1 = 1.0
       }
+    }
             
-      // Check if the current intersection's object id is already in the list.
-      const idx = _containers.map(j => j.object.id).indexOf(i.object.id)
+    const idx = _containers.map(j => j.object.id).indexOf(i.object.id)
       
-      if (idx != -1) {
-        // The current intersections's object is in the list; we are exiting the object and therefore remove it from the list.
-        log("error", "Object " + _containers[idx].object.id + " found at index " + idx)
+    if (idx != -1) {
         _containers.splice(idx, 1)
       } else {
-        // The object was not in the list; we are entering that object, and it should be added to the list.
-        log("error", "Entering object " + i.object.id)
         _containers.push(i)
       }
       
-      // If this is the hit, 
       if (the_hit) {
-        // n2 is the current object's ri
-        this._n2 = i.object.material.refractive_index
-        log("error", "This is the hit, n2 is " + this._n2)
-        break
-      } else {
         if (_containers.length === 0 ) {
           this._n2 = 1.0
-          log("error", "Exiting last object, n2 is 1.0")
         } else {
-        // there are still objects in the list, n2 should be the ri of the object we are entering, that is the current intersections's object
           this._n2 = _containers.at(-1).object.material.refractive_index
-          log("error", "There were objects in the list, n2 is last obj ri " + this._n2)
         }
       }
-      
-      if (this._n1 != undefined && this._n2 != undefined) { break }
     }
-    
-    log("error", "n1 = " + this._n1)
-    log("error", "n2 = " + this._n2)
   }
 
   toString() { return `PrepareComputations(intersection, ray, intersections):\nt = ${this.t} \nobject.id=${this.object.id} \npoint=${this.point} \neyev=${this.eyev} \nnormalv=${this.normalv} \ninside=${this.inside} \nreflectv=${this.reflectv} \nover_point=${this.over_point} \nintersections:${this._intersects.map(i => `t-value = ${i.t}, object.id=${i.object.id}`)} \nn1 = ${this._n1} \nn2 = ${this._n2}` }
@@ -1925,9 +1892,7 @@ function refracted_color(w, comps, remaining = C.RECURSIONS) {
   
   // Find ratio of the first index of refraction to the second
   const n_ratio = comps.n1 / comps.n2
-  log("error", "n1: " + comps.n1)
-  log("error", "n2: " + comps.n2)
-  log("error", "n_ratio: " + n_ratio)
+  
   //cos(theta_i) is the same as the dot-product of the two vectors
   const cos_i = comps.eyev.dot(comps.normalv)
   
@@ -1935,7 +1900,19 @@ function refracted_color(w, comps, remaining = C.RECURSIONS) {
   
   if (sin2_t > 1) { return color(0, 0, 0) } // We have total internal reflection
   
-  return color(1, 1, 1)
+  const cos_t = Math.sqrt(1.0 - sin2_t)
+  
+  const direction = comps.normalv.by_scalar(n_ratio * cos_i - cos_t).minus(comps.eyev.by_scalar(n_ratio))
+  
+  const refract_ray = ray(comps.under_point, direction)
+  
+  const c = color_at(w, refract_ray, remaining - 1)
+  
+  c.times(comps.object.material.transparency)
+  
+  log("error", c)
+  
+  return c
 }
 
 </script>
@@ -3753,7 +3730,6 @@ function test_color_at_function() {
   //log("error", c3)
   //log("error", inner.material.color)
   
-  log("error", c2)
   return c1.equals(color(0, 0, 0)) 
       && c2.equals(color(0.38066, 0.47583, 0.2855))
       && c3.equals(inner.material.color)
@@ -4401,7 +4377,6 @@ function test_finding_n1_and_n2_refractive_indices() {
   // Test that PrepareComputations can calculate n1 and n2
   // for refractive intersections.
   
-  log("error", "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
   const a = glass_sphere()
   a.transform = scaling(2, 2, 2)
   a.material.refractive_index = 1.5
@@ -4432,14 +4407,14 @@ function test_finding_n1_and_n2_refractive_indices() {
   
   const res = []
   for (i in xs) {
-    log("error", `Intersection is at index ${i},  object id ${xs[i].object.id}`)
+    //log("error", `Intersection is at index ${i},  object id ${xs[i].object.id}`)
     const comps = prepare_computations(xs[i], r, xs)
     
     res.push( comps.n1 === expected[i][0] 
            && comps.n2 === expected[i][1] )
-    log("error", "---DONE---")
+    //log("error", "---DONE---")
   }
-  log("error", res)
+  //log("error", res)
   return !res.includes(false)
 }
 
@@ -4504,6 +4479,33 @@ function test_refracted_color_under_total_internal_reflection() {
   const c = refracted_color(w, comps, 5)
   
   return c.equals(color(0, 0, 0))
+}
+
+function test_refracted_color_with_a_refracted_ray() {
+  // Test that refracted_color() in all other cases will spawn a secondary ray in the correct
+  // direction, and return its color.
+  
+  const w = default_world()
+  
+  const a = w.objects[0]
+  a.material.ambient = 1.0
+  a.material.pattern = test_pattern()
+  
+  const b = w.objects[1]
+  b.material.transparency = 1.0
+  b.material.refractive_index = 1.5
+  
+  const r = ray(point(0, 0, 0.1), vector(0, 1, 0))
+  const xs = intersections(
+               intersection(-0.9899, a), 
+               intersection(-0.4899, b), 
+               intersection(0.4899,  b), 
+               intersection(0.9899,  a))
+  
+  const comps = prepare_computations(xs[2], r, xs)
+  const c = refracted_color(w, comps, 5)
+  
+  return c.equals(color(0, 0.99888, 0.04725))
 }
 
 </script>
@@ -4662,10 +4664,11 @@ runTest("reflect_list", test_limit_recursion_of_reflection)
 runTest("reflect_list", test_material_has_transparency_and_refraction)
 runTest("reflect_list", test_glass_sphere_function)
 runTest("reflect_list", test_finding_n1_and_n2_refractive_indices)
-//runTest("reflect_list", test_computing_under_point)
-//runTest("reflect_list", test_refracted_color_of_opaque_object)
-//runTest("reflect_list", test_refracted_color_at_max_recursions)
-//runTest("reflect_list", test_refracted_color_under_total_internal_reflection)
+runTest("reflect_list", test_computing_under_point)
+runTest("reflect_list", test_refracted_color_of_opaque_object)
+runTest("reflect_list", test_refracted_color_at_max_recursions)
+runTest("reflect_list", test_refracted_color_under_total_internal_reflection)
+runTest("reflect_list", test_refracted_color_with_a_refracted_ray)
 
 
 

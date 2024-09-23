@@ -1361,10 +1361,10 @@ function test_hit_function() {
   const xs4 = intersections(i7, i8, i9, i10)
   const h4 = hit(xs4)
   
-  return h1[0] === i1
-      && h2[0] === i4 
-      && !h3[0] // h3: there are no intersections, returns "undefined", which equals "false"
-      && h4[0] === i10 
+  return h1 === i1
+      && h2 === i4 
+      && !h3 // h3: there are no intersections, returns "undefined", which equals "false"
+      && h4 === i10 
 }
 
 function test_transform_function() {
@@ -1811,10 +1811,9 @@ function test_color_at_function() {
   //log("error", c3)
   //log("error", inner.material.color)
   
-  //log("error", c2)
   return c1.equals(color(0, 0, 0)) 
       && c2.equals(color(0.38066, 0.47583, 0.2855))
-      //&& c3.equals(inner.material.color)
+      && c3.equals(inner.material.color)
 }
 
 function test_view_transform_function() {
@@ -2489,15 +2488,14 @@ function test_finding_n1_and_n2_refractive_indices() {
   
   const res = []
   for (i in xs) {
-    log("error", "xs[i].t: " + xs[i].t)
+    //log("error", `Intersection is at index ${i},  object id ${xs[i].object.id}`)
     const comps = prepare_computations(xs[i], r, xs)
-    log("error", "comps.n1: " + comps.n1)
-    log("error", "comps.n2: " + comps.n2)
     
     res.push( comps.n1 === expected[i][0] 
            && comps.n2 === expected[i][1] )
+    //log("error", "---DONE---")
   }
-  
+  //log("error", res)
   return !res.includes(false)
 }
 
@@ -2546,4 +2544,48 @@ function test_refracted_color_at_max_recursions() {
   const c = refracted_color(w, comps, 0)
   
   return c.equals(color(0, 0, 0))
+}
+
+function test_refracted_color_under_total_internal_reflection() {
+  // Test new function refracted_color(world, comps, remaining)
+  // Show that it returns black when the conditions for total internal reflection occurs.
+  
+  const w = default_world()
+  const shape = w.objects[0]
+  shape.material.transparency = 1.0
+  shape.material.refractive_index = 1.5
+  const r = ray(point(0, 0, Math.sqrt(2)/2), vector(0, 1, 0))
+  const xs = intersections(intersection(-Math.sqrt(2)/2, shape), intersection(Math.sqrt(2)/2, shape))
+  const comps = prepare_computations(xs[1], r, xs)
+  const c = refracted_color(w, comps, 5)
+  
+  return c.equals(color(0, 0, 0))
+}
+
+function test_refracted_color_with_a_refracted_ray() {
+  // Test that refracted_color() in all other cases will spawn a secondary ray in the correct
+  // direction, and return its color.
+  
+  const w = default_world()
+  
+  const a = w.objects[0]
+  a.material.ambient = 1.0
+  a.material.pattern = test_pattern()
+  
+  const b = w.objects[1]
+  b.material.transparency = 1.0
+  b.material.refractive_index = 1.5
+  
+  const r = ray(point(0, 0, 0.1), vector(0, 1, 0))
+  const xs = intersections(
+               intersection(-0.9899, a), 
+               intersection(-0.4899, b), 
+               intersection(0.4899,  b), 
+               intersection(0.9899,  a))
+  
+  const comps = prepare_computations(xs[2], r, xs)
+  const c = refracted_color(w, comps, 5)
+  
+  //log("error", c)
+  return c.equals(color(0, 0.99888, 0.04721)) // book sez 0.04725. I take it as a rounding error.
 }

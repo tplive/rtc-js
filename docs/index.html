@@ -1095,19 +1095,24 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
   <li><code>patterns.js</code> på $178$ linjer</li>
 </li>
 <li>Og så er <code>tests.js</code> er $2456$ linjer.</li>
+</ul>
 </p>
 <p>Dette er til sammen $4498$ linjer med ren javascript. Det stemmer bra med prosjektet <code>tryit_combined_test_runner.html</code> som inneholder all denne koden og HTML for å kjøre testene, på $4783$ linjer.</p>
 <p>Dette dokumentet er på $1165$ linjer med bare HTML kode.</p>
 <p>Hva betyr så dette? Lite. Antall linjer kode er et dårlig mål på noe som helst.</p>
-<li></li>
-<li></li>
-<li></li>
-<li></li>
-<li></li>
-<li></li>
-<li></li>
-<li></li>
-</ul></p>
+
+<p>Now, back to our regular scheduled programme...</p>
+<p>1. juli 2024. Det er noen dager siden sist jeg kunne oppdatere dokumentasjonen. Ikke fordi jeg ikke har jobbet med prosjektet, men fordi jeg har hatt $0$ framgang... &#128517; Opprinnelig duret jeg gjennom den og trodde at en grønn test var det som skulle til, og jeg jobbet meg videre til test #6, men så ramlet alt sammen. Viste seg at den tidligere testen min ikke holdt vann. Min nemesis starter på side 151 i boka:</p>
+<p>Test #2: Determining $n_1$ and $n_2$: <var>Show that <code>prepare_computations()</code> determines $n_1$ and $n_2$ correctly at six different points of intersection</var>.</p>
+<p>Hørtes jo egentlig greit ut, vi har fra før tatt vare på alle intersections, og skal nå begynne å bruke dem (ikke bare "the hit") for å beregne refraksjonsindeksen når strålen passerer fra et materiale med èn verdi $n_1$ og over i et annet materiale med en annen verdi $n_2$. Dette gjøres med Snell's lov, som beskriver forholdet mellom innkommende stråle $\theta _i$ og refraktert stråle $\theta _t$, og ser slik ut: </p>
+
+<p>$$ {\sin \theta _i \over \sin \theta _t} = {n_2 \over n_1 } $$</p>
+
+<p>Vel, problemet mitt var ikke matematikken, men å forstå algoritmen. Algoritmen sier at vi nå skal bruke alle intersections til <code>prepare_computations()</code> og iterere over alle sammen, for å finne $n_1$ og $n_2$ i hver intersection. På grunn av en noe forenklet formulering i boka, trodde jeg at jeg alltid skulle sammenligne med "the hit", altså det <i>første</i> punktet strålen treffer. Jeg brukte flere dager på å jobbe meg inn i materien før det plutselig ble klart for meg hvordan det måtte være. Needless to say så var det et stort øyeblikk da testen omsider ble grønn, og jeg kunne rydde opp koden vel vitende om at jeg nå kan gå videre i kapitlet... Et sånt øyeblikk som gjør dette Sisyfos arbeidet verdt det... &#129315; Hmm... Kanskje et passende symbol på dette prosjektet er en Sisyfos som dytter en blank og fin, halvgjennomsiktig, refrakterende kule opp en bratt bakke? Legger den på TODO lista mi jeg.. </p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
   <p></p>
   <p></p>
   <p></p>
@@ -1118,6 +1123,7 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
 
   <p>TODO:
   <ul>
+    <li>Rendre Sisyfos som dytter en blank og fin, halvgjennomsiktig, refrakterende kule opp en bratt bakke...</li> 
     <li>Fikse bugs med plan som ikke rendrer korrekt når de transleres. Acne, "gjennomsiktighet" og skygge.</li>
     <li>Gå tilbake til kapittel 10 og lage et 2D sjakkmønster og/eller blend patterns.</li>
     <li>Kode for å lese (og skrive?) JSON-fil med beskrivelse av scene.</li>
