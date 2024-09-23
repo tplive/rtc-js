@@ -589,7 +589,7 @@ For å tegne på canvas, er det en ny loop som går gjennom arrayet og dytter pu
 Jeg legger til litt perf-testing og pynter med litt CSS og vòila! Resultatet ser du her: <a href="../clockface_chapter4.html"><code>clockface_chapter4.html</code></a></p>
 <p>Jeg oppdager også at lagring til PPM-fil alldeles ikke fungerer som det skal. Men jeg er litt irritert på de greiene der, PPM er et idiotisk format uansett, 300x300 px blir jo over 500kB! Må da gå an å gjøre en bedre jobb enn som så... </p>
 <p>Jeg ser også at rendring av urskiven tar sånn circa 150 ms i snitt, ved 300x300 piksler. Det er 12 * 2 transformasjoner, og 12 write_pixel kall og 12 fillRect. Når jeg kommenterer ut håndtering av PPM, kjører vi på 1 ms. Bare sånn for senere referanse.</p>
-<p></p>
+<p>1. mai 2024: I dag har jeg implementert tester for å lage <code>sphere()</code> objekter med en id som er unik for hvert objekt, og jeg har laget <code>intersect()</code> funksjonen som sjekker om en stråle (ray) treffer en sphere() eller ikke. Kjente igjen andregradsligning og abc-formelen der &#129299;, selv om jeg ikke har satt meg inn i hva denne funksjonen egentlig gjør.</p>
 <p></p>
 <p></p>
 <p></p>

@@ -636,3 +636,46 @@ function position(ray, t) {
   // Compute a ray's direction by t to find the total distance traveled
   return add_tuples(multiply_vector(ray.direction, t), ray.origin)
 }
+
+// THIS IS A GLOBAL VARIABLE, GIVES A NEW ID FOR EACH INVOCATION
+var unique_id = (() => {
+        var counter = 0
+
+        return function() {
+            return counter++
+        }
+    })()
+
+function sphere(id) {
+  // Returns a new sphere object, each invocation has a unique id.
+  
+  const _id = unique_id()
+  
+  return Object.freeze({
+    id:_id
+  })
+}
+
+function intersect(s, r) {
+  // Intersect returns an array of points where a given ray (r) intersects a given object (s)
+  
+  // Vector from sphere's center to the ray origin
+  // Remember: The sphere is centered at the world origin (0, 0, 0)
+  
+  const sphere_to_ray = subtract_tuples(r.origin, point(0, 0, 0))
+  const a = dot(r.direction, r.direction)
+  const b = 2 * dot(r.direction, sphere_to_ray)
+  const c = dot(sphere_to_ray, sphere_to_ray) - 1
+  
+  const discriminant = b**2 - 4*a*c
+  
+  // The discriminant is the key - if it's negative, the ray misses the sphere
+  if (discriminant < 0 ) { return [] }
+  
+  // Otherwise, the equation has two solutions, which could be the same, if the
+  // ray intersects at a perfect tangent
+  const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
+  const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
+  
+  return [t1, t2]
+}

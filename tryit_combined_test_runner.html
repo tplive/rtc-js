@@ -685,6 +685,49 @@ function position(ray, t) {
   return add_tuples(multiply_vector(ray.direction, t), ray.origin)
 }
 
+// THIS IS A GLOBAL VARIABLE, GIVES A NEW ID FOR EACH INVOCATION
+var unique_id = (() => {
+        var counter = 0
+
+        return function() {
+            return counter++
+        }
+    })()
+
+function sphere(id) {
+  // Returns a new sphere object, each invocation has a unique id.
+  
+  const _id = unique_id()
+  
+  return Object.freeze({
+    id:_id
+  })
+}
+
+function intersect(s, r) {
+  // Intersect returns an array of points where a given ray (r) intersects a given object (s)
+  
+  // Vector from sphere's center to the ray origin
+  // Remember: The sphere is centered at the world origin (0, 0, 0)
+  
+  const sphere_to_ray = subtract_tuples(r.origin, point(0, 0, 0))
+  const a = dot(r.direction, r.direction)
+  const b = 2 * dot(r.direction, sphere_to_ray)
+  const c = dot(sphere_to_ray, sphere_to_ray) - 1
+  
+  const discriminant = b**2 - 4*a*c
+  
+  // The discriminant is the key - if it's negative, the ray misses the sphere
+  if (discriminant < 0 ) { return [] }
+  
+  // Otherwise, the equation has two solutions, which could be the same, if the
+  // ray intersects at a perfect tangent
+  const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
+  const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
+  
+  return [t1, t2]
+}
+
 </script>
 <script>
 // *** TESTS
@@ -1781,6 +1824,82 @@ function test_position_function() {
 function test_sphere_function() {
   // The sphere() function should return a unique value for every invocation, as the sphere's id.
   
+  const spheres = []
+  
+  // Create a lot of spheres and store their ids in the array
+  for (let i=0; i < 1000; i++) {
+    const s = sphere()
+    spheres.push(s.id)
+  }
+  
+  // Create a new Set of values from sphere ids. A Set can only contain unique values
+  let unique = [...new Set(spheres)]
+
+  return spheres.length === unique.length
+}
+
+function test_ray_intersects_sphere_at_two_points() {
+  // The intersect function returns all points where a ray intersects an object, in this case a sphere.
+  
+  // A ray intersects a sphere at two points
+  const r = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  
+  return xs.length === 2 && xs[0] === 4.0 && xs[1] === 6.0
+}
+
+function test_ray_intersects_sphere_at_tangent() {
+  // The intersect function returns all points where a ray intersects an object, in this case a sphere.
+  
+  // A ray intersects a sphere at a tangent
+  const r = ray(point(0, 1, -5), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  
+  return xs.length === 2 && xs[0] === 5.0 && xs[1] === 5.0
+}
+
+function test_ray_misses_a_sphere() {
+  // The intersect function returns all points where a ray intersects an object, in this case a sphere.
+  
+  // A ray intersects a sphere at a tangent
+  const r = ray(point(0, 2, -5), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  
+  return xs.length === 0
+}
+
+function test_ray_originates_inside_a_sphere() {
+  // The intersect function returns all points where a ray intersects an object, in this case a sphere.
+  // This is an edge case where the ray originates inside the sphere. In this case too, 
+  // it should return both intersections, in front of as well as behind the rays origin.
+  
+  // A ray originates inside a sphere
+  const r = ray(point(0, 0, 0), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  
+  return xs.length === 2 && xs[0] === -1.0 && xs[1] === 1.0
+}
+
+function test_sphere_is_behind_a_ray() {
+  // The intersect function returns all points where a ray intersects an object, in this case a sphere.
+  // This is an edge case where the sphere is behind the ray. In this case too,
+  // it should return both intersections, both with negative values (behind) the rays origin.
+  
+  // A sphere is behind the ray
+  const r = ray(point(0, 0, 5), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  
+  return xs.length === 2 && xs[0] === -6.0 && xs[1] === -4.0
 }
 
 </script>
@@ -1876,6 +1995,13 @@ runTest("matrix_list", test_apply_individual_transformations)
 runTest("ray_list", test_creating_ray_function)
 runTest("ray_list", test_position_function)
 runTest("ray_list", test_sphere_function)
+runTest("ray_list", test_ray_intersects_sphere_at_two_points)
+runTest("ray_list", test_ray_intersects_sphere_at_tangent)
+runTest("ray_list", test_ray_misses_a_sphere)
+runTest("ray_list", test_ray_originates_inside_a_sphere)
+runTest("ray_list", test_sphere_is_behind_a_ray)
+
+
 
 
 const end = performance.now()

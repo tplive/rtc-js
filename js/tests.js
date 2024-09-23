@@ -1088,3 +1088,84 @@ function test_position_function() {
     && equal_tuples(p3, point(1, 3, 4))
     && equal_tuples(p4, point(4.5, 3, 4))
 }
+
+function test_sphere_function() {
+  // The sphere() function should return a unique value for every invocation, as the sphere's id.
+  
+  const spheres = []
+  
+  // Create a lot of spheres and store their ids in the array
+  for (let i=0; i < 1000; i++) {
+    const s = sphere()
+    spheres.push(s.id)
+  }
+  
+  // Create a new Set of values from sphere ids. A Set can only contain unique values
+  let unique = [...new Set(spheres)]
+
+  return spheres.length === unique.length
+}
+
+function test_ray_intersects_sphere_at_two_points() {
+  // The intersect function returns all points where a ray intersects an object, in this case a sphere.
+  
+  // A ray intersects a sphere at two points
+  const r = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  
+  return xs.length === 2 && xs[0] === 4.0 && xs[1] === 6.0
+}
+
+function test_ray_intersects_sphere_at_tangent() {
+  // The intersect function returns all points where a ray intersects an object, in this case a sphere.
+  
+  // A ray intersects a sphere at a tangent
+  const r = ray(point(0, 1, -5), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  
+  return xs.length === 2 && xs[0] === 5.0 && xs[1] === 5.0
+}
+
+function test_ray_misses_a_sphere() {
+  // The intersect function returns all points where a ray intersects an object, in this case a sphere.
+  
+  // A ray intersects a sphere at a tangent
+  const r = ray(point(0, 2, -5), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  
+  return xs.length === 0
+}
+
+function test_ray_originates_inside_a_sphere() {
+  // The intersect function returns all points where a ray intersects an object, in this case a sphere.
+  // This is an edge case where the ray originates inside the sphere. In this case too, 
+  // it should return both intersections, in front of as well as behind the rays origin.
+  
+  // A ray originates inside a sphere
+  const r = ray(point(0, 0, 0), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  
+  return xs.length === 2 && xs[0] === -1.0 && xs[1] === 1.0
+}
+
+function test_sphere_is_behind_a_ray() {
+  // The intersect function returns all points where a ray intersects an object, in this case a sphere.
+  // This is an edge case where the sphere is behind the ray. In this case too,
+  // it should return both intersections, both with negative values (behind) the rays origin.
+  
+  // A sphere is behind the ray
+  const r = ray(point(0, 0, 5), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  
+  return xs.length === 2 && xs[0] === -6.0 && xs[1] === -4.0
+}

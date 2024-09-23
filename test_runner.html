@@ -139,7 +139,12 @@ runTest("matrix_list", test_apply_individual_transformations)
 
 runTest("ray_list", test_creating_ray_function)
 runTest("ray_list", test_position_function)
-
+runTest("ray_list", test_sphere_function)
+runTest("ray_list", test_ray_intersects_sphere_at_two_points)
+runTest("ray_list", test_ray_intersects_sphere_at_tangent)
+runTest("ray_list", test_ray_misses_a_sphere)
+runTest("ray_list", test_ray_originates_inside_a_sphere)
+runTest("ray_list", test_sphere_is_behind_a_ray)
 
 
 const end = performance.now()
