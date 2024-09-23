@@ -389,9 +389,12 @@ import { doStuff } from "./js/functions.js"
 
 
 <h3>&#127767; Chapter 6, Light and Shading</h3>
-<p>Dette er et spennende kapittel! Nå skal vi omsider begynne å lage litt 3D-effekter, og det starter med at vi må beregne noen flere vektorer. Jeg ser at jeg gjerne vil refaktorere litt mer, for <code>ray()</code> har en ekstern <code>transform()</code> funksjon, mens <code>Sphere()</code> har en egen metode for dette. Det er på tide å rydde. Vi må kunne gjøre ting som <code>ray().transform = scaling(5,5,5)</code> og <code>sphere().transform = rotation_z(Math.PI/5)</code>. Ikke sant? &#128514;</p>
+<p>Dette er et spennende kapittel! Nå skal vi omsider begynne å lage litt 3D-effekter, og det starter med at vi må beregne noen flere vektorer. Jeg ser at jeg gjerne vil refaktorere litt mer, for <code>ray()</code> har en ekstern <code>transform()</code> funksjon, mens <code>Sphere()</code> har en egen metode for dette.</p>
 
-<p>Videre har vi <code>equal_tuples()</code>, <code>add_tuples()</code>, <code>subtract_tuples()</code>, <code>negate_tuple()</code>, <code>multiply_vectors()</code>, <code>divide_vectors()</code>, <code>dot()</code>, <code>cross()</code>, <code>magnitude()</code> og <code>normalize()</code> som alle funksjoner som er eksterne fra <code>tuple()</code>! Jeg mener koden blir ryddigere hvis jeg gjør dem om til metoder på <code>tuple()</code>. Det viser seg også at disse metodene kan chaines, uten at jeg trenger å gjøre noe spesielt!</p>
+<h4>&#128295; Time to refactor!</h4>
+<p>Det er på tide å rydde. Vi må kunne gjøre ting som <code>ray().transform = scaling(5,5,5)</code> og <code>sphere().transform = rotation_z(Math.PI/5)</code>. Ikke sant? &#128514;</p>
+
+<p>Videre har vi <code>equal_tuples()</code>, <code>add_tuples()</code>, <code>subtract_tuples()</code>, <code>negate_tuple()</code>, <code>multiply_vectors()</code>, <code>divide_vectors()</code>, <code>dot()</code>, <code>cross()</code>, <code>magnitude()</code> og <code>normalize()</code>. Alle disse er funksjoner som hører til <code>tuple()</code>! Jeg mener koden blir ryddigere hvis jeg gjør dem om til metoder på <code>tuple()</code>. Da kan man chaine metodene, uten at jeg trenger å gjøre noe spesielt!</p>
 
 <p>Så må jeg skrive om alle kallene sånn at det blir konsistent og fint. Gjør det videre sånn at de gamle funksjonene får ligge i koden litt til, men de kaster bare exceptions hvis man prøver å bruke dem. Sånn blir det:</p>
 <pre>
@@ -404,6 +407,35 @@ import { doStuff } from "./js/functions.js"
   Uncaught add_tuples() is deprecated. Use tuple().plus(t) instead.
 </pre>
 <p>Vakkert.</p>
+<p>Dette tar lenger tid enn jeg trodde. FOR en &#128163;! I tillegg har jeg eksamensforberedelser mot 24. mai, så her blir det en lengre pause. Det må være greit, TID har vi da nok av...</p>
+<p>Jeg henger meg fortsatt opp i problemene med transformations() funksjonen, og kan ikke forstå hvorfor det blir en Batman-funksjon... Hva i huleste er en Batman-funksjon sier du? Jo, det er en funksjon som returnerer <code>[NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN]</code>... Get it? Anyways, det viser seg at det bare er jeg som må være mer påpasselig med at det bare er tall som blir brukt som parametre, får <strong>ingen</strong> hjelp fra JS her. Det viser seg at <code>Math.pi / 2</code> ikke er det samme som <code>Math.PI / 2</code>. Videre viser det seg at <code>NaN</code> som står for "Not a Number", faktisk ER et <code>number</code> i JS. Blir så svett av sånt... Men, det finnes en test som heter <code>isNaN()</code> og DEN kan fortelle meg om en verdi IKKE er <code>NaN</code> om ikke annet.. Forvirret? Jeg også.. </p>
+<p>Så da blir det en liten test på disse transformation-funksjonene som sørger for å stoppe opp hvis jeg prøver å gi dem noe som ikke er tall, feks slik:</p>
+<pre>
+function rotation_z(rad) {
+  // Takes an angle in radians and returns a rotation matrix for the z-axis
+  
+  if (!isNaN(rad) ) {
+    const cr = Math.cos(rad)
+    const sr = Math.sin(rad)
+    const t = idmatrix()
+
+    t.put(0,0,cr)
+    t.put(0,1,-sr)
+    t.put(1,0,sr)
+    t.put(1,1,cr)
+
+    return t
+  } else {
+    throw(`Input variable is not a number: rad = ${rad}`)
+  }
+}
+</pre>
+
+<p>Med det ute av veien, kan jeg gå tilbake til Chapter 6 og beregne normaler...</p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
 <p></p>
 <p></p>
 <p></p>
@@ -411,7 +443,7 @@ import { doStuff } from "./js/functions.js"
 
 <p>TODO:
 <ul>
-  <li>Fikse det som er galt med transformations() når jeg legger på en rotation.</li>
+  
   <li>WIP: Kjøre raytracing som <a href="https://www.w3schools.com/js/js_api_web_workers.asp">bakgrunnsprosess</a>.</li>
   <li>Refaktorere minor(), determinant() og cofactor() som metoder på matrix() funksjonen.
   <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>
@@ -421,6 +453,7 @@ import { doStuff } from "./js/functions.js"
   <ul>
     <li>Refaktorere canvas til class</li>
   </ul>
+  <li>Done. <del>Fikse det som er galt med transformations() når jeg legger på en rotation.</del></li>
   <li>Done. <del>Bytte navn på funksjonen scale() til scaling().</del></li>
   <li>Done! <del>Bytte til <a href="https://stackoverflow.com/a/22004858/83148">typed arrays</a> i alle array-funksjoner. Vurdere også 1D arrays istedet for 2D.</del></li>
   <li>Done! <del>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny transform funksjon side 68.)</del></li>

@@ -63,14 +63,12 @@ function equal(a, b) {
 }
 
 function equal_tuples(a, b) {
-  throw (`equal_tuples() is deprecated. Use tuple().equals(t) instead.`)
   // Compare x, y, z coordinates of a tuple. JS does not distinguish these types of objects
   // so a tuple == vector == point at this time.
-  return equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z) && equal(a.w, b.w)
+  return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z) && equal(a.w, b.w))
 }
 
 function add_tuples(a, b) {
-  throw (`add_tuples() is deprecated. Use tuple().plus(t) instead.`)
   // Add two tuples together.
   // A point (w=1) added to a vector (w=0) is a new point.
   // A vector (w=0) added to another vector (w=0) is the resulting vector.
@@ -79,50 +77,42 @@ function add_tuples(a, b) {
 }
 
 function subtract_tuples(a, b) {
-  throw (`subtract_tuples() is deprecated. Use tuple().minus(t) instead.`)
   // Subtract values of tuple b from values of tuple a.
   return tuple(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w)
 }
 
 function negate_tuple(t) {
-  throw (`negate_tuple() is deprecated. Use tuple().negate() instead.`)
   // Return a tuple with x=-x, y=-y, z=-z coordinates
   return tuple(t.x * -1, t.y * -1, t.z * -1, t.w * -1)
 }
 
 function multiply_vector(v, s) {
-  throw (`multiply_vector() is deprecated. Use vector().by_scalar(s) instead.`)
   // Multiply each component of the tuple t by the scalar value s
   return tuple(v.x * s, v.y * s, v.z * s, v.w * s)
 }
 
 function divide_vector(s, t) {
-  throw (`divide_vector() is deprecated. Use vector().divided_by(s) instead.`)
   // Multiply each component of the tuple t by the scalar value s
   return tuple(t.x / s, t.y / s, t.z / s, t.w / s)
 }
 
 function magnitude(v) {
-  throw (`magnitude() is deprecated. Use vector().magnitude() instead.`)
   // Calculate the magnitude of a vector
   return Math.sqrt(v.x**2 + v.y**2 + v.z**2 + v.w**2)
 }
 
 function normalize(v) {
-  throw (`normalize() is deprecated. Use vector.normalize() instead.`)
   // Normalize a vector using its magnitude
   var m = magnitude(v)
   return tuple(v.x / m, v.y / m, v.z / m, v.w / m)
 }
 
 function dot(a, b) {
-  throw (`dot() is deprecated. Use vector.dot(v) instead.`)
   // Compute the dot product of two vectors
   return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
 }
 
 function cross(a, b) {
-  throw (`cross() is deprecated. Use vector.cross(v) instead.`)
   // Compute the cross product of two vectors
   // Order matters!
   return vector(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
@@ -134,55 +124,7 @@ function tuple(a, b, c, d) {
     y:b,
     z:c,
     w:d,
-    equals: function(t) { return equal(a, t.x) && equal(b, t.y) && equal(c, t.z) && equal(d, t.w) },
-    minus: function(t) { return tuple(a - t.x, b - t.y, c - t.z, d - t.w) },
-    plus: function(t) { return tuple(a + t.x, b + t.y, c + t.z, d + t.w) },
-    negate: function() { return tuple(a * -1, b * -1, c * -1, d * -1) },
-    by_scalar: function(s) { 
-      if (d === 0) {
-        return tuple(a * s, b * s, c * s, d * s)
-      } else {
-        throw(`Can only multiply vectors by scalar value.`)
-      }
-    },
-    divided_by: function(s) {
-      if (d === 0) {
-        return tuple(a / s, b / s, c / s, d / s)
-      } else {
-        throw(`Can only divide vectors by scalar value.`)
-      }
-    },
-    dot: function(v) {
-      if (d === 0) {
-        return a * v.x + b * v.y + c * v.z
-      } else {
-        throw(`Can only calculate dot product of vectors.`)
-      }
-    },
-    cross: function(v) {
-      if (d === 0) {
-        return vector(b * v.z - c * v.y, c * v.x - a * v.z, a * v.y - b * v.x)
-      } else {
-        throw(`Can only calculate cross product of vectors.`)
-      }
-    },
-    magnitude: function() {
-    if (d === 0) {
-        return Math.sqrt(a**2 + b**2 + c**2)
-      } else {
-        throw(`Can only calculate magnitude of vectors.`)
-      }
-      
-    },
-    normalize: function() {
-      if (d === 0) {
-        var m = this.magnitude()
-        return vector(a / m, b / m, c / m)
-      } else {
-        throw(`Can only normalize vectors.`)
-      }
-    },
-    toString: function() { return `x:${a} y:${b} z:${c} w:${d}` },
+    toString: function() { return `x:${this.x} y:${this.y} z:${this.z} w:${this.w}`}
   })
     
 }
@@ -450,93 +392,62 @@ function matrix(rows, cols) {
         }
       }
       return Float32Array.of(...temp)
-    },
-    times_tuple: function(t) {
-      // Multiply matrix _a by tuple t.
-      // Returns a tuple.
-      
-      const result = []
-      for (let r = 0; r <= 3; r++) {
-        result[r] = 
-          this.get(r,0) * t.x + 
-          this.get(r,1) * t.y + 
-          this.get(r,2) * t.z + 
-          this.get(r,3) * t.w
-      }
-      
-      return tuple(result[0], result[1], result[2], result[3])
-    },
-    equals: function(m) {
-      const structural_equality = this.rows === m.rows && this.cols === m.cols 
-      const elements_equal = []
-      if (structural_equality) {
-        for (let i=0;i<this.d.length;i++) {
-          if ( !equal(this.d[i], m.d[i]) ) {
-            //log("error", `These fuckers aren't equal: ${ma.d[i]} and ${mb.d[i]}`)
-            elements_equal.push(false)
-          } else {
-            elements_equal.push(true)
-          }
-        }
-      } else { 
-        // Return if structural_equality is false
-        return false 
-      }
-    //log("error", elements_equal)
-    return !elements_equal.includes(false)
-    },
+    }
   })
 }
 
 function matrix_equal(ma, mb) {
-  throw(`matrix_equal() is deprecated. Use matrix().equals(m) instead.`)
   // Test equality. A === B if Arows === Brows and Acols === Bcols
   //log("error", `matrix_equal(): Running`)
   
-  const structural_equality = ma.rows === mb.rows && ma.cols === mb.cols 
-  const elements_equal = []
-  if (structural_equality) {
-   
+  // Ensure structural equality first.
+  if ( ma.rows === mb.rows && ma.cols === mb.cols ) {
+    
     for (let i=0;i<ma.d.length;i++) {
     
       if ( !equal(ma.d[i], mb.d[i]) ) {
         //log("error", `These fuckers aren't equal: ${ma.d[i]} and ${mb.d[i]}`)
-        elements_equal.push(false)
-      } else {
-        elements_equal.push(true)
+        return false
       }
     }
   }
-  //log("error", elements_equal)
-  return !elements_equal.includes(false)
+  return true
 }
 
 function multiply_matrices(a, b) {
   // Multiply matrices.
   // Only supports 4x4 matrices.
-    
+  //log("error", a.rows)
+  
   if (a.rows * a.cols != 16 || b.rows * b.cols != 16) {
     throw `Only supports multiplying 4x4 matrices. a = ${a.rows}, b = ${b.cols}`
   }
   const m = matrix(4, 4)
   
   for (let r=0;r<m.rows;r++) {
+    //log("error", "r: " + r)
     for (let c=0;c<m.cols;c++) {
-      m.put(r,c,
-        a.get(r,0) * b.get(0,c) + 
-        a.get(r,1) * b.get(1,c) + 
-        a.get(r,2) * b.get(2,c) + 
-        a.get(r,3) * b.get(3,c)
-      )
+     //log("error", "    c: " + c)
+     m.put(r,c, 
+       a.get(r,0) * b.get(0,c) + 
+       a.get(r,1) * b.get(1,c) + 
+       a.get(r,2) * b.get(2,c) + 
+       a.get(r,3) * b.get(3,c)
+     )
+     
+     
      //log("error", `m.get(${r},${c}) = ${m.get(r,c)}`)
     }
   }
+  
+  //log("error", a.join("\n"))
+  //log("error", b.join("\n"))
+  //log("error", m.join("\n"))
   
   return m
 }
 
 function multiply_matrix_by_tuple(ma, t) {
-  throw(`multiply_matrix_by_tuple() is deprecated. Use matrix().times_tuple(t) instead.`)
   // Multiply matrix by tuple.
   // Returns a tuple.
   
@@ -549,6 +460,9 @@ function multiply_matrix_by_tuple(ma, t) {
      ma.get(r,3) * t.w
   }
   
+  //log("error", ma.join("\n"))
+  //log("error", t)
+  //log("error", result)
   return tuple(result[0], result[1], result[2], result[3])
 }
 
@@ -561,6 +475,7 @@ function idmatrix() {
   m.put(3,3,1)
   
   return m
+  
 }
 
 function transpose_matrix(m) {
@@ -674,56 +589,40 @@ function inverse(m) {
 function translation(x, y, z) {
   // Returns a 4x4 translation matrix applying the x, y and z coordinates for translation.
   
-  if (!isNaN(x) && !isNaN(y) && !isNaN(z) ) {
-    const t = idmatrix()
-    t.put(0,3,x)
-    t.put(1,3,y)
-    t.put(2,3,z)
-
-    return t
-  } else {
-    throw(`Input variable is not a number: x = ${x}, y = ${y}, z = ${z}`)
-  }
+  const t = idmatrix()
+  t.put(0,3,x)
+  t.put(1,3,y)
+  t.put(2,3,z)
+  
+  return t
 }
 
 function scale(x, y, z) {
-  throw `scale(x, y, z) has been deprecated. Use scaling(x, y, z) instead.`
-}
-
-function scaling(x, y, z) {
   //Returns a 4x4 translation matrix applying the x, y and z coordinates for scaling.
   
-  if (!isNaN(x) && !isNaN(y) && !isNaN(z) ) {
-    // Could have used an idmatrix here, but we save a few cycles by avoiding to set then overwrite coords.
-    const t = matrix(4, 4)
-    t.put(0,0,x)
-    t.put(1,1,y)
-    t.put(2,2,z)
-    t.put(3,3,1)
-
-    return t
-  } else {
-    throw(`Input variable is not a number: x = ${x}, y = ${y}, z = ${z}`)
-  }
+  // Could have used an idmatrix here, but we save a few cycles by avoiding to set then overwrite coords.
+  const t = matrix(4, 4)
+  t.put(0,0,x)
+  t.put(1,1,y)
+  t.put(2,2,z)
+  t.put(3,3,1)
+  
+  return t
 }
 
 function rotation_x(rad) {
   // Takes an angle in radians and returns a rotation matrix for the x-axis
   
-  if (!isNaN(rad) ) {
-    const cr = Math.cos(rad)
-    const sr = Math.sin(rad)
-    const t = idmatrix()
+  const cr = Math.cos(rad)
+  const sr = Math.sin(rad)
+  const t = idmatrix()
 
-    t.put(1,1,cr)
-    t.put(1,2,-sr)
-    t.put(2,1,sr)
-    t.put(2,2,cr)
-
-    return t
-  } else {
-    throw(`Input variable is not a number: rad = ${rad}`)
-  }
+  t.put(1,1,cr)
+  t.put(1,2,-sr)
+  t.put(2,1,sr)
+  t.put(2,2,cr)
+  
+  return t
 }
 
 
@@ -731,39 +630,31 @@ function rotation_x(rad) {
 function rotation_y(rad) {
   // Takes an angle in radians and returns a rotation matrix for the y-axis
   
-  if (!isNaN(rad) ) {
-    const cr = Math.cos(rad)
-    const sr = Math.sin(rad)
-    const t = idmatrix()
+  const cr = Math.cos(rad)
+  const sr = Math.sin(rad)
+  const t = idmatrix()
 
-    t.put(0,0,cr)
-    t.put(0,2,sr)
-    t.put(2,0,-sr)
-    t.put(2,2,cr)
-
-    return t
-  } else {
-    throw(`Input variable is not a number: rad = ${rad}`)
-  }
+  t.put(0,0,cr)
+  t.put(0,2,sr)
+  t.put(2,0,-sr)
+  t.put(2,2,cr)
+  
+  return t
 }
 
 function rotation_z(rad) {
   // Takes an angle in radians and returns a rotation matrix for the z-axis
   
-  if (!isNaN(rad) ) {
-    const cr = Math.cos(rad)
-    const sr = Math.sin(rad)
-    const t = idmatrix()
+  const cr = Math.cos(rad)
+  const sr = Math.sin(rad)
+  const t = idmatrix()
 
-    t.put(0,0,cr)
-    t.put(0,1,-sr)
-    t.put(1,0,sr)
-    t.put(1,1,cr)
-
-    return t
-  } else {
-    throw(`Input variable is not a number: rad = ${rad}`)
-  }
+  t.put(0,0,cr)
+  t.put(0,1,-sr)
+  t.put(1,0,sr)
+  t.put(1,1,cr)
+  
+  return t
 }
 
 function shearing(xy, xz, yx, yz, zx, zy) {
@@ -776,20 +667,16 @@ function shearing(xy, xz, yx, yz, zx, zy) {
   // z in proportion to y
   // shearing(xy, xz, yx, yz, zx, zy)
   
-  if (!isNaN(xy) && !isNaN(xz) && !isNaN(yx) && !isNaN(yz) && !isNaN(zx) && !isNaN(zy) ) {
-    
-    const m = idmatrix()
-    m.put(0,1,xy)
-    m.put(0,2,xz)
-    m.put(1,0,yx)
-    m.put(1,2,yz)
-    m.put(2,0,zx)
-    m.put(2,1,zy)
-
-    return m
-  } else {
-    throw(`Input variable is not a number: xy = ${xy}, xz = ${xz}, yx = ${yx}, yz = ${yz}, zx = ${zx}, zy = ${zy}`)
-  }
+  const m = idmatrix()
+  m.put(0,1,xy)
+  m.put(0,2,xz)
+  m.put(1,0,yx)
+  m.put(1,2,yz)
+  m.put(2,0,zx)
+  m.put(2,1,zy)
+  
+  return m
+  
 }
 
 function angle(v) {
@@ -806,44 +693,21 @@ function transformations(trans) {
   // Transformations given as parameters will be applied in the reverse order
   // We can apply translation, scaling, rotation and shearing into a single operation.
   
-  const m = idmatrix()
+  let m = idmatrix()
+  //log("error", "Start: " + m)
+
   
-  let t = []
-  
-  for (let i=0;i<arguments.length;i++) {
-    if (arguments[i].d != undefined ) {
-      // Only push arguments that are matrices, ie they have .d defined.
-      const mat = matrix(arguments[i].rows, arguments[i].cols)
-      mat.putAll(arguments[i].d)
-      t.push(mat)
+  for (let i=0;i < arguments.length;i++) {
+    
+    // Unless argument is a point or vector, multiply by m
+    if (!(arguments[i].w === 1 || arguments[i].w === 0)) {
+      //log("error", `Applying ${i}: ${arguments[i]}`)
+      m = multiply_matrices(arguments[i], m)
+      //log("error", "Result: " + m)
     }
   }
   
-  //log("error", "transformations(): t[0]) " + t[0].d)
-  t = t.reverse()
-  
-  for (e in t) {
-    // To set the result of the multiplied matrices, add .d
-    m.putAll(multiply_matrices(m, t[e]).d)
-    // log("error", `transformations(): ${e} ${t[e].d}`)
-  }
-  //log("error", "transformations(): m.d " + m.d)
-  
   return m
-}
-
-function recursive_transformations(arr) {
-  //log("error", "recursive_transformations()" )
-  const m = idmatrix()
-  const i = arr.pop()
-  if (arr.length === 0) {
-    //log("error", "recursive_transformations(): " + "array.length=0")
-    return multiply_matrices(m, i )
-  } else {
-    //log("error", "recursive_transformations(): " + "arr.length!=0")
-    m.putAll(recursive_transformations(arr ) )
-  }
-  return m //ultiply_matrices(m, i )
 }
 
 // *** RAY FUNCTIONS
@@ -859,12 +723,6 @@ function ray(o, d) {
   return Object.freeze({
     origin:o,
     direction:d,
-    transform: function(matr) {
-      return ray(
-        matr.times_tuple(o), 
-        matr.times_tuple(d)
-      )
-    },
     toString: function() { return `origin: point(${this.origin}) direction: vector(${this.direction})`}
   })
   
@@ -872,7 +730,7 @@ function ray(o, d) {
 
 function position(ray, t) {
   // Compute a ray's direction by t to find the total distance traveled
-  return ray.direction.by_scalar(t).plus(ray.origin)
+  return add_tuples(multiply_vector(ray.direction, t), ray.origin)
 }
 
 class Sphere {
@@ -895,13 +753,11 @@ class Sphere {
   }
   
   get toString() {
-    return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}`
+    return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform}`
   }
   
   set transform(value) {
-    if (value.d != undefined) {
-      this._transform = multiply_matrices(this._transform, value)
-    }
+    this._transform = multiply_matrices(this._transform, value) 
   }
 }
 
@@ -911,12 +767,12 @@ function intersect(s, ra) {
   // Vector from sphere's center to the ray origin
   // Remember: The sphere is centered at the world origin (0, 0, 0)
   
-  const r = ra.transform(inverse(s.transform)) // Ray passed to intersect should be transformed by the inversed transformation matrix
+  const r = transform(ra, inverse(s.transform)) // Ray passed to intersect should be transformed by the inversed transformation matrix
 
-  const sphere_to_ray = r.origin.minus(point(0, 0, 0))
-  const a = r.direction.dot(r.direction)
-  const b = 2 * r.direction.dot(sphere_to_ray)
-  const c = sphere_to_ray.dot(sphere_to_ray) - 1
+  const sphere_to_ray = subtract_tuples(r.origin, point(0, 0, 0))
+  const a = dot(r.direction, r.direction)
+  const b = 2 * dot(r.direction, sphere_to_ray)
+  const c = dot(sphere_to_ray, sphere_to_ray) - 1
   
   const discriminant = b**2 - 4*a*c
   
@@ -960,20 +816,9 @@ function hit(list_of_intersections) {
   return list_of_intersections.sort().reverse()[0]
 }
 
-function transform_old(r, matr) {
+function transform(r, matr) {
   // Transform applies a transformation matrix to a ray
-  throw(`Function is deprecated. Use ray().transform(m) instead.`)
+  
+  return ray(multiply_matrix_by_tuple(matr, r.origin), multiply_matrix_by_tuple(matr, r.direction))
 }
 
-// *** SHADING FUNCTIONS
-
-function normal_at(obj, world_point) {
-  // This function takes an object and a point and returns the point's normal (perpendicular) vector.
-  // This is an upgraded version of normal_at(), and will replace that function when done.
-  
-  const object_point = inverse(obj.transform).times_tuple(world_point)
-  const object_normal = object_point.minus(point(0, 0, 0))
-  const world_normal = transpose_matrix(inverse(obj.transform)).times_tuple(object_normal)
-  
-  return vector(world_normal.x, world_normal.y, world_normal.z).normalize()
-}

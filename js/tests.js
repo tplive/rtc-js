@@ -1070,6 +1070,7 @@ function test_transformations_function() {
   
   // These transformations should be applied in reverse order; tr, sc, rx
   const chained1 = transformations(tr, sc, rx, rz, ry)
+  //log("error", `Transformations tr sc rx rz ry: ${chained1.d}`)
   
   // Manually applying tranformations in reverse order:
   const chained2 = multiply_matrices(
@@ -1348,7 +1349,9 @@ function test_transform_sphere() {
   // Transformations to apply
   const tr = translation(2, 3, 4)
   const sc = scaling(2, 2, 2)
-  const rz = rotation_z(Math.pi / 2)
+  const rx = rotation_x(Math.PI / 2)
+  const ry = rotation_y(Math.PI / 2)
+  const rz = rotation_z(Math.PI / 2)
   
   // A sphere's default transformation
   const default_transform_equals_idmatrix = s.transform.equals(idmatrix())
@@ -1356,9 +1359,10 @@ function test_transform_sphere() {
   // Changing a sphere's transformation
   //log("error", s.transform.d)
   //log("error", tr.d)
-  s.transform.putAll(tr.d)
+  s.transform = tr
+  
   //log("error", s.transform.d)
-  const new_transform_is_set = tr.equals(s.transform)
+  const new_transform_is_set = s.transform.equals(tr)
   //log("error", new_transform_is_set)
   //log("error", s.toString)
     
@@ -1376,21 +1380,23 @@ function test_transform_sphere() {
   //log("error", "xs[1].t: " + xs[1].t)
   
   // Test transformations function on a sphere
-  //log("error", "tr.d: " + tr.d)
-  s2.transform.putAll(tr.d)
-  //log("error", "s2.transform: " + s2.transform.d)
   const s3 = new Sphere()
-  const t1 = transformations(sc, tr, rz)
+  const s4 = new Sphere()
   
+  // Add chained transformations to s3
+  const t1 = transformations(tr, sc, rz)
   s3.transform = t1
   
-  log("error", "t1.d: " + t1.d)
-  log("error", "s2.transform: " + s2.toString)
-  log("error", "s3.transform: " + s3.toString)
+  // Manually add transformations to s4
+  const chained = multiply_matrices(
+                    idmatrix(), 
+                      multiply_matrices(rz,
+                          multiply_matrices(sc, tr)
+                      )
+                    )
+  s4.transform = chained
   
-  const transformations_applied_to_sphere = s2.transform.equals(s3.transform)
-  //log("error", s3.toString)
-  //log("error", transformations_applied_to_sphere)
+  const transformations_applied_to_sphere = s3.transform.equals(s4.transform)
     
   return default_transform_equals_idmatrix 
     && new_transform_is_set 
@@ -1398,25 +1404,25 @@ function test_transform_sphere() {
     && transformations_applied_to_sphere
 }
 
-function test_normal_function() {
-  // Compute the normal on a sphere at a point
+function test_normal_at_function() {
+  // Compute the normal on a sphere at a point...
   
   const s = new Sphere()
   const sq3 = Math.sqrt(3)
   
-  // on the x axis
+  // ...on the x axis
   const nx = normal_at(s, point(1, 0, 0))
   const rx = nx.equals(vector(1, 0, 0))
   
-  // on the y axis
+  // ...on the y axis
   const ny = normal_at(s, point(0, 1, 0))
   const ry = ny.equals(vector(0, 1, 0))
   
-  // on the z axis
+  // ...on the z axis
   const nz = normal_at(s, point(0, 0, 1))
   const rz = nz.equals(vector(0, 0, 1))
   
-  // on a nonaxial point
+  // ...on a nonaxial point
   const nn = normal_at(s, point(sq3/3, sq3/3, sq3/3))
   const rn = nn.equals(vector(sq3/3, sq3/3, sq3/3))
   
@@ -1437,15 +1443,11 @@ function test_normal_on_transformed_sphere() {
   // Test computing the normal on a transformed sphere
   const s2 = new Sphere()
   
-  s2.transform = scaling(1, 0.5, 1)
-  s2.transform = rotation_z(Math.PI/5)
+  const transforms = transformations(rotation_z(Math.PI/5), scaling(1, 0.5, 1))
+  
+  s2.transform = transforms
   const n2 = normal_at(s2, point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
   const v2 = vector(0, 0.97014, -0.24254)
-  
-  log("error", "test_normal_on_transformed_sphere(): " + n1)
-  log("error", "test_normal_on_transformed_sphere(): " + v1)
-  log("error", "test_normal_on_transformed_sphere(): " + n2)
-  log("error", "test_normal_on_transformed_sphere(): " + v2)
-  
+    
   return n1.equals(v1) && n2.equals(v2)
 }

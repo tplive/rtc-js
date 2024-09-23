@@ -725,12 +725,16 @@ function inverse(m) {
 function translation(x, y, z) {
   // Returns a 4x4 translation matrix applying the x, y and z coordinates for translation.
   
-  const t = idmatrix()
-  t.put(0,3,x)
-  t.put(1,3,y)
-  t.put(2,3,z)
-  
-  return t
+  if (!isNaN(x) && !isNaN(y) && !isNaN(z) ) {
+    const t = idmatrix()
+    t.put(0,3,x)
+    t.put(1,3,y)
+    t.put(2,3,z)
+
+    return t
+  } else {
+    throw(`Input variable is not a number: x = ${x}, y = ${y}, z = ${z}`)
+  }
 }
 
 function scale(x, y, z) {
@@ -740,29 +744,37 @@ function scale(x, y, z) {
 function scaling(x, y, z) {
   //Returns a 4x4 translation matrix applying the x, y and z coordinates for scaling.
   
-  // Could have used an idmatrix here, but we save a few cycles by avoiding to set then overwrite coords.
-  const t = matrix(4, 4)
-  t.put(0,0,x)
-  t.put(1,1,y)
-  t.put(2,2,z)
-  t.put(3,3,1)
-  
-  return t
+  if (!isNaN(x) && !isNaN(y) && !isNaN(z) ) {
+    // Could have used an idmatrix here, but we save a few cycles by avoiding to set then overwrite coords.
+    const t = matrix(4, 4)
+    t.put(0,0,x)
+    t.put(1,1,y)
+    t.put(2,2,z)
+    t.put(3,3,1)
+
+    return t
+  } else {
+    throw(`Input variable is not a number: x = ${x}, y = ${y}, z = ${z}`)
+  }
 }
 
 function rotation_x(rad) {
   // Takes an angle in radians and returns a rotation matrix for the x-axis
   
-  const cr = Math.cos(rad)
-  const sr = Math.sin(rad)
-  const t = idmatrix()
+  if (!isNaN(rad) ) {
+    const cr = Math.cos(rad)
+    const sr = Math.sin(rad)
+    const t = idmatrix()
 
-  t.put(1,1,cr)
-  t.put(1,2,-sr)
-  t.put(2,1,sr)
-  t.put(2,2,cr)
-  
-  return t
+    t.put(1,1,cr)
+    t.put(1,2,-sr)
+    t.put(2,1,sr)
+    t.put(2,2,cr)
+
+    return t
+  } else {
+    throw(`Input variable is not a number: rad = ${rad}`)
+  }
 }
 
 
@@ -770,31 +782,39 @@ function rotation_x(rad) {
 function rotation_y(rad) {
   // Takes an angle in radians and returns a rotation matrix for the y-axis
   
-  const cr = Math.cos(rad)
-  const sr = Math.sin(rad)
-  const t = idmatrix()
+  if (!isNaN(rad) ) {
+    const cr = Math.cos(rad)
+    const sr = Math.sin(rad)
+    const t = idmatrix()
 
-  t.put(0,0,cr)
-  t.put(0,2,sr)
-  t.put(2,0,-sr)
-  t.put(2,2,cr)
-  
-  return t
+    t.put(0,0,cr)
+    t.put(0,2,sr)
+    t.put(2,0,-sr)
+    t.put(2,2,cr)
+
+    return t
+  } else {
+    throw(`Input variable is not a number: rad = ${rad}`)
+  }
 }
 
 function rotation_z(rad) {
   // Takes an angle in radians and returns a rotation matrix for the z-axis
   
-  const cr = Math.cos(rad)
-  const sr = Math.sin(rad)
-  const t = idmatrix()
+  if (!isNaN(rad) ) {
+    const cr = Math.cos(rad)
+    const sr = Math.sin(rad)
+    const t = idmatrix()
 
-  t.put(0,0,cr)
-  t.put(0,1,-sr)
-  t.put(1,0,sr)
-  t.put(1,1,cr)
-  
-  return t
+    t.put(0,0,cr)
+    t.put(0,1,-sr)
+    t.put(1,0,sr)
+    t.put(1,1,cr)
+
+    return t
+  } else {
+    throw(`Input variable is not a number: rad = ${rad}`)
+  }
 }
 
 function shearing(xy, xz, yx, yz, zx, zy) {
@@ -807,16 +827,20 @@ function shearing(xy, xz, yx, yz, zx, zy) {
   // z in proportion to y
   // shearing(xy, xz, yx, yz, zx, zy)
   
-  const m = idmatrix()
-  m.put(0,1,xy)
-  m.put(0,2,xz)
-  m.put(1,0,yx)
-  m.put(1,2,yz)
-  m.put(2,0,zx)
-  m.put(2,1,zy)
-  
-  return m
-  
+  if (!isNaN(xy) && !isNaN(xz) && !isNaN(yx) && !isNaN(yz) && !isNaN(zx) && !isNaN(zy) ) {
+    
+    const m = idmatrix()
+    m.put(0,1,xy)
+    m.put(0,2,xz)
+    m.put(1,0,yx)
+    m.put(1,2,yz)
+    m.put(2,0,zx)
+    m.put(2,1,zy)
+
+    return m
+  } else {
+    throw(`Input variable is not a number: xy = ${xy}, xz = ${xz}, yx = ${yx}, yz = ${yz}, zx = ${zx}, zy = ${zy}`)
+  }
 }
 
 function angle(v) {
@@ -852,7 +876,7 @@ function transformations(trans) {
   for (e in t) {
     // To set the result of the multiplied matrices, add .d
     m.putAll(multiply_matrices(m, t[e]).d)
-    //log("error", `transformations(): ${e} ${t[e].d}`)
+    // log("error", `transformations(): ${e} ${t[e].d}`)
   }
   //log("error", "transformations(): m.d " + m.d)
   
@@ -2073,6 +2097,7 @@ function test_transformations_function() {
   
   // These transformations should be applied in reverse order; tr, sc, rx
   const chained1 = transformations(tr, sc, rx, rz, ry)
+  //log("error", `Transformations tr sc rx rz ry: ${chained1.d}`)
   
   // Manually applying tranformations in reverse order:
   const chained2 = multiply_matrices(
@@ -2351,7 +2376,9 @@ function test_transform_sphere() {
   // Transformations to apply
   const tr = translation(2, 3, 4)
   const sc = scaling(2, 2, 2)
-  const rz = rotation_z(Math.pi / 2)
+  const rx = rotation_x(Math.PI / 2)
+  const ry = rotation_y(Math.PI / 2)
+  const rz = rotation_z(Math.PI / 2)
   
   // A sphere's default transformation
   const default_transform_equals_idmatrix = s.transform.equals(idmatrix())
@@ -2359,9 +2386,10 @@ function test_transform_sphere() {
   // Changing a sphere's transformation
   //log("error", s.transform.d)
   //log("error", tr.d)
-  s.transform.putAll(tr.d)
+  s.transform = tr
+  
   //log("error", s.transform.d)
-  const new_transform_is_set = tr.equals(s.transform)
+  const new_transform_is_set = s.transform.equals(tr)
   //log("error", new_transform_is_set)
   //log("error", s.toString)
     
@@ -2379,21 +2407,23 @@ function test_transform_sphere() {
   //log("error", "xs[1].t: " + xs[1].t)
   
   // Test transformations function on a sphere
-  //log("error", "tr.d: " + tr.d)
-  s2.transform.putAll(tr.d)
-  //log("error", "s2.transform: " + s2.transform.d)
   const s3 = new Sphere()
-  const t1 = transformations(sc, tr, rz)
+  const s4 = new Sphere()
   
+  // Add chained transformations to s3
+  const t1 = transformations(tr, sc, rz)
   s3.transform = t1
   
-  log("error", "t1.d: " + t1.d)
-  log("error", "s2.transform: " + s2.toString)
-  log("error", "s3.transform: " + s3.toString)
+  // Manually add transformations to s4
+  const chained = multiply_matrices(
+                    idmatrix(), 
+                      multiply_matrices(rz,
+                          multiply_matrices(sc, tr)
+                      )
+                    )
+  s4.transform = chained
   
-  const transformations_applied_to_sphere = s2.transform.equals(s3.transform)
-  //log("error", s3.toString)
-  //log("error", transformations_applied_to_sphere)
+  const transformations_applied_to_sphere = s3.transform.equals(s4.transform)
     
   return default_transform_equals_idmatrix 
     && new_transform_is_set 
