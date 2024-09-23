@@ -26,7 +26,6 @@ window.onerror = function(errorMsg, url, lineNumber){
 
 <h1>&#127939; Test Runner &#127939; </h1>
 
-
 <h2>&#128295; Testing Tuple functions</h2>
 <ul id="test_list"></ul>
 
@@ -50,6 +49,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 
 <h2>&#128747; Testing Shape functions</h2>
 <ul id="shape_list"></ul>
+
+<h2>&#127937; Testing Pattern functions</h2>
+<ul id="pattern_list"></ul>
 
 <pre><code id="error"></code></pre>
 
@@ -198,6 +200,38 @@ class Sphere extends AbstractShape {
   }
   
   get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}
+
+class Plane extends AbstractShape {
+  // The Plane represents a completely flat surface that extends infinitely in two directions.
+  
+  constructor() {
+    super()
+    this._normal = vector(0, 1, 0)
+  }
+  
+  _intersect(local_ray) {
+    // Intersect returns an array of points where a given ray (local_ray) intersects this plane.
+    // This is an internal method, should never be called from the outside.
+    // Instead call intersect(ray), which is inherited from AbstractShape.
+    
+    // This is how a Plane does intersection:
+    
+    // Ray is parallel to the plane if it has no slope in y at all.
+    if (Math.abs(local_ray.direction.y) < C.EPSILON ) {
+      // Return empty intersection array
+      
+      return []
+    } else {
+      const t = -local_ray.origin.y / local_ray.direction.y
+      
+      return [intersection(t, this)]
+    }
+  }
+  
+  _normal_at(local_normal) { return this._normal }
+  
+  get toString() { return `Plane(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
 
 </script>
@@ -411,6 +445,7 @@ class Color {
   get red() { return this._r }
   get green() { return this._g }
   get blue() { return this._b }
+  get isColor() { return true }
     
   toString() { return `red: ${this._r}, green: ${this._g}, blue: ${this._b}` }
   equals(c) { return equal(this._r, c.red) && equal(this._g, c.green) && equal(this._b, c.blue) }
@@ -1368,6 +1403,7 @@ class Material {
   get diffuse() { return this._diffuse}
   get specular() { return this._specular}
   get shininess() { return this._shininess}
+  get pattern() { return this._pattern }
   
   set color(col) { this._color = color(col.red, col.green, col.blue) }
   
@@ -1375,6 +1411,9 @@ class Material {
   set diffuse(dif) { this._diffuse = dif }
   set specular(spe) { this._specular = spe }
   set shininess(shi) { this._shininess = shi }
+  set pattern(pat) { this._pattern = pat }
+  
+  hasPattern() { return this._pattern != undefined }
   
   equals(mat) {
     return mat.color.equals(this._color) 
@@ -1395,8 +1434,10 @@ function material() {
 function lighting(material, light, point, eyev, normalv, in_shadow) {
   // The lighting function computes shading for pixels
   
+  const this_color = material.hasPattern() ? stripe_at(material.pattern, point) : material.color
+    
   // Combine surface color with the light's color/intensity
-  const effective_color = material.color.times(light.intensity)
+  const effective_color = this_color.times(light.intensity)
   //log("error", "effective_color: " + effective_color)
   
   // Find the direction to the light source
@@ -1774,6 +1815,32 @@ function test_shape() {
   // class is defined in shapes.js
   
   return new TestShape()
+}
+
+function plane() {
+  // Factory function for Plane()
+  // class is defined in shapes.js
+  
+  return new Plane()
+}
+
+function stripe_pattern(c1, c2) {
+  // A stripe pattern alternates between two colors in one dimension.
+  // a and b are the two colors.
+  // This implementation is lame.
+  
+  if (c1.isColor && c2.isColor) {
+    return {a: c1, b: c2 }
+  } else {
+    throw new Error("stripe_pattern() wants two colors as input")
+  }
+  
+}
+
+function stripe_at(pattern, point) {
+  // This function returns alternating colors depending on the x-coordinate of the point.
+  
+  return Math.floor(point.x) % 2 === 0 ? pattern.a : pattern.b
 }
 
 </script>
@@ -3834,6 +3901,111 @@ function test_shape_inherited_normal_at_function() {
   return res1 && res2
 }
 
+function test_plane_function() {
+  // Test that a plane extends infinitely in two directions
+  // and is indeed completely planar - it has the same normal everywhere; [0, 1, 0].
+  // Plane is a new implementation of a shape, and thus it extends AbstractShape.
+  
+  const p = plane()
+  
+  // The normal of a plane is constant everywhere
+  const n1 = p.normalAt(point(0, 0, 0))
+  const n2 = p.normalAt(point(10, 0, -10))
+  const n3 = p.normalAt(point(-5, 0, 150))
+  
+  const res1 = n1.equals(vector(0, 1, 0)) 
+            && n2.equals(vector(0, 1, 0)) 
+            && n3.equals(vector(0, 1, 0))
+            
+  // Intersect with ray parallel to the plane
+  const r2 = ray(point(0, 10, 0), vector(0, 0, 1))
+  const xs2 = p.intersect(r2)
+  const res2 = xs2.length === 0
+  
+  // Intersect with a coplanar ray
+  const r3 = ray(point(0, 0, 0), vector(0, 0, 1))
+  const xs3 = p.intersect(r3)
+  const res3 = xs3.length === 0
+  
+  // A ray intersecting a plane from above
+  const r4 = ray(point(0, 1, 0), vector(0, -1, 0))
+  const xs4 = p.intersect(r4)
+  const res4 = xs4.length === 1
+            && xs4[0].t === 1 
+            && xs4[0].object.equals(p)
+  
+  // A ray intersecting a plane from below
+  const r5 = ray(point(0, -1, 0), vector(0, 1, 0))
+  const xs5 = p.intersect(r5)
+  const res5 = xs5.length === 1
+            && xs5[0].t === 1 
+            && xs5[0].object.equals(p)
+    
+  return res1 && res2 && res3 && res4 && res5
+}
+
+function test_stripe_pattern_function() {
+  // Testing the stripe pattern function
+  
+  const white = color(1,1,1)
+  const black = color(0,0,0)
+  
+  const pattern = stripe_pattern(white, black)  
+  const res1 = pattern.a.equals(white) && pattern.b.equals(black)
+  
+  return res1
+}
+
+function test_stripe_at_function() {
+  // Testing the stripe at point function
+  
+  const white = color(1,1,1)
+  const black = color(0,0,0)
+  
+  const pattern = stripe_pattern(white, black)
+  
+  // A stripe pattern is constant i y
+  const res1 = stripe_at(pattern, point(0, 0, 0)).equals(white) 
+            && stripe_at(pattern, point(0, 1, 0)).equals(white) 
+            && stripe_at(pattern, point(0, 2, 0)).equals(white)
+  
+  // A stripe pattern is constant in z
+  const res2 = stripe_at(pattern, point(0, 0, 0)).equals(white) 
+            && stripe_at(pattern, point(0, 0, 1)).equals(white) 
+            && stripe_at(pattern, point(0, 0, 2)).equals(white)
+  
+  // A stripe pattern alternates in x
+  const res3 = stripe_at(pattern, point(0, 0, 0)).equals(white) 
+            && stripe_at(pattern, point(0.9, 0, 0)).equals(white) 
+            && stripe_at(pattern, point(1, 0, 0)).equals(black)
+            && stripe_at(pattern, point(-0.1, 0, 0)).equals(black)
+            && stripe_at(pattern, point(-1, 0, 0)).equals(black)
+            && stripe_at(pattern, point(-1.1, 0, 0)).equals(white)
+  
+  return res1 && res2 && res3
+}
+
+function test_lighting_has_stripe_pattern() {
+  // Test that material has pattern and that
+  // the lighting() function applies pattern.
+  
+  const m = material()
+  m.pattern = stripe_pattern(color(1, 1, 1), color(0, 0, 0))
+  m.ambient = 1
+  m.diffuse = 0
+  m.specular = 0
+  
+  const eyev = vector(0, 0, -1)
+  const normalv = vector(0, 0, -1)
+  const light = point_light(point(0, 0, -10), color(1, 1, 1))
+  
+  // Lighting with a pattern applied
+  const c1 = lighting(m, light, point(0.9, 0, 0), eyev, normalv, false)
+  const c2 = lighting(m, light, point(1.1, 0, 0), eyev, normalv, false)
+    
+  return c1.equals(color(1, 1, 1)) && c2.equals(color(0, 0, 0))
+}
+
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -3969,6 +4141,11 @@ runTest("scene_list", test_is_shadowed_function)
 runTest("shape_list", test_test_shape_function)
 runTest("shape_list", test_shape_inherited_intersect_function)
 runTest("shape_list", test_shape_inherited_normal_at_function)
+runTest("shape_list", test_plane_function)
+
+runTest("pattern_list", test_stripe_pattern_function)
+runTest("pattern_list", test_stripe_at_function)
+runTest("pattern_list", test_lighting_has_stripe_pattern)
 
 
 

@@ -2053,3 +2053,108 @@ function test_shape_inherited_normal_at_function() {
   
   return res1 && res2
 }
+
+function test_plane_function() {
+  // Test that a plane extends infinitely in two directions
+  // and is indeed completely planar - it has the same normal everywhere; [0, 1, 0].
+  // Plane is a new implementation of a shape, and thus it extends AbstractShape.
+  
+  const p = plane()
+  
+  // The normal of a plane is constant everywhere
+  const n1 = p.normalAt(point(0, 0, 0))
+  const n2 = p.normalAt(point(10, 0, -10))
+  const n3 = p.normalAt(point(-5, 0, 150))
+  
+  const res1 = n1.equals(vector(0, 1, 0)) 
+            && n2.equals(vector(0, 1, 0)) 
+            && n3.equals(vector(0, 1, 0))
+            
+  // Intersect with ray parallel to the plane
+  const r2 = ray(point(0, 10, 0), vector(0, 0, 1))
+  const xs2 = p.intersect(r2)
+  const res2 = xs2.length === 0
+  
+  // Intersect with a coplanar ray
+  const r3 = ray(point(0, 0, 0), vector(0, 0, 1))
+  const xs3 = p.intersect(r3)
+  const res3 = xs3.length === 0
+  
+  // A ray intersecting a plane from above
+  const r4 = ray(point(0, 1, 0), vector(0, -1, 0))
+  const xs4 = p.intersect(r4)
+  const res4 = xs4.length === 1
+            && xs4[0].t === 1 
+            && xs4[0].object.equals(p)
+  
+  // A ray intersecting a plane from below
+  const r5 = ray(point(0, -1, 0), vector(0, 1, 0))
+  const xs5 = p.intersect(r5)
+  const res5 = xs5.length === 1
+            && xs5[0].t === 1 
+            && xs5[0].object.equals(p)
+    
+  return res1 && res2 && res3 && res4 && res5
+}
+
+function test_stripe_pattern_function() {
+  // Testing the stripe pattern function
+  
+  const white = color(1,1,1)
+  const black = color(0,0,0)
+  
+  const pattern = stripe_pattern(white, black)  
+  const res1 = pattern.a.equals(white) && pattern.b.equals(black)
+  
+  return res1
+}
+
+function test_stripe_at_function() {
+  // Testing the stripe at point function
+  
+  const white = color(1,1,1)
+  const black = color(0,0,0)
+  
+  const pattern = stripe_pattern(white, black)
+  
+  // A stripe pattern is constant i y
+  const res1 = stripe_at(pattern, point(0, 0, 0)).equals(white) 
+            && stripe_at(pattern, point(0, 1, 0)).equals(white) 
+            && stripe_at(pattern, point(0, 2, 0)).equals(white)
+  
+  // A stripe pattern is constant in z
+  const res2 = stripe_at(pattern, point(0, 0, 0)).equals(white) 
+            && stripe_at(pattern, point(0, 0, 1)).equals(white) 
+            && stripe_at(pattern, point(0, 0, 2)).equals(white)
+  
+  // A stripe pattern alternates in x
+  const res3 = stripe_at(pattern, point(0, 0, 0)).equals(white) 
+            && stripe_at(pattern, point(0.9, 0, 0)).equals(white) 
+            && stripe_at(pattern, point(1, 0, 0)).equals(black)
+            && stripe_at(pattern, point(-0.1, 0, 0)).equals(black)
+            && stripe_at(pattern, point(-1, 0, 0)).equals(black)
+            && stripe_at(pattern, point(-1.1, 0, 0)).equals(white)
+  
+  return res1 && res2 && res3
+}
+
+function test_lighting_has_stripe_pattern() {
+  // Test that material has pattern and that
+  // the lighting() function applies pattern.
+  
+  const m = material()
+  m.pattern = stripe_pattern(color(1, 1, 1), color(0, 0, 0))
+  m.ambient = 1
+  m.diffuse = 0
+  m.specular = 0
+  
+  const eyev = vector(0, 0, -1)
+  const normalv = vector(0, 0, -1)
+  const light = point_light(point(0, 0, -10), color(1, 1, 1))
+  
+  // Lighting with a pattern applied
+  const c1 = lighting(m, light, point(0.9, 0, 0), eyev, normalv, false)
+  const c2 = lighting(m, light, point(1.1, 0, 0), eyev, normalv, false)
+    
+  return c1.equals(color(1, 1, 1)) && c2.equals(color(0, 0, 0))
+}

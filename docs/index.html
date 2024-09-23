@@ -1006,10 +1006,28 @@ return _intersections.sort( function(a, b) {
   
   <p>Kapittel 9 skal som sagt implementere en ny "grafisk primitiv", i tillegg til den ene vi har fra før - kula. <code>Plane()</code> og <code>Sphere()</code> skal arve noen av de samme egenskapene, så nå kommer det til sin rett at jeg allerede har implementert Sphere som en klasse. Da kan jeg skrive det om, ved å definere en parent-class som holder all felles funksjonalitet som ID, transformation matrix og litt til...</p>
 
-  <p></p>
-  <p></p>
-  <p></p>
+  <p>Det går overraskende fort å få dette til. Jeg har skilt ut klassene i en egen <code>shapes.js</code> fil. Der har jeg definert en <del>abstrakt</del> halv-abstrakt klasse <code>AbstractShape</code>. La meg forklare. Klassen er base-klasse med <code>ID</code>, <code>transform</code> og <code>material</code> for (foreløpig) <code>Plane()</code> og <code>Sphere()</code>. I tillegg har <code>AbstractShape</code> to konkrete metoder <code>.normalAt(point)</code> og <code>.intersect(ray)</code> og to abstrakte metoder <code>_normal_at(point)</code> og <code>_intersect(ray)</code>. Ideen er at de to konkrete metodene arves og gjør litt av jobben, og delegerer til de konkrete klassenes ulike implementasjoner for beregning av normalen på et punkt, og intersections med en stråle. AbstractShape har en constructor som kaster en Error dersom man prøver å instansiere klassen ( <code>new AbstractShape()</code> ). Og dersom en implementasjon som ikke overrider _intersect og/eller _normal_at vil også de kaste en Error.</p>
+  
+  <h4>Putting it together</h4>
+  <p>Siden kapittel 8 skuffet med bare å legge skygge på bildet fra kapittel 7, tenkte jeg det var på sin plass å gjøre litt mer ut av dette kapitlet. Vi har tross alt forenklet scenen og redusert bakgrunnen til ett enkelt objekt - et plan. Og da kan vi gjøre litt mer moro ut av de andre objektene, med en loop som genererer flere kuler og transformer dem i sekvens:</p>
+  <p><img src="./chapter9_planes_12_dancing_spheres.png" /></p>
 
+  <p>Lekkert. On with the show!</p>
+  
+  <h3>&#127937; Kapittel 10, Patterns</h3>
+  
+  <p>Vi skal lage mønster på objektene! Her møter jeg igjen en "gammel" kjenning fra matematikken: parameterframstilling!</p>
+  <p>Funksjonen for å lage et stripemønster langs x-aksen, er gitt ved:
+$$color(point, c_a, c_b) = \begin{cases}c_a, if floor(point_x) % 2 = 0
+\\ c_b, otherwise 
+\end{cases}$$
+  </p>
+<p>Så her er det bare å dykke inn. Jeg skriver tester for <code>stripe_pattern(c1, c2)</code> og <code>stripe_at(pattern, point)</code>.</p>
+<p>Endrer på <code>Material</code> så materialet kan ha et pattern, og endrer <code>lighting()</code> så den setter farge på objektene ut fra pattern. Det ser sånn ut i en tidlig fase:</p>
+<p><img src="./chapter10_patterns_early_test.png" /></p>
+  <p></p>
+  <p></p>
+  <p></p>
   <p></p>
   <p></p>
   <p></p>

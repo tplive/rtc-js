@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<h2>Find all UTF-8 emoji</h2>
+
+
+<div id="list"></div>
+
+<script>
+_counter = 0
+// Keepers:
+
+//loop(0, 12000)
+loop(8986, 8988)
+loop(9193, 9211)
+loop(9748, 10176)
+loop(10241, 10496)
+loop(11088, 11094)
+loop(13184, 13312)
+
+loop(126979, 126979)
+loop(127374, 127388)
+loop(127488, 127570)
+loop(127374, 127387)
+loop(127488, 127491)
+loop(127514, 127547)
+loop(127568, 127570)
+loop(127744, 128763)
+loop(128992, 129004)
+loop(129293, 129536)
+loop(129648, 129686)
+
+log(`<br>${_counter}<br>`)
+
+//loop(124000, 128000, false)
+
+function loop(from, to, prefix) {
+  
+  if ((to - from) > 4000) { 
+    log("Too much.")
+    return  
+  }
+  
+  let accumulator = ``
+  
+  for (let i=from; i < to; i++) {
+    _counter++
+    
+    if (prefix) {
+      log(`${i} = &#${i};`)
+    } else {
+      log(`&#${i};`)
+    }
+  }
+}
+
+function log(symbol) {
+  
+  document.getElementById("list").innerHTML += symbol
+}
+
+</script>
+</body>
+</html> 

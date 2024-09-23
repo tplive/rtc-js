@@ -56,6 +56,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#128747; Testing Shape functions</h2>
 <ul id="shape_list"></ul>
 
+<h2>&#127937; Testing Pattern functions</h2>
+<ul id="pattern_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -197,8 +200,11 @@ runTest("scene_list", test_is_shadowed_function)
 runTest("shape_list", test_test_shape_function)
 runTest("shape_list", test_shape_inherited_intersect_function)
 runTest("shape_list", test_shape_inherited_normal_at_function)
+runTest("shape_list", test_plane_function)
 
-
+runTest("pattern_list", test_stripe_pattern_function)
+runTest("pattern_list", test_stripe_at_function)
+runTest("pattern_list", test_lighting_has_stripe_pattern)
 
 
 const end = performance.now()

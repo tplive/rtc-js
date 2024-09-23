@@ -140,3 +140,41 @@ class Sphere extends AbstractShape {
   
   get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
+
+class Plane extends AbstractShape {
+  // The Plane represents a completely flat surface that extends infinitely in two directions.
+  
+  constructor() {
+    super()
+    this._normal = vector(0, 1, 0)
+  }
+  
+  _intersect(local_ray) {
+    // Intersect returns an array of points where a given ray (local_ray) intersects this plane.
+    // This is an internal method, should never be called from the outside.
+    // Instead call intersect(ray), which is inherited from AbstractShape.
+    
+    // This is how a Plane does intersection:
+    
+    // Ray is parallel to the plane if it has no slope in y at all.
+    if (Math.abs(local_ray.direction.y) < C.EPSILON ) {
+      // Return empty intersection array
+      
+      return []
+    }
+    
+    const t = local_ray.origin.negate().y / local_ray.direction.y
+    
+    if (t < C.EPSILON) {
+    
+      return []
+    } else {
+    
+      return [intersection(t, this)]
+    }
+  }
+  
+  _normal_at(local_normal) { return this._normal }
+  
+  get toString() { return `Plane(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}
