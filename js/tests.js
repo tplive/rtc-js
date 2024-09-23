@@ -532,6 +532,7 @@ function test_multiply_matrices_function() {
 function test_multiply_matrix_by_tuple_function() {
   // Multiply matrix by tuple.
   // Similar to multiply_matrices, but this time "matrix B" is a tuple, treated as a one column matrix.
+  // Given tuple(1,2,3,1)
   // Given 1 2 3 4
   //       2 4 4 2
   //       8 6 4 1
@@ -1448,7 +1449,7 @@ function test_normal_on_transformed_sphere() {
   s2.transform = transforms
   const n2 = normal_at(s2, point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
   const v2 = vector(0, 0.97014, -0.24254)
-    
+
   return n1.equals(v1) && n2.equals(v2)
 }
 
@@ -1557,7 +1558,7 @@ function test_lighting_function() {
   const normalv4 = vector(0, 0, -1)
   const light4   = point_light(point(0, 10, -10), color(1, 1, 1))
   const r4       = lighting(m, light4, position, eyev4, normalv4)
-  
+    
   // Lighting with the light behind the surface
   const eyev5    = vector(0, 0, -1)
   const normalv5 = vector(0, 0, -1)

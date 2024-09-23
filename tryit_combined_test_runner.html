@@ -198,8 +198,8 @@ function tuple(a, b, c, d) {
     z:c,
     w:d,
     equals: function(t) { return equal(a, t.x) && equal(b, t.y) && equal(c, t.z) && equal(d, t.w) },
-    minus: function(t) { return tuple(a - t.x, b - t.y, c - t.z, d - t.w) },
-    plus: function(t) { return tuple(a + t.x, b + t.y, c + t.z, d + t.w) },
+    minus: function(t) { return tuple(parseFloat(a - t.x), parseFloat(b - t.y), parseFloat(c - t.z), parseInt(d - t.w)) },
+    plus: function(t) { return tuple(parseFloat(a + t.x), parseFloat(b + t.y), parseFloat(c + t.z), parseInt(d + t.w)) },
     negate: function() { return tuple(a * -1, b * -1, c * -1, d * -1) },
     by_scalar: function(s) { 
       if (d === 0) {
@@ -282,11 +282,7 @@ function subtract_colors(c1, c2) {
 
 function multiply_color(s, c1) {
   // Multiply scalar value by r, g, b components
-  if (!isNaN(s)) {
-    return color(s * c1.red, s * c1.green, s * c1.blue)
-  } else {
-    throw `First input value must be a number. s = ${s}`
-  }
+  return color(s * c1.red, s * c1.green, s * c1.blue)
 }
 
 function multiply_colors(c1, c2) {
@@ -523,16 +519,14 @@ function matrix(rows, cols) {
     times_tuple: function(t) {
       // Multiply matrix _a by tuple t.
       // Returns a tuple.
-      
       const result = []
       for (let r = 0; r <= 3; r++) {
         result[r] = 
-          this.get(r,0) * t.x + 
-          this.get(r,1) * t.y + 
-          this.get(r,2) * t.z + 
-          this.get(r,3) * t.w
+          parseFloat(this.get(r,0) * t.x) + 
+          parseFloat(this.get(r,1) * t.y) + 
+          parseFloat(this.get(r,2) * t.z) + 
+          parseFloat(this.get(r,3) * t.w)
       }
-      
       return tuple(result[0], result[1], result[2], result[3])
     },
     equals: function(m) {
@@ -719,12 +713,13 @@ function cofactor(ma, r, c) {
 function inverse(m) {
   // Mansplained: Calculate the inverse of a matrix
   
-  if (determinant(m) === 0) {
+  const d = determinant(m)
+
+  if (d === 0) {
     throw "Matrix is not invertible, determinant is 0"
   }
   
-  let d = determinant(m)
-  let m2 = matrix(m.rows, m.cols)
+  const m2 = matrix(m.rows, m.cols)
   m2.putAll(m.d)
   
   for (let r=0;r<m.rows;r++) {
@@ -1177,22 +1172,22 @@ function lighting(material, light, point, eyev, normalv) {
     //log("error", "reflectv: " + reflectv)
     
     const reflect_dot_eye = reflectv.dot(eyev)
-    log("error", "reflect_dot_eye: " + reflect_dot_eye)
+    //log("error", "reflect_dot_eye: " + reflect_dot_eye)
     
     if (reflect_dot_eye <= 0 ) {
       specular = color(0, 0, 0)
     } else {
       // Compute the specular contribution
-      const factor = reflect_dot_eye ** material.shininess
+      const factor = Math.pow(reflect_dot_eye, material.shininess)
       
       specular = multiply_color(material.specular * factor, light.intensity)
-      log("error", "light.intensity: " + light.intensity)
-      log("error", "material.specular: " + material.specular)
-      log("error", "factor: " + factor)
+      //log("error", "light.intensity: " + light.intensity)
+      //log("error", "material.specular: " + material.specular)
+      //if (specular.red >= 0.1) {log("error", "specular.red: " + specular.red)}
     }
   }
   // Add the three contributions together to get the final shading
-  //log("error", "add_colors(ambient, add_colors(diffuse, specular)): " + add_colors(ambient, add_colors(diffuse, specular)))
+  //log("error", `ambient + diffuse + specular = " ${ambient} + ${diffuse} + ${specular} = ${add_colors(ambient, add_colors(diffuse, specular))}`)
   return add_colors(ambient, add_colors(diffuse, specular))
 }
 
@@ -1732,6 +1727,7 @@ function test_multiply_matrices_function() {
 function test_multiply_matrix_by_tuple_function() {
   // Multiply matrix by tuple.
   // Similar to multiply_matrices, but this time "matrix B" is a tuple, treated as a one column matrix.
+  // Given tuple(1,2,3,1)
   // Given 1 2 3 4
   //       2 4 4 2
   //       8 6 4 1
@@ -2648,7 +2644,7 @@ function test_normal_on_transformed_sphere() {
   s2.transform = transforms
   const n2 = normal_at(s2, point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
   const v2 = vector(0, 0.97014, -0.24254)
-    
+
   return n1.equals(v1) && n2.equals(v2)
 }
 

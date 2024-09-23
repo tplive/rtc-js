@@ -54,10 +54,15 @@ const can = canvas(size, size)
 // Add a sphere and material, assign material
 const shape = new Sphere()
 const mat = material()
-mat.color = color(0.8, 0.9, 0.2)
-mat.ambient = 0.2
-
+mat.color = color(0.8, 0.2, 0.8)
+mat.ambient = 0.3
+mat.specular = 0.8
 shape.material = mat
+
+// Add transformations
+
+// Transformations fail, due to inverse() throwing an exception when a matris is non-invertible (if determinant = 0)
+//shape.transform = transformations(translation(1, 1, 1), scaling(1, -1, 2), rotation_x(1, 1, 1), shearing(1,1,1,1,1,1))
 
 // Add a light source
 const light_position = point(-10, 10, 10)
@@ -89,8 +94,9 @@ for (let y=0;y < size;y++) {
       
       const p = position(r, h.t)
       const normal = normal_at(h.object, p)
+      //log("error", normal)
       const eye = r.direction.negate()
-      //log("error", eye)
+      
       
       const res = lighting(h.object.material, light, p, eye, normal)
       const s1 = scale_color(res)

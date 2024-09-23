@@ -458,8 +458,33 @@ function reflect(v_in, normal) {
 
 <h3>&#127767; Chapter 6, Light and Shading</h3>
 <p>Vi prøver igjen. Og nå går det meget godt. Jeg har stor progresjon på koden, og er i løpet av noen timer klar for å "put it together" - men først skal jeg forklare litt hva jeg har gjort i kapittel 6.</p>
-<p></p>
 
+<p>For å kalkulere hvordan lyset treffer, trenger vi flere vektorer. Hvis <var>P</var> er planet vi skal treffe, kan vi definere fire forskjellige vektorer, slik:</p>
+
+<ul>
+  <li><var>E</var> er vektor for øyet, peker fra <var>P</var> mot opprinnelsen (origin) for strålen. <var>E</var> er en vektor som peker motsatt av strålen.</li>
+  <li><var>L</var> er lysvektoren, peker fra <var>P</var> mot lyskilden. For å finne <var>L</var>, trekker vi fra <var>P</var> fra lyskildens posisjon, noe som gir vektoren som peker mot lyset.</li>
+  <li><var>N</var> er planets normalvektor, ortogonal (eng. perpendicular) med planet. Kan skrives <var>N &perp; P</var>.</li>
+  <li><var>R</var> er refleksjonsvektoren, og peker i den retning lyset vil reflekteres.</li>
+</ul>
+<p>Overflatenormaler brukes mye. Det er vektorer som peker 90&deg; rett ut fra overflaten. En kule har normaler som peker i alle retninger. Kan sammenlignes med piggene på en kråkebolle? Eller solstråler?</p>
+<p>Siden vi (foreløpig) bare beskjeftiger oss med kuler, er det normaler for kule som skal kalkuleres. Det er også viktig at normalene er normalisert, det vil si å konvertere til enhetsvektor. Metoden <code>.normalize()</code> brukes her - den beregner <code>magnitude()</code> (vektorlengde, gitt ved <var>m = <span>&#8730;</span><span  style="border-top: 1px solid black">x<sup>2</sup> + y<sup>2</sup> + z<sup>2</sup></span></var>) og deler hver vektorkomponent på lengden, for å få en vektor som står i forhold til enhetsvektor. <var>v<sub>n</sub> = [v<sub>x</sub> / m, v<sub>y</sub> / m, v<sub>z</sub> / m]</var>. Merkes det at jeg liker å briefe med mine nyvunne matte-kunnskaper? &#128513; </p>
+
+<p>Så lenge vi snakker om en kule som alltid befinner seg i origo, er alt såre vel, og vi får en svært enkel <code>normal_at(sphere, point)</code> funksjon. Den tar posisjonen p og trekker fra origo og normaliserer den. Ferdig. Men siden det vil være ønskelig å kaste transformations (skalering, flytting, forskyving og rotasjon) på objektene, må vi ta hensyn til det når vi skal kalkulere normalen. Og hvordan fungerer så det? Her må jeg ærlig innrømme at jeg falt av lasset på hvordan det skjer, men jeg fikk nå uansett koden til fungere... Jeg har sagt det før og sier det igjen: Omfavn &#128150;TDD&#129392;!</p>
+
+<p>Alle disse normalene er nødvendige for å kunne beregne lyset etter Phong-modellen, som nevnt tidligere. For at de ulike objektene i scenen skal kunne ha ulike egenskaper (overflater etc.) introduseres her <code>material()</code>. Jeg implementerer det som klasse og legger også til material som egenskap på <code>Sphere()</code> klassen. Material har flere egenskaper. Ambient er romlys og er helt flatt, dvs at det legges til likt på alle punkter på objektet. Diffuse beregnes ut fra lyskilden, og er nettopp det - spredt. Specular er refleksjonen av selve lyskilden, den hvite prikken man kan se i øyet til tegneseriefigurer. Jo blankere overflate, jo mer intens er denne prikken, og denne verdien gis av verdien for Shininess.</p>
+
+<p>For at vi skal ha noe lys å beregne, må vi ha en lyskilde, og den første typen lys som introduseres er et <code>point_light()</code>. Dette er bare et punkt i rommet (gitt en posisjon) som kaster lysstråler i alle retninger, gitt ved en lysintensitet; hvitt lys er <code>color(1.0, 1.0, 1.0)</code>. </p>
+
+<p><code>lighting()</code> funksjonen setter dette sammen. Funksjonen beregner fargen på hver enkelt pixel i scenen, ved hjelp av egenskapene til et <code>material()</code>, en lyskilde <code>light()</code>, øyevektoren E og normalvektoren til objektet.</p>
+
+<p>Det krever atskillige iterasjoner før jeg får dette til. Jeg tror jeg oppdager en bug i koden også, i hvertfall for meg. Boka sier at vinkelen v mellom lysvektor og normalen skal beregnes ved å invertere lysvektoren, men hos meg blir det ingen Specular-prikk da. Jeg kommer litt tilfeldig fram til at det fungerer meget bedre hvis jeg lar være å invertere. Så får vi se om ikke det kommer til å bite meg senere...</p>
+
+<h4>Putting it together</h4>
+<p>Selv om alle testene kjørte grønne og fine, ble det nødvendig med en hel del mer testing og prøving og ikke minst feiling før det kom på plass. Men oppgaven her er å ta koden fra slutten av kapittel 5, og så modifisere den sånn at vi får lagt på lyseffektene på kula. Og resultatet av det kan vi se her:</p>
+<p><img src="./chapter6_shading_performance.png"/></p>
+<p>Prøv selv, her: <a href="../shading_chapter6.html"><code>./raycast_chapter6.html</code></a></p>
+<p></p>
 <p></p>
 <p></p>
 <p></p>
@@ -469,7 +494,7 @@ function reflect(v_in, normal) {
 <p>TODO:
 <ul>
   
-  <li>WIP: Kjøre raytracing som <a href="https://www.w3schools.com/js/js_api_web_workers.asp">bakgrunnsprosess</a>.</li>
+
   <li>Refaktorere minor(), determinant() og cofactor() som metoder på matrix() funksjonen.
   <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>
   <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og utgangshastighet.</li>
@@ -478,7 +503,8 @@ function reflect(v_in, normal) {
   <ul>
     <li>Refaktorere canvas til class</li>
   </ul>
-  <li>Done. <del>Fikse det som er galt med transformations() når jeg legger på en rotation.</del></li>
+    <li>Done! <del>Men krever at man kjører på webserver, noe jeg bare stundom har tilgjengelig, og derfor lagrer jeg koden i egne filer med suffix _worker. Kjøre raytracing som <a href="https://www.w3schools.com/js/js_api_web_workers.asp">bakgrunnsprosess</a>.</del></li>
+    <li>Done. <del>Fikse det som er galt med transformations() når jeg legger på en rotation.</del></li>
   <li>Done. <del>Bytte navn på funksjonen scale() til scaling().</del></li>
   <li>Done! <del>Bytte til <a href="https://stackoverflow.com/a/22004858/83148">typed arrays</a> i alle array-funksjoner. Vurdere også 1D arrays istedet for 2D.</del></li>
   <li>Done! <del>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny transform funksjon side 68.)</del></li>

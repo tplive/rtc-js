@@ -147,8 +147,8 @@ function tuple(a, b, c, d) {
     z:c,
     w:d,
     equals: function(t) { return equal(a, t.x) && equal(b, t.y) && equal(c, t.z) && equal(d, t.w) },
-    minus: function(t) { return tuple(a - t.x, b - t.y, c - t.z, d - t.w) },
-    plus: function(t) { return tuple(a + t.x, b + t.y, c + t.z, d + t.w) },
+    minus: function(t) { return tuple(parseFloat(a - t.x), parseFloat(b - t.y), parseFloat(c - t.z), parseInt(d - t.w)) },
+    plus: function(t) { return tuple(parseFloat(a + t.x), parseFloat(b + t.y), parseFloat(c + t.z), parseInt(d + t.w)) },
     negate: function() { return tuple(a * -1, b * -1, c * -1, d * -1) },
     by_scalar: function(s) { 
       if (d === 0) {
@@ -468,16 +468,14 @@ function matrix(rows, cols) {
     times_tuple: function(t) {
       // Multiply matrix _a by tuple t.
       // Returns a tuple.
-      
       const result = []
       for (let r = 0; r <= 3; r++) {
         result[r] = 
-          this.get(r,0) * t.x + 
-          this.get(r,1) * t.y + 
-          this.get(r,2) * t.z + 
-          this.get(r,3) * t.w
+          parseFloat(this.get(r,0) * t.x) + 
+          parseFloat(this.get(r,1) * t.y) + 
+          parseFloat(this.get(r,2) * t.z) + 
+          parseFloat(this.get(r,3) * t.w)
       }
-      
       return tuple(result[0], result[1], result[2], result[3])
     },
     equals: function(m) {
@@ -664,12 +662,13 @@ function cofactor(ma, r, c) {
 function inverse(m) {
   // Mansplained: Calculate the inverse of a matrix
   
-  if (determinant(m) === 0) {
+  const d = determinant(m)
+
+  if (d === 0) {
     throw "Matrix is not invertible, determinant is 0"
   }
   
-  let d = determinant(m)
-  let m2 = matrix(m.rows, m.cols)
+  const m2 = matrix(m.rows, m.cols)
   m2.putAll(m.d)
   
   for (let r=0;r<m.rows;r++) {
@@ -1118,7 +1117,7 @@ function lighting(material, light, point, eyev, normalv) {
     
     // reflect_dot_eye represents the cosine of the angle between the reflection vector
     // and the eye vector. A negative number means the light reflects away from the eye.
-    const reflectv = reflect(lightv.negate(), normalv)
+    const reflectv = reflect(lightv, normalv)
     //log("error", "reflectv: " + reflectv)
     
     const reflect_dot_eye = reflectv.dot(eyev)
@@ -1133,11 +1132,10 @@ function lighting(material, light, point, eyev, normalv) {
       specular = multiply_color(material.specular * factor, light.intensity)
       //log("error", "light.intensity: " + light.intensity)
       //log("error", "material.specular: " + material.specular)
-      if (specular.red >= 0.1) {log("error", "specular.red: " + specular.red)}
+      //if (specular.red >= 0.1) {log("error", "specular.red: " + specular.red)}
     }
   }
   // Add the three contributions together to get the final shading
   //log("error", `ambient + diffuse + specular = " ${ambient} + ${diffuse} + ${specular} = ${add_colors(ambient, add_colors(diffuse, specular))}`)
   return add_colors(ambient, add_colors(diffuse, specular))
 }
-
