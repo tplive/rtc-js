@@ -2930,5 +2930,87 @@ function test_default_open_cylinder() {
   
   const cyl = cylinder()
   
-  if (cyl.closed === false) { return true } else { return false }
+  return cyl.closed === false ? true : false
+}
+
+function test_intersect_cylinder_end_caps() {
+  // Test that we can correctly intersect the end caps of a closed cylinder
+  
+  const cyl = cylinder()
+  cyl.minimum = 1
+  cyl.maximum = 2
+  cyl.closed = true
+  
+  const cases = [
+        ray(point(0, 3, 0), vector(0, -1, 0)),
+        ray(point(0, 3, -2), vector(0, -1, 2)),
+        ray(point(0, 4, -2), vector(0, -1, 1)), // corner case
+        ray(point(0, 0, -2), vector(0, 1, 2)),
+        ray(point(0, -1, -2), vector(0, 1, 1))  // corner case
+  ]
+  
+  const expected = [2, 2, 2, 2, 2]
+  
+  const results = []
+  
+  for (let i = 0; i < cases.length; i++) {
+    const direction = cases[i].direction.normalize()
+    const r = ray(cases[i].origin, direction)
+    const xs = cyl._intersect(r)
+    
+    //log("error", xs.length)
+    if ( xs.length === expected[i] ) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+  }
+  
+  //log("error", results)
+
+  return results.includes(false) ? false : true
+}
+
+function test_normal_on_cylinder_end_caps() {
+  // Test that the normal vector calculation accounts for closed cylinders, and returns the
+  // correct normal at the end caps.
+  
+  const cyl = cylinder()
+  cyl.minimum = 1
+  cyl.maximum = 2
+  cyl.closed = true
+  
+  const cases = [
+          point(0, 1, 0),
+          point(0.5, 1, 0),
+          point(0, 1, 0.5),
+          point(0, 2, 0),
+          point(0.5, 2, 0),
+          point(0, 2, 0.5),
+        ]
+        
+  const expected = [
+          vector(0, -1, 0),
+          vector(0, -1, 0),
+          vector(0, -1, 0),
+          vector(0, 1, 0),
+          vector(0, 1, 0),
+          vector(0, 1, 0),
+        ]
+  
+  const results = []
+  
+  for (let i = 0; i < cases.length; i++) {
+    
+    const n = cyl._normal_at(cases[i])
+    
+    if ( n.equals(expected[i]) ) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+  }
+  //log("error", results)
+  
+  return results.includes(false) ? false : true
 }

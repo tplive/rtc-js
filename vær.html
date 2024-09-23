@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="https://www.yr.no/assets/images/favicon-96x96.png" sizes="96x96" rel="icon" type="image/png">
+<link href="https://www.yr.no/assets/images/favicon-32x32.png" sizes="32x32" rel="icon" type="image/png">
+<link href="https://www.yr.no/assets/images/favicon-16x16.png" sizes="16x16" rel="icon" type="image/png">
+</head>
+<style>
+
+h1 {
+  font-family: Calibri, sans-serif;
+}
+</style>
+<body>
+<h1>Viktig vær fra nord til sør</h1>
+
+<form>
+  <input type="radio" id="card" name="format" checked="yes" value="card" onchange="update(`card`)">
+  <label for="html">Nå</label><br>
+  <input type="radio" id="meteogram" name="format" value="meteogram" onchange="update(`meteogram`)">
+  <label for="css">2 dager</label><br>
+  <input type="radio" id="table" name="format" value="table" onchange="update(`table`)">
+  <label for="css">7 dager</label><br>
+
+</form>
+
+<div id="forecasts"></div>
+
+<script>
+const format = "card"
+const base_url = "https://www.yr.no/nb/innhold/"
+
+// Søk opp sted på yr.no, feks Tromsø. Klipp tallkode ut av URL:
+// https://www.yr.no/nb/værvarsel/daglig-tabell/   1-305409   /Norge/Troms/Tromsø/Tromsø
+// ..og sett inn i arrayet under:
+const places = [ 
+                 "1-305409",   // Tromsø
+                 "1-276917",   // Svolvær
+                 "5-83300",    // Steigen
+                 "1-255442",   // Dønna
+                 "1-244819",   // Brønnøysund
+                 "1-212207",   // Stjørdal
+                 "1-225497",   // Stokkøya
+                 "1-211102",   // Trondheim
+                 "1-72837",    // Oslo
+                 "2-12089568", // Berg Søndre
+                 "1-31680",    // Porsgrunn
+                 "1-2376",     // Kristiansand
+                 "2-2618425",  // København
+                 "2-2964574",  // Dublin
+                 "2-3099434",  // Gdansk
+                 "2-2995469",  // Marseille
+               ]
+
+places.reverse()
+
+update(format)
+
+function update(format) {
+  
+  const content = document.getElementById("forecasts")
+  content.innerHTML = ""
+  
+  for (let i=0; i < places.length;i++) {
+    // Create an iframe
+    const frame = document.createElement("iframe")
+    
+    if (format === "card") {
+      const frame = document.createElement("iframe")
+      frame.setAttribute("height", "410px")
+      frame.setAttribute("src", `${base_url}${places[i]}/card.html`)
+      content.insertBefore(frame, content.children[0])
+    } else if (format === "table") {
+      const frame = document.createElement("iframe")
+      frame.setAttribute("height", "510px")
+      frame.setAttribute("width", "100%")
+      frame.setAttribute("src", `${base_url}${places[i]}/table.html`)
+      content.insertBefore(frame, content.children[0])
+    } else if (format === "meteogram") {
+      const svg = document.createElement("img")
+      svg.setAttribute("src", `${base_url}${places[i]}/meteogram.svg`)
+      content.insertBefore(svg, content.children[0])
+    }
+    
+    
+  }
+}
+
+</script>
+</body>
+</html> 
