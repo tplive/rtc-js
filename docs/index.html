@@ -1067,12 +1067,47 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
 <p><img src="./chapter10_snooker_table_setup.png" /></p>
 
 <h3>&#128150; Kapittel 11, Reflection and Refraction</h3>
-<p>Omg, dette har jeg gledet meg til! På tidlig 90-tall var det Amiga som var best på grafikk. Selv om jeg aldri ble noen utvikler på den plattformen, ei heller gjorde noe 3D-modellering eller raytracing på den, så var det her jeg fikk min første intro til 3D-grafikk og raytracing. Jeg husker til og med at jeg og en kompis snakket om hvor *sjukt* mye datakraft man måtte hatt dersom man skulle gjort realtime raytracing. Nå om dagen gjør Nvidia det med sine RTX-kort helt trivielt, i 60fps. Denne Javascript implementasjonen av raytracing kommer nok aldri opp i sånn fart, men jeg skal nå likevel få rendret lysbryting. Og kanskje til og med flere frames, og så sette det sammen til en videosekvens! Vi får se. Vi lære å reflektere og bryte lys før vi kan utfordre Nvidia... &#129315;</p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
+<p>Omg, dette har jeg gledet meg til! På tidlig 90-tall var det Amiga som var best på grafikk. Selv om jeg aldri ble noen utvikler på den plattformen, ei heller gjorde noe 3D-modellering eller raytracing på den, så var det her jeg fikk min første intro til 3D-grafikk og raytracing. Jeg husker til og med at jeg og en kompis snakket om hvor *sjukt* mye datakraft man måtte hatt dersom man skulle gjort realtime raytracing. Nå om dagen gjør Nvidia det med sine RTX-kort helt trivielt, i 60fps. Denne Javascript implementasjonen av raytracing kommer nok aldri opp i sånn fart, men jeg skal nå likevel få rendret lysbryting. Og kanskje til og med flere frames, og så sette det sammen til en videosekvens! Vi får se. Vi må lære å reflektere og bryte lys før vi kan utfordre Nvidia... &#129315;</p>
+
+<p>Her tar forfatteren av boken også grep, eller egentlig løsner han grepet, og slutter med håndholdingen. Fra dette kapitlet blir ikke alt stavet for deg lenger, du må tenke sjæææl... så får vi se hvor bra det går da.. &#128517;</p>
+
+<p>Vi begynner med refleksjon. Nei, ikke en filosofisk øvelse, men en med hard vektor-matte! Vi må beregne strålens refleksjonsvektor, som egentlig er det samme som lysets refleksjonsvektor, men nå skal vi altså beregne refleksjon for det vi ser. <code>Material()</code> får en ny parameter <code>reflective = 0.0</code> som betyr ikke-reflekterende. Mer reflekterende materiale har høyere verdi. 1.0 er trolig maks, men det må testes. <code>PrepareComputations()</code> får en kalkulasjon som beregner refleksjonsvektor. Vi har allerede funksjonen <code>reflect(ray, normal)</code> og den fungerer også til denne bruken.</p>
+
+<p>Den første testen sjekker at når strålen treffer en ikke-reflekterende overflate, returnerer den "ingen refleksjon", altså <code>color(0, 0, 0)</code>. Her introduseres en ny funksjon <code>reflected_color(world, computations)</code> som for nå bare returnerer "ingenting" når materialets <code>reflective</code>-verdi er 0.</p>
+
+<p>Jeg har gjort "noe" som ikke er helt i vater i koden som beregner intersections. Jeg returnerer litt i hytt og gevær, enten undefined eller tomt array, og det gjør at noe annen kode litt lenger ned i løypa knekker når den ikke får det den forventer. Jeg knoter ganske mye før jeg faktisk får til å rendre en scene med refleksjon, for selv om testene er grønne og fine, blir det ikke grafikk av det. Dette kommer til å bite meg igjen senere, men for nå lar jeg det være. Jeg MÅ ha refraksjon! &#129315;</p>
+
+<p>Når det omsider fungerer, er resultatet helt nydelig &#128525;:</p>
+<p><img src="./chapter11_reflections_but_no_shadow.png" /></p>
+<p>...bortsett fra en liten detalj... Ser du hva som mangler? Ikke jeg heller, i førstningen. Men da det demret for meg tenkte jeg at dette løser jeg lett! Og måtte pakke sammen for dagen. Og gi fra meg PC'en der jeg har console-log og gode saker. Det skulle vise seg å by på en hel dag med feilsøking, men omsider kom også...</p>
+<p><img src="./chapter11_reflections_AND_shadows.png" /></p>
+<p>Skyggene ja! &#129315; Men se så fint de også reflekteres, jeg syns det er helt magisk. &#128525; </p>
+
+<p>Jeg vil feire med en ny Full HD render, men det er fortsatt en bug i koden nå, som gjør at noen oppsett feiler, helt random tilsynelatende, men jeg tror det det er noe med intersection/hit beregningen som ikke håndteres korrekt. Skal nok finne det, men trenger litt bedre debugging.</p>
+
+<p>Oppdatering 21. juni: Jeg hadde et "eureka" moment og kom plutselig på hva jeg kunne gjøre for å bøte på problemet. Dette er i <code>is_shadowed()</code> funksjonen. Den får et array med hits, som inntil videre bare skal være ett eneste hit. Av "grunner utenfor min kontroll" (egentlig ikke) er det enten et array med ett eneste hit i form av et <code>intersection</code> objekt eller bare et enslig objekt. Løsningen her er så klart å sjekke nå om det er et array jeg får, i så fall returnerer jeg element 0. Dersom det ikke er et array returnerer jeg bare det ene hit'et. Etter denne lille fix'en fungerer det hver gang! (famous last words... &#128517;)</p>
+<p>Og da blir det <a href="./chapter11_8_reflective_balls_1920x1080.png">ny render i full HD</a>.. &#128525;</p>
+
+<p>Jeg får lyst å gjøre en liten oppsummering i antall linjer kode:</p>
+<p><ul>
+<li><code>functions.js</code> er på $1682$ linjer kode, men så er det splittet ut to filer:
+  <li><code>shapes.js</code> på $182$ linjer, og</li>
+  <li><code>patterns.js</code> på $178$ linjer</li>
+</li>
+<li>Og så er <code>tests.js</code> er $2456$ linjer.</li>
+</p>
+<p>Dette er til sammen $4498$ linjer med ren javascript. Det stemmer bra med prosjektet <code>tryit_combined_test_runner.html</code> som inneholder all denne koden og HTML for å kjøre testene, på $4783$ linjer.</p>
+<p>Dette dokumentet er på $1165$ linjer med bare HTML kode.</p>
+<p>Hva betyr så dette? Lite. Antall linjer kode er et dårlig mål på noe som helst.</p>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+<li></li>
+</ul></p>
   <p></p>
   <p></p>
   <p></p>
@@ -1083,6 +1118,7 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
 
   <p>TODO:
   <ul>
+    <li>Fikse bugs med plan som ikke rendrer korrekt når de transleres. Acne, "gjennomsiktighet" og skygge.</li>
     <li>Gå tilbake til kapittel 10 og lage et 2D sjakkmønster og/eller blend patterns.</li>
     <li>Kode for å lese (og skrive?) JSON-fil med beskrivelse av scene.</li>
     <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>

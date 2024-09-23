@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width">
+  <style>
+    pre {
+      background-color: lightgrey;
+    }
+
+    body {
+      font-family: sans-serif;
+      margin: 3rem;
+    }
+  </style>
+  <title>The Raytracer Challenge - BENCHMARK</title>
+</head>
+
+<body>
+  <script>
+    window.onerror = function (errorMsg, url, lineNumber) {
+      const error = document.getElementById("error")
+      error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+    }
+  </script>
+
+  <h1>
+    <h2>&#127937; BENCHMARK
+  </h1>
+  <p id="perf"></p>
+  <div id="kansas"></div>
+  <pre id="error"></pre>
+
+
+<script src="./js/patterns.js"></script>
+
+<script src="./js/shapes.js"></script>
+
+<script src="./js/functions.js"></script>
+
+  <script>
+    // *** SCENE
+
+    // Benchmark render at full HD resolution
+
+
+    // Performance counter
+    const start = performance.now()
+
+    // *** DEFINE SCENE
+
+    const hsize = 800
+    const vsize = 600 //Math.round(hsize * 0.5625) // 16:9
+
+    // SCENE TELEMETRY
+    tuple = profile(tuple)
+    matrix = profile(matrix)
+    color = profile(color)
+    lighting = profile(lighting)
+    intersect_world = profile(intersect_world)
+
+
+    log("error", `Image dimensions: ${hsize} x ${vsize}`)
+
+    // DEFINE WORLD
+    const myworld = world()
+
+    // PLANE
+    const floor = plane()
+    floor.material.pattern = stripe_pattern(random_color(), random_color())
+    floor.material.pattern.transform = rotation_y(π / 6)
+    //floor.material.reflective = 0.3
+    myworld.addObject(floor)
+
+    const ceiling = plane()
+    ceiling.transform = translation(0, 30, 0)
+    ceiling.material.pattern = ring_pattern(random_color(), random_color())
+    myworld.addObject(ceiling)
+
+    // CAMERA AND LIGHT
+
+    const cam = camera(hsize, vsize, π / 6)
+    const from = point(0, 5, -20)
+    const to = point(0, 3, 0)
+    const up = vector(0, 1, 0)
+    cam.transform = view_transform(from, to, up)
+
+    const light = point_light(point(-15, 20, -15), color(1, 1, 1))
+    log("error", "Light color: " + light.intensity.scaled())
+    myworld.addLight(light)
+
+    // SCENE OBJECTS
+
+    // MATERIALS
+    const white_material = material()
+    white_material.color = color(1, 1, 1)
+    white_material.shininess = 400
+
+    // BALLS
+
+    const balls = []
+    for (let j = 1; j <= 2; j++) {
+    
+      for (let i = 1; i <= 4; i++) {
+        const b = sphere()
+        b.material.reflective = 0.4
+        b.material.pattern = gradient_pattern(random_color(), random_color())
+        b.transform = scaling(1.3, 1.3, 1.3).times_matrix(translation(-5 + (i * 2), -0.5 + (j*2), 3))
+        balls.push(b)
+      }
+    }
+
+    for (e in balls) {
+      myworld.addObject(balls[e])
+      log("error", `${balls[e].toString}\n${balls[e].material.color}`)
+    }
+
+    // AAND ACTION!
+
+    const can = render(cam, myworld)
+
+    // HTML canvas
+    const html_can = html_canvas("kansas", hsize, vsize)
+    var context = html_can.getContext("2d")
+    context.fillStyle = "black"
+    context.fillRect(0, 0, hsize, vsize)
+
+    canvas_to_html_canvas(context, can)
+
+
+
+    // Performance measurement
+    const end = performance.now()
+    const elapsed = end - start
+    const counter_id = "benchmark"
+    const cumulated_id = counter_id + "_running_time"
+    const numberOfRuns_id = counter_id + "_runs"
+    const logged_data_id = counter_id + "_logged"
+
+    const cumulated = localStorage.getItem(cumulated_id)
+    const runs = localStorage.getItem(numberOfRuns_id)
+    const logged = localStorage.getItem(logged_data_id)
+
+    const data = { 
+      runtime: elapsed,
+      hsize: hsize,
+      vsize: vsize,
+      telemetry: _calls,
+    }
+    
+    localStorage.setItem(numberOfRuns_id, Number(runs) + 1)
+    localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+    localStorage.setItem(logged_data, logged + JSON.stringify(data))
+
+    log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
+    log("perf", "Running time per pixel: " + Math.round(elapsed) / (cam.vsize * cam.hsize) + " ms.")
+    log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+
+    Object.keys(_calls).length > 0 ? log("perf", JSON.stringify(_calls, 0, 3)) : null
+
+    Object.keys(logged).length > 0 ? log("error", JSON.stringify(logged.telemetry, 0, 3)) : null
+
+  </script>
+
+</body>
+
+</html>

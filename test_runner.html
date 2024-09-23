@@ -111,7 +111,6 @@ function runTest(domId, callback) {
 }
 
 runTest("test_list", test_tuple_function)
-
 runTest("test_list", test_vector_function)
 runTest("test_list", test_point_function)
 runTest("test_list", test_equal_function)
@@ -119,7 +118,6 @@ runTest("test_list", test_equal_tuples_function)
 runTest("test_list", test_add_tuples_function)
 runTest("test_list", test_subtract_tuples_function)
 runTest("test_list", test_negate_tuple_function)
-
 runTest("test_list", test_multiply_vector_function)
 runTest("test_list", test_divide_vector_function)
 runTest("test_list", test_magnitude_function)
@@ -150,7 +148,6 @@ runTest("matrix_list", test_idmatrix_function)
 runTest("matrix_list", test_multiply_by_identity_matrix_function)
 runTest("matrix_list", test_transpose_matrix_function)
 runTest("matrix_list", test_transpose_identity_matrix)
-
 runTest("matrix_list", test_calculate_determinant_of_2x2_matrix)
 runTest("matrix_list", test_submatrix_function)
 runTest("matrix_list", test_minor_function)
@@ -167,7 +164,7 @@ runTest("matrix_list", test_rotation_y_function)
 runTest("matrix_list", test_rotation_z_function)
 runTest("matrix_list", test_shearing_function)
 runTest("matrix_list", test_angle_function)
-runTest("matrix_list", test_transformations_function)
+runTest("matrix_list", test_chained_transformations)
 runTest("matrix_list", test_apply_individual_transformations)
 
 runTest("ray_list", test_creating_ray_function)
@@ -225,6 +222,12 @@ runTest("reflect_list", test_prepare_computations_reflectv)
 runTest("reflect_list", test_reflected_color_function)
 runTest("reflect_list", test_avoid_infinite_recursion_reflection)
 runTest("reflect_list", test_limit_recursion_of_reflection)
+runTest("reflect_list", test_material_has_transparency_and_refraction)
+runTest("reflect_list", test_glass_sphere_function)
+runTest("reflect_list", finding_n1_and_n2_refractive_indices)
+runTest("reflect_list", test_computing_under_point)
+runTest("reflect_list", test_refracted_color_of_opaque_object)
+runTest("reflect_list", test_refracted_color_at_max_recursions)
 
 
 
