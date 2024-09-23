@@ -43,6 +43,14 @@ const start = performance.now()
 
 const size = 100
 
+// SCENE TELEMETRY
+/*equal = profile(equal)
+sphere = profile(sphere)
+tuple = profile(tuple)
+vector = profile(vector)
+point = profile(point)
+*/
+
 const floor = sphere()
 floor.transform = scaling(10, 0.01, 10)
 floor.material.color = color(1, 0.9, 0.9)
@@ -76,7 +84,7 @@ left.material.specular = 0.3
 
 const light = point_light(point(-10, 10, -10), color(1, 1, 1))
 
-const cam = camera(300, 200, π/3)
+const cam = camera(100, 50, π/3)
 const from = point(0, 1.5, -5)
 const to = point(0, 1, 0)
 const up = vector(0, 1, 0)
@@ -120,6 +128,8 @@ localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
 log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
 log("perf", "Running time per pixel: " + Math.round(elapsed)/(cam.vsize * cam.hsize) + " ms.")
 log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+
+Object.keys(_calls).length > 0 ? log("perf", JSON.stringify(_calls,0,3)) : null
 </script>
 
 </body>

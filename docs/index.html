@@ -600,9 +600,20 @@ return _intersections.sort( function(a, b) {
 <p>Jeg er inne på noe, og samtidig så fullstendig ute. Jeg må bryte det ned og se om jeg får til ett og ett objekt. Det *kan* bare være transformasjonene som legges på i feil rekkefølge...?</p>
 <p>Jeg finner ut av det. En bug i <code>hit()</code> funksjonen gjør at intersections sorteres feil og alt blir bare rot og tull. En annen bug i <code>Canvas()</code> klassen gjør at en pixel bare kan ha heltallsverdier og det passer dårlig når fargeverdiene er flyttall fra 0 til 1. Andre forsøk ser vesentlig mer ut som det jeg ønsket å oppnå:</p>
 <p><img src="./chapter7_scene_second_attempt.png"/></p>
-<p>Etter at jeg fikset <code>hit()</code> funksjonen ser det ut for at <code>color_at()</code> og <code>render()</code> også fungerer! Bonus! &#129321; (bare <code>lighting()</code> igjen da.. </p>
+<p>Etter at jeg fikset <code>hit()</code> funksjonen ser det ut for at <code>color_at()</code> og <code>render()</code> også fungerer! Bonus! &#129321; (bare <code>lighting()</code> igjen da.. )</p>
+
+<h3>&#9203; Telemetri-digresjonen</h3>
+<p>Jeg begynner å undres på hvor ofte hver funksjon faktisk brukes, og tenker at det må finnes en enkel måte å telle dette på. Et kjapt søk leder meg til <a href="https://stackoverflow.com/a/31741066/83148">denne tråden</a> og med wrapper-funksjonen <code>profile()</code> inkludert i <code>functions.js</code> kan jeg ganske enkelt "wrappe" hver funksjon jeg vil telle, feks <code>tuple = profile(tuple)</code> som så holder styr på tellere for hver funksjon. Så nå lurer nok du også (?) på hvor mange tupler vi bruker? For å rendre kapittel 7 bildet i oppløsning 100x50 pixler, kalles <code>tuple()</code> intet mindre enn <var>219 478</var> ganger! Ikke rart ting tar tid! &#128565;</p>
+
 <p></p>
 <p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+
 <p>Testing math: $x = {-b \pm \sqrt{b^2-4ac} \over 2a}$</p>
 <p>Det over er et ledd i min søken etter "enkel" matte på web. <a href="https://stackoverflow.com/questions/67001012/problems-with-configuration-of-mathjax-3-demo-interactive-tex-input-and-html-out">Eksemplet her</a> fungerer utenfor denne dokumentasjonen, og jeg skal nok komme til bunns i det! </p>
 
@@ -630,6 +641,7 @@ return _intersections.sort( function(a, b) {
   <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>
   <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og utgangshastighet.</li>
   <li>Kan jeg hente koden til en funksjon inn i dokumentasjonen direkte med JS? Istedet for å klippe og lime?</li>
+  <li>Refaktorere demokoden for Kapittel 1-6 så de kan bruke siste versjon av <code>functions.js</code> og slett så de daterte versjonene.</li>
   <li>Skrive om JS funksjoner som returnerer Object.freeze({}) til ordentlige klasser og metoder. Bruk factory-metoder for å slippe å lage objekter med <code>new</code>
   <ul>
     <li>Refaktorere matrix til class</li>

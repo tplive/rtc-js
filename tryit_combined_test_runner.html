@@ -119,6 +119,18 @@ function shuffle(arr) {
   }
 }
 
+// *** PROFILER GLOBAL MAP AND FUNCTION
+// Wrap functions with profile, like tuple = profile(tuple) to count calls to the function.
+// Output JSON.stringify(_calls) at the end of the run.
+_calls = {}
+
+profile = function(fn) {
+    return function() {
+        _calls[fn.name] = (_calls[fn.name] || 0) + 1;
+        return fn.apply(this, arguments);
+    }
+}
+
 // *** VECTOR FUNCTIONS
 
 function equal(a, b) {
@@ -984,8 +996,9 @@ function hit(list_of_intersections) {
   if (!Array.isArray(list_of_intersections)) {return } // There are no intersections, return undefined
     
   list_of_intersections = list_of_intersections.filter( item => { if (item.t > 0) {return item}} )
+                                               .sort( function(a, b) { return a.t - b.t } )
   
-  return list_of_intersections.sort().reverse()[0]
+  return list_of_intersections[0] 
 }
 
 function transform_old(r, matr) {
@@ -2775,7 +2788,10 @@ function test_hit_function() {
   const xs4 = intersections(i7, i8, i9, i10)
   const h4 = hit(xs4)
   
-  return h1 === i1 && h2 === i4 && !h3 && h4 === i10 // h3: there are no intersections, returns "undefined", which equals "false"
+  return h1 === i1 
+      && h2 === i4 
+      && !h3 // h3: there are no intersections, returns "undefined", which equals "false"
+      && h4 === i10 
 }
 
 function test_transform_function() {
@@ -3295,6 +3311,9 @@ function test_render_function() {
   // Test the render() function. Takes a camera and a world and renders and image
   // by returning it as a canvas.
   
+  // *** TELEMETRY
+  tuple = profile(tuple)
+
   // Rendering a world with a camera
   const w = default_world()
   const c = camera(11, 11, π / 2)
@@ -3436,7 +3455,6 @@ runTest("scene_list", test_render_function)
 
 
 
-
 const end = performance.now()
 const elapsed = end - start
 const cumulated_id = "test_running_time"
@@ -3450,6 +3468,8 @@ localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
 
 log("perf", "Tests running time: " + Math.round(elapsed) + " ms.")
 log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+
+Object.keys(_calls).length > 0 ? log("perf", "Telemetry profiler: " + JSON.stringify(_calls,0,3)) : null
 
 window.scrollTo(0,document.body.scrollHeight);
 </script>

@@ -1,6 +1,5 @@
 // *** FUNCTION DEFINITIONS
 
-const π = Math.PI
 
 // *** CONFIGURATION OBJECT
 const C = function() {
@@ -63,30 +62,6 @@ function shuffle(arr) {
     arr[i] = arr[j]
     arr[j] = temp
   }
-}
-
-function canvas_to_html_canvas(ctx, can) {
-  // Define canvas outside function, then pass context and canvas to this function
-  for (let y = 0;y < can.height;y++) {
-    for (let x = 0;x < can.width;x++) {
-      const col = can.pixel_at(x, y)
-      const sc = scale_color(col)
-      ctx.fillStyle = `rgb(${sc.red}, ${sc.green}, ${sc.blue})`
-      ctx.fillRect(x, y, 1, 1)
-    }
-  }
-}
-
-// *** PROFILER GLOBAL MAP AND FUNCTION
-// Wrap functions with profile, like tuple = profile(tuple) to count calls to the function.
-// Output JSON.stringify(_calls) at the end of the run.
-_calls = {}
-
-profile = function(fn) {
-    return function() {
-        _calls[fn.name] = (_calls[fn.name] || 0) + 1;
-        return fn.apply(this, arguments);
-    }
 }
 
 // *** VECTOR FUNCTIONS
@@ -304,7 +279,7 @@ function html_canvas(parent, width, height) {
 
 
 class Canvas {
-  // Create a canvas object. It has a width and a height and a pixel array.
+  // Create a canvas abstraction object. It has a width and a height and a pixel array.
   // Each pixel is defined by three values, r, g, b.
   // The format is a single array or bit stream.
   // To make the array as efficient as possible, we make it a const and pre-initialize length.
@@ -312,49 +287,91 @@ class Canvas {
   // So 0 < x < w - 1, and 0 < y < h - 1
   
   constructor(w, h) {
-    this._width = w
-    this._height = h
-    this._bits = 3 // Bits per pixel. rgb = 3. rgba = 4.
-    this._d = new Float32Array(w * h * this._bits).fill(0)
+    this.width = w
+    this.height = h
+    this.bits = 3 // Bits per pixel. rgb = 3. rgba = 4.
+    this.d = new Uint8ClampedArray(w * h * b).fill(0)
   }
   
-  get width() { return this._width }
-  get height() { return this._height }
-  get data() { return this._d }
-  get bits() { return this._bits }
+  get width() {return this.width}
+  get height() {return this.height}
+  get data() {return this.d}
   
   pixel_at(x, y) {
     // Make sure pixels are within the canvas.
-    if (x < 0 || y < 0 || x > this._width - 1 || y > this._height - 1) {
+    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) {
       throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
     }
     
-    const i = (this._width * y + x) * this._bits
+    const i = (this.width * y + x) * this.bits
   
-    return color(this._d[i], this._d[i+1], this._d[i+2])
+    return color(this.d[i], this.d[i+1], this.d[i+2])
   }
   
   write_pixel(x, y, color) {
     // Ignore pixels outside the canvas.
-    if (x < 0 || y < 0 || x > this._width - 1 || y > this._height - 1) {
+    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) {
       return
     }
     
-    const i = (this._width * Math.round(y) + Math.round(x)) * this._bits
+    const i = (this.width * Math.round(y) + Math.round(x)) * this.bits
     // For debugging
     //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
     
-    this._d[i]   = color.red
-    this._d[i+1] = color.green
-    this._d[i+2] = color.blue
+    this.d[i]   = color.red
+    this.d[i+1] = color.green
+    this.d[i+2] = color.blue
     //log("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
   }
 }
 
 function canvas(w, h) {
-  // Canvas factory 
+  // Create a canvas abstraction object. It has a width and a height and a pixel array.
+  // Each pixel is defined by three values, r, g, b.
+  // The format is a single array or bit stream.
+  // To make the array as efficient as possible, we make it a const and pre-initialize length.
+  // The RTC book assumes all x and y values are 0-based.
+  // So 0 < x < w - 1, and 0 < y < h - 1
   
-  return new Canvas(w, h)
+  const b = 3 // Bits per pixel. rgb = 3. rgba = 4.
+  
+  //const d = Array(w * h * b).fill(0)
+  
+  // Typed Array
+  const d = new Uint8ClampedArray(w * h * b).fill(0)
+  
+  //log("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
+  
+  return {
+    width:w,
+    height:h,
+    data:d,
+    bits:b,
+    pixel_at: function(x, y) {
+      // Make sure pixels are within the canvas.
+      if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
+        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+      }
+      
+      const i = (w * y + x) * b
+  
+      return color(this.data[i], this.data[i+1], this.data[i+2])
+    },
+    write_pixel: function(x, y, color) {
+    // Ignore pixels outside the canvas.
+      if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
+        return
+      }
+      const i = (w * Math.round(y) + Math.round(x)) * b
+      // For debugging
+      //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
+      
+      this.data[i]   = color.red
+      this.data[i+1] = color.green
+      this.data[i+2] = color.blue
+      //log("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
+    }
+    }
 }
 
 function canvas_to_ppm(can) {
@@ -887,7 +904,7 @@ class Sphere {
   get transform() { return this._transform }
   get material() { return this._material }
   get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
-    
+  
   set transform(value) {
     if (value.d != undefined) {
       this._transform = multiply_matrices(this._transform, value)
@@ -899,14 +916,6 @@ class Sphere {
       this._material = mat
     }
   }
-  
-  equals(obj) { return this._transform.equals(obj.transform) && this._material.equals(obj.material)}
-}
-
-function sphere() {
-  // Factory function for Sphere()
-
-  return new Sphere()
 }
 
 function intersect(s, ra) {
@@ -960,9 +969,8 @@ function hit(list_of_intersections) {
   if (!Array.isArray(list_of_intersections)) {return } // There are no intersections, return undefined
     
   list_of_intersections = list_of_intersections.filter( item => { if (item.t > 0) {return item}} )
-                                               .sort( function(a, b) { return a.t - b.t } )
   
-  return list_of_intersections[0] 
+  return list_of_intersections.sort().reverse()[0]
 }
 
 function transform_old(r, matr) {
@@ -1068,14 +1076,6 @@ class Material {
   set diffuse(dif) { this._diffuse = dif }
   set specular(spe) { this._specular = spe }
   set shininess(shi) { this._shininess = shi }
-  
-  equals(mat) {
-    return mat.color.equals(this._color) 
-        && mat.ambient === this._ambient 
-        && mat.diffuse === this._diffuse
-        && mat.specular === this._specular 
-        && mat.shininess === this._shininess
-  }
 
 }
 
@@ -1089,7 +1089,7 @@ function lighting(material, light, point, eyev, normalv) {
   // The lighting function computes shading for pixels
   
   // Combine surface color with the light's color/intensity
-  const effective_color = multiply_colors(material.color, light.intensity)
+  const effective_color = multiply_colors(light.intensity, material.color)
   //log("error", "effective_color: " + effective_color)
   
   // Find the direction to the light source
@@ -1117,8 +1117,6 @@ function lighting(material, light, point, eyev, normalv) {
     
     // reflect_dot_eye represents the cosine of the angle between the reflection vector
     // and the eye vector. A negative number means the light reflects away from the eye.
-    // According to the book, it should be -lightv. But I saw no specular highlight while that was the case.
-    // When I (by chance) changed it to lightv, the highlight is there!
     const reflectv = reflect(lightv, normalv)
     //log("error", "reflectv: " + reflectv)
     
@@ -1134,292 +1132,10 @@ function lighting(material, light, point, eyev, normalv) {
       specular = multiply_color(material.specular * factor, light.intensity)
       //log("error", "light.intensity: " + light.intensity)
       //log("error", "material.specular: " + material.specular)
-      //if (specular.red >= 0.01) {log("error", "specular.red: " + specular.red)}
+      //if (specular.red >= 0.1) {log("error", "specular.red: " + specular.red)}
     }
   }
   // Add the three contributions together to get the final shading
   //log("error", `ambient + diffuse + specular = " ${ambient} + ${diffuse} + ${specular} = ${add_colors(ambient, add_colors(diffuse, specular))}`)
   return add_colors(ambient, add_colors(diffuse, specular))
-}
-
-// *** SCENE FUNCTIONS
-
-class World {
-  // The World object holds all the objects for the scene
-  
-  constructor() {
-    this._objects = []
-    this._lights = []
-  }
-  
-  get objects() { return this._objects }
-  get lights() { return this._lights }
-  
-  addLight(light_object) { this._lights.push(light_object) }
-  addObject(world_object) { this._objects.push(world_object) }
-  
-  has(object) {
-    // Check if the world contains an object matching the input
-    if (object.position != undefined && object.intensity != undefined) {
-      // Input is a light object
-      return this._lights.filter(e => e.position.equals(object.position) && e.intensity.equals(object.intensity))
-    } else {
-      // Input is a world object
-      return this._objects.filter(e => e.transform.equals(object.transform) && e.material.equals(object.material) )
-    }
-  }
-  toString() {
-    return `World: ${this._objects}`
-  }
-}
-
-function world() {
-  // Creates World-objects
-  return new World()
-}
-
-function default_world() {
-  // Creates a default world
-  
-  // Create world object
-  const w = world()
-  
-  // Create a default light object
-  const light = point_light(point(-10, 10, -10), color(1, 1, 1))
-  
-  // Create a sphere
-  const s1 = new Sphere()
-  
-  // Create a new material
-  const mat = material()
-  
-  // Set material properties
-  mat.color = color(0.8, 1.0, 0.6)
-  mat.diffuse = 0.7
-  mat.specular = 0.2
-  
-  // Apply material to sphere
-  s1.material = mat
-  
-  // Create a new sphere
-  const s2 = new Sphere()
-  
-  // Add a transform to the sphere
-  s2.transform = scaling(0.5, 0.5, 0.5)
-  
-  // Add objects to the world
-  w.addLight(light)
-  w.addObject(s1)
-  w.addObject(s2)
-  
-  return w
-}
-
-function intersect_world(w, r) {
-  // Iterate over the world w and log all object intersections with ray r
-  
-  const _intersections = []
-  
-  if (w.objects === undefined || w.objects.length === 0) {
-    throw(`Trying to iterate over an empty world`)
-  }
-  
-  for (e in w.objects) {
-    
-    const f = intersect(w.objects[e], r)
-    
-    for (g in f) {
-      //log("error", "Intersection: " + f[g].t)
-
-      _intersections.push(f[g])
-    } 
-  }
-  
-  // Sort the array of intersections by their t-values
-  return _intersections.sort( function(a, b) {
-    return a.t - b.t
-  })
-}
-
-class PrepareComputations {
-  // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
-  
-  constructor(i, r) {
-    // i must be a singular intersection(t, object), not an array!
-    if (!isNaN(i.t)) {
-      this._i = i
-      this._r = r
-      this._p = position(this._r, this._i.t)
-      this._e = this._r.direction.negate()
-      this._n = normal_at(this._i.object, this._p)
-      this._inside = this.is_inside()
-
-    } else {
-      throw(`Cannot construct a PrepareComputations object without a valid intersection, i.t was: ${i.t}`)
-    }
-  }
-  
-  get t() { return this._i.t }
-  get object() { return this._i.object }
-  get point() { return this._p }
-  get eyev() { return this._e }
-  get normalv() { return this._n }
-  get inside() { return this._inside }
-  
-  is_inside() {
-    if (this._n.dot(this._e) < 0 ) {
-      this._n = this._n.negate()
-      return true
-    } else {
-      return false
-    }
-  }
-  toString() { return `PrepareComputations(intersection, ray): t=${this.t} object.id=${this.object.id} point=${this.point} eyev=${this.eyev} normalv=${this.normalv} inside=${this.inside}` }
-}
-
-function prepare_computations(i, r) {
-  // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
-  
-  return new PrepareComputations(i, r)
-}
-
-function shade_hit(w, c) {
-  // Call lighting() function with the intersected object's material and the prepared computations
-  return lighting(c.object.material, w.lights[0], c.point, c.eyev, c.normalv)
-}
-
-function color_at(w, r) {
-  // The color_at function uses intersect(), prepare_computations()
-  // and shade_hit() to compute the color at the resulting intersection
-  
-  const xs = intersect_world(w, r)
-  
-  if (xs.length === 0) {
-    // Ray did not intersect any objects in this world
-    return color(0, 0, 0)
-  } else {
-    
-    // Find the hit
-    const i = hit(xs)
-    
-    // We prepare the computations
-    comps = prepare_computations(i, r)
-    
-    // We calculate the color
-    return shade_hit(w, comps)
-  }
-}
-
-function view_transform(from, to, up) {
-  // Defines transformation matrix for the view, effectively moving "the eye"
-  // The default transformation is the idmatrix()
-  
-  const forward = to.minus(from).normalize()
-  //log("error", "view_transform(): forward: " + forward)
-  
-  const upn = up.normalize()
-  //log("error", "view_transform(): upn: " + upn)
-  
-  const left = forward.cross(upn)
-  //log("error", "view_transform(): left: " + left)
-  
-  const trueup = left.cross(forward)
-  //log("error", "view_transform(): trueup: " + trueup)
-  
-  const orientation = matrix(4, 4)
-  orientation.putAll([left.x,     left.y,     left.z,    0,
-                      trueup.x,   trueup.y,   trueup.z,  0,
-                     -forward.x, -forward.y, -forward.z, 0,
-                              0,          0,          0, 1,
-                    ])
-  
-  return multiply_matrices(orientation, translation(-from.x, -from.y, -from.z))
-}
-
-class Camera {
-  // The virtual camera will let you "take pictures" of your scene.
-  // Like a real camera, you can move it around, zoom in and out and
-  // even rotate the camera upside down if that's the shot you want.
-  
-  constructor(h, v, fov) {
-    this._h = h
-    this._v = v
-    this._f = fov
-    this._transform = idmatrix()
-    
-    const half_view = Math.tan(fov / 2 )
-    const aspect = this._h / this._v
-    
-    if (aspect >= 1) {
-      this._half_width = half_view
-      this._half_height = half_view / aspect
-    } else {
-      this._half_width = half_view * aspect
-      this._half_height = half_view
-    }
-  }
-  
-  get hsize() { return this._h }
-  get vsize() { return this._v }
-  get fov() { return this._f }
-  get transform() { return this._transform }
-  get half_width() { return this._half_width }
-  get half_height() { return this._half_height }
-  
-  set transform(value) {
-    if (value.d != undefined) {
-      this._transform = multiply_matrices(this._transform, value)
-    }
-  }
-  
-  get pixel_size() {
-    // Calculate pixel size for the camera
-    
-    return parseFloat((( this._half_width * 2 ) / this._h))
-  }
-}
-
-function camera(hs, vs, fov) {
-  // Factory function for camera
-  
-  return new Camera(hs, vs, fov)
-}
-
-function ray_for_pixel(cam, px, py) {
-  // Compute ray that can pass through any given pixel on the canvas
-  
-  // Offset from edge of canvas to pixel's center
-  const xoffset = (px + 0.5) * cam.pixel_size
-  const yoffset = (py + 0.5) * cam.pixel_size
-  
-  // The untransformed coordinates of the pixel in world space.
-  // (camera looks toward -z, so +x is to the left)
-  const worldx = cam.half_width - xoffset
-  const worldy = cam.half_height - yoffset
-  
-  // Using the camera matrix, transform the canvas point and the origin,
-  // and then compute the ray's direction vector
-  // (remember that the canvas is at z=-1)
-  const pixel = inverse(cam.transform).times_tuple(point(worldx, worldy, -1))
-  
-  const origin = inverse(cam.transform).times_tuple(point(0, 0, 0))
-  const direction = pixel.minus(origin)
-    
-  return ray(origin, direction.normalize())
-}
-
-function render(cam, w) {
-  // The render function will render a scene and return a canvas
-  
-  const image = canvas(cam.hsize, cam.vsize)
-  
-  for (let y=0; y < cam.vsize; y++) {
-    for (let x=0; x < cam.hsize; x++) {
-      const ray = (ray_for_pixel(cam, x, y))
-      const col = color_at(w, ray)
-      image.write_pixel(x, y, col)
-    }
-  }
-  
-  return image
 }

@@ -198,6 +198,8 @@ localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
 log("perf", "Tests running time: " + Math.round(elapsed) + " ms.")
 log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
 
+Object.keys(_calls).length > 0 ? log("perf", "Telemetry profiler: " + JSON.stringify(_calls,0,3)) : null
+
 window.scrollTo(0,document.body.scrollHeight);
 </script>
 </body>

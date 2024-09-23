@@ -1790,8 +1790,8 @@ function test_camera_function() {
   //log("error", c3.pixel_size)
   
   return res 
-      && c2.pixel_size === 0.01 
-      && c3.pixel_size === 0.01
+      && equal(c2.pixel_size, 0.01)
+      && equal(c3.pixel_size, 0.01)
 }
 
 function test_ray_for_pixel_function() {
@@ -1825,6 +1825,9 @@ function test_render_function() {
   // Test the render() function. Takes a camera and a world and renders and image
   // by returning it as a canvas.
   
+  // *** TELEMETRY
+  //tuple = profile(tuple)
+
   // Rendering a world with a camera
   const w = default_world()
   const c = camera(11, 11, π / 2)
