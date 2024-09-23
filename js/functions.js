@@ -65,7 +65,7 @@ function equal(a, b) {
 function equal_tuples(a, b) {
   // Compare x, y, z coordinates of a tuple. JS does not distinguish these types of objects
   // so a tuple == vector == point at this time.
-  return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z))
+  return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z) && equal(a.w, b.w))
 }
 
 function add_tuples(a, b) {
@@ -124,7 +124,9 @@ function tuple(a, b, c, d) {
     y:b,
     z:c,
     w:d,
-    toString: function() { return `x:${this.x} y:${this.y} z:${this.z} w:${this.w}`}})
+    toString: function() { return `x:${this.x} y:${this.y} z:${this.z} w:${this.w}`}
+  })
+    
 }
 
 function vector(a,b,c) {
@@ -204,7 +206,52 @@ function html_canvas(parent, width, height) {
 }
 
 
-
+class Canvas {
+  // Create a canvas abstraction object. It has a width and a height and a pixel array.
+  // Each pixel is defined by three values, r, g, b.
+  // The format is a single array or bit stream.
+  // To make the array as efficient as possible, we make it a const and pre-initialize length.
+  // The RTC book assumes all x and y values are 0-based.
+  // So 0 < x < w - 1, and 0 < y < h - 1
+  
+  constructor(w, h) {
+    this.width = w
+    this.height = h
+    this.bits = 3 // Bits per pixel. rgb = 3. rgba = 4.
+    this.d = new Uint8ClampedArray(w * h * b).fill(0)
+  }
+  
+  get width() {return this.width}
+  get height() {return this.height}
+  get data() {return this.d}
+  
+  pixel_at(x, y) {
+    // Make sure pixels are within the canvas.
+    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) {
+      throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+    }
+    
+    const i = (this.width * y + x) * this.bits
+  
+    return color(this.d[i], this.d[i+1], this.d[i+2])
+  }
+  
+  write_pixel(x, y, color) {
+    // Ignore pixels outside the canvas.
+    if (x < 0 || y < 0 || x > this.width - 1 || y > this.height - 1) {
+      return
+    }
+    
+    const i = (this.width * Math.round(y) + Math.round(x)) * this.bits
+    // For debugging
+    //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
+    
+    this.d[i]   = color.red
+    this.d[i+1] = color.green
+    this.d[i+2] = color.blue
+    //log("error", `write_pixel: ${this.data[i]}, ${this.data[i+1]}, ${this.data[i+2]}`)
+  }
+}
 
 function canvas(w, h) {
   // Create a canvas abstraction object. It has a width and a height and a pixel array.
@@ -215,7 +262,12 @@ function canvas(w, h) {
   // So 0 < x < w - 1, and 0 < y < h - 1
   
   const b = 3 // Bits per pixel. rgb = 3. rgba = 4.
-  const d = Array(w * h * b).fill(0)
+  
+  //const d = Array(w * h * b).fill(0)
+  
+  // Typed Array
+  const d = new Uint8ClampedArray(w * h * b).fill(0)
+  
   //log("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
   
   return {
@@ -250,22 +302,22 @@ function canvas(w, h) {
     }
 }
 
-function canvas_to_ppm(canvas) {
+function canvas_to_ppm(can) {
   // Take a canvas object and return a PPM file.
   // The header should look like this, where 80 40 is W and H:
   // P3
   // 80 40
   // 255
   
-  let ppm_array = []
+  let ppm_array = [] // Cannot be typed array, as it will have strings
   let counter = 0
-  const bytes = canvas.width * canvas.height * canvas.bits
-  const bytes_per_line = Math.floor(70 / (canvas.bits + 1))
+  const bytes = can.width * can.height * can.bits
+  const bytes_per_line = Math.floor(70 / (can.bits + 1))
   //log("error", "Bytes per line: " + bytes_per_line)
   //log("error", "Bytes: " + bytes)
   
-  for (let k in canvas.data) {
-    ppm_array.push(canvas.data[k])
+  for (let k in can.data) {
+    ppm_array.push(can.data[k])
     counter++
     if ( counter === bytes_per_line) {
       //log("error", `k: ${k}, ${k % bytes_per_line}`)
@@ -286,7 +338,7 @@ function canvas_to_ppm(canvas) {
   }
   //log("error", split)
   var str = `P3
-${canvas.width} ${canvas.height}
+${can.width} ${can.height}
 255
 ${split.join("")}
 `
@@ -296,35 +348,66 @@ ${split.join("")}
 // *** MATRIX FUNCTIONS
 
 function matrix(rows, cols) {
+  // A matrix consists of a bitstream represented in rows * columns
+  // For efficiency, a typed array of Float32Array is used, and
+  // index value is an integer calculation:
+  // m4x4.at(r,c) = (4 * r + c)
   
-  let a = Array(rows).fill(null).map(()=>Array(cols).fill(0)) // Was: Array(rows).fill(Array(cols).fill(0))
-  //log("error", a.join("\n"))
+  const _r = rows
+  const _c = cols
+  
+  const _a = new Float32Array(rows * cols).fill(0)
+  //log("error", "_a: " + this._a)
 
-  return structuredClone(a)
+  return Object.freeze({
+    rows:_r,
+    cols:_c,
+    d:_a,
+    put: function(row, col, val) { _a[_c * row + col] = val },
+    putAll: function(arr) {
+      for (let e=0; e < _a.length;e++) {
+        _a[e] = arr[e]
+      }
+    },
+    get: function(row, col) { return _a[_c * row + col] },
+    submatrix: function(row, col) {
+      if((_r-1)*(_c-1) < 4) { throw `Cannot get submatrix < 2x2`}
+      
+      //__a = new Float32Array((_r-1) * (_c-1)).fill(0)
+      temp = []
+      // Calculate indexes on row and on col
+      const indices = []
+      for (let x=0;x<cols;x++) {
+        indices.push(cols*row+x)
+      }
+      for (let x=0;x<rows;x++) {
+        indices.push(cols*x+col)
+      }
+      //log("error", indices)
+      const skip = new Set(indices)
+      
+      for (let i=0;i<_r*_c;i++) {
+        if (!skip.has(i)) {
+          temp.push(_a[i])
+        }
+      }
+      return Float32Array.of(...temp)
+    }
+  })
 }
 
 function matrix_equal(ma, mb) {
   // Test equality. A === B if Arows === Brows and Acols === Bcols
-  
-  
-  const masize = ma.length * ma[0].length
-  const mbsize = mb.length * mb[0].length
+  //log("error", `matrix_equal(): Running`)
   
   // Ensure structural equality first.
-  if ( masize === mbsize && masize / ma[0].length === mbsize / mb[0].length ) {
+  if ( ma.rows === mb.rows && ma.cols === mb.cols ) {
     
-    //log("error", `masize (${masize}) / ma[0].length (${ma[0].length}) === mbsize (${mbsize}) / mb[0].length (${mb[0].length})`)
+    for (let i=0;i<ma.d.length;i++) {
     
-    // This for loop is preferable (less chance of OBOB) when we don't calculate anything from r and c, as they are strings...
-    for (let r in ma) {
-      //log("error", ma[r])
-      //log("error", mb[r])
-      for (let c in ma[r]) {
-        //log("error", `${ma[r][c]} === ${mb[r][c]}`)
-        if (!(equal(ma[r][c], mb[r][c]))) {
-          //log("error", "These fuckers aren't equal: " + ma[r][c] + " and " + mb[r][c])
-          return false
-        }
+      if ( !equal(ma.d[i], mb.d[i]) ) {
+        //log("error", `These fuckers aren't equal: ${ma.d[i]} and ${mb.d[i]}`)
+        return false
       }
     }
   }
@@ -334,24 +417,26 @@ function matrix_equal(ma, mb) {
 function multiply_matrices(a, b) {
   // Multiply matrices.
   // Only supports 4x4 matrices.
+  //log("error", a.rows)
   
-  if (a.length != 4 || b.length != 4) {
-    throw `Only supports multiplying 4x4 matrices. a = ${a.length}, b = ${b.length}`
+  if (a.rows * a.cols != 16 || b.rows * b.cols != 16) {
+    throw `Only supports multiplying 4x4 matrices. a = ${a.rows}, b = ${b.cols}`
   }
   const m = matrix(4, 4)
   
-  for (let r in m) {
+  for (let r=0;r<m.rows;r++) {
     //log("error", "r: " + r)
-    for (let c in m) {
+    for (let c=0;c<m.cols;c++) {
      //log("error", "    c: " + c)
-     m[r][c] = 
-       a[r][0] * b[0][c] + 
-       a[r][1] * b[1][c] + 
-       a[r][2] * b[2][c] + 
-       a[r][3] * b[3][c]
+     m.put(r,c, 
+       a.get(r,0) * b.get(0,c) + 
+       a.get(r,1) * b.get(1,c) + 
+       a.get(r,2) * b.get(2,c) + 
+       a.get(r,3) * b.get(3,c)
+     )
      
      
-     //log("error", `m[${r}][${c}] =  ${a[r][0] * b[0][c] + a[r][1] * b[1][c] + a[r][2] * b[2][c] + a[r][3] * b[3][c]}`)
+     //log("error", `m.get(${r},${c}) = ${m.get(r,c)}`)
     }
   }
   
@@ -366,14 +451,13 @@ function multiply_matrix_by_tuple(ma, t) {
   // Multiply matrix by tuple.
   // Returns a tuple.
   
-  let result = [0,0,0,0]
-  
+  const result = []
   for (let r = 0; r <= 3; r++) {
     result[r] = 
-     ma[r][0] * t.x + 
-     ma[r][1] * t.y + 
-     ma[r][2] * t.z + 
-     ma[r][3] * t.w
+     ma.get(r,0) * t.x + 
+     ma.get(r,1) * t.y + 
+     ma.get(r,2) * t.z + 
+     ma.get(r,3) * t.w
   }
   
   //log("error", ma.join("\n"))
@@ -382,17 +466,28 @@ function multiply_matrix_by_tuple(ma, t) {
   return tuple(result[0], result[1], result[2], result[3])
 }
 
+function idmatrix() {
+  // Return an id_matrix
+  const m = matrix(4, 4)
+  m.put(0,0,1)
+  m.put(1,1,1)
+  m.put(2,2,1)
+  m.put(3,3,1)
+  
+  return m
+  
+}
+
 function transpose_matrix(m) {
   // Turn rows into columns.
   
   const t = matrix(4, 4)
   
-  // This for loop is ok when we are not computing values from r or c; they are strings.
-  for (let r in m) {
+  for (let r=0;r<m.rows;r++) {
     //log("error", "r: " + r)
-    for (let c in m) {
+    for (let c=0;c<m.cols;c++) {
      //log("error", "    c: " + c)
-     t[r][c] = m[c][r]
+     t.put(r,c,m.get(c,r))
     }
   }
   
@@ -403,7 +498,7 @@ function transpose_matrix(m) {
 function determinant(m) {
   // Mansplained: Calculate the determinant of a matrix.
   // For a 2x2 matrix
-  //   matrix = [[a,b],[c,d]]
+  //   matrix = [a,b,c,d]
   // the calculation is ad - bc.
   // For larger matrices, take the first row and multiply each element with its cofactor.
   // Inputs:
@@ -412,12 +507,13 @@ function determinant(m) {
   
   let det = 0
   
-  if (m.length == 2) {
-    det = (m[0][0] * m[1][1] - m[0][1] * m[1][0])
+  if (m.d.length == 4) {
+    //log("error", "2x2 determinant")
+    det = (m.get(0,0) * m.get(1,1) - m.get(0,1) * m.get(1,0))
   } else {
-    let mc = structuredClone(m)
-    for (let i = 0; i <= m[0].length - 1;i++) {
-      det = det + m[0][i] * cofactor(mc, 0, i)
+    //log("error", ">2x>2 determinant")
+    for (let i = 0;i<m.rows;i++) {
+      det = det + m.get(0,i) * cofactor(m, 0, i)
     }
   }
   
@@ -426,40 +522,7 @@ function determinant(m) {
 }
 
 function submatrix(mat, row, col) {
-  // Inputs
-  // m: matrix
-  // row: row to remove
-  // col: column to remove
-  // Calculates and returns submatrix with row r and col c removed
-  
-  let m = structuredClone(mat)
-  
-  //log("error", `Matrix is ${m.length} x ${m[0].length}`)
-  //log("error", m.join("\n"))
-  
-  
-  // Loop over all elements, r * c, remove full column first.
-  for (let r in m) {
-    for (let c in m[r]) {
-      if ( c == col) {
-        //log("error", "Found col to remove: " + c + " in row " + r + " which reads " + m[r][c])
-        m[r].splice(c, 1)
-      }
-    }
-  }
-  
-  // Loop over all rows, remove matching row.
-  for (let r in m) {
-    if ( r == row) {
-      //log("error", "Found row to remove: " + r)
-      m.splice(r, 1)
-    }
-  }
-  
-  //log("error", `Submatrix is ${m.length} x ${m[0].length}`)
-  //log("error", m.join("\n"))
-  
-  return m
+  throw `submatrix(mat, row, col) has been deprecated. Use mat.submatrix(row, col) instead.`
 }
 
 function minor(ma, row, col) {
@@ -471,7 +534,8 @@ function minor(ma, row, col) {
   // Returns the determinant of the submatrix.
   
   //log("error", ma.join("\n"))
-  const sm = submatrix(ma, row, col)
+  const sm = matrix(ma.rows-1, ma.cols-1)
+  sm.putAll(ma.submatrix(row, col))
   const d = determinant(sm)
   return d
   
@@ -493,32 +557,27 @@ function cofactor(ma, r, c) {
   
   const min = minor(ma, r, c)
   
-  // Determine if indexes at row+col (r-1 + c-1) is an odd number and if so, return the negative value of min, else return min.
+  // Determine if indexes at row+col (r + c) is an odd number and if so, return the negative value of min, else return min.
+  //log("error", (r + c) % 2 == 0 ? min : min * -1)
   return (r + c) % 2 == 0 ? min : min * -1
 }
 
-function inverse(ma) {
+function inverse(m) {
   // Mansplained: Calculate the inverse of a matrix
   
-  if (determinant(ma) === 0) {
+  if (determinant(m) === 0) {
     throw "Matrix is not invertible, determinant is 0"
   }
   
-  let m = structuredClone(ma)
   let d = determinant(m)
-  let m2 = structuredClone(ma)
-  //log("error", "m\n" + m.join("\n"))
-  //log("error", "m2\n" + m2.join("\n"))
+  let m2 = matrix(m.rows, m.cols)
+  m2.putAll(m.d)
   
-  // DO NOT use (for x in y) as x and y will be strings.
-  // DO remember to do "length -1".
-  for (let r = 0; r <= m.length-1; r++) {
-    //log("error", m[r])
-    for (let c = 0; c <= m.length-1; c++) {
-      //log("error", c)
+  for (let r=0;r<m.rows;r++) {
+    for (let c=0;c<m.cols;c++) {
       const cof = cofactor(m, r, c)
       //log("error", "Cofactor: " + cof + ", c: " + c + " r: " + r)
-      m2[c][r] = cof / d
+      m2.put(c, r, cof / d)
       //log("error", "New value: " + m2[c][r])
     }
   }
@@ -527,25 +586,13 @@ function inverse(ma) {
   
 }
 
-function idmatrix() {
-  // Return an id_matrix
-  const m = matrix(4, 4)
-  m[0][0] = 1
-  m[1][1] = 1
-  m[2][2] = 1
-  m[3][3] = 1
-  
-  return m
-  
-}
-
 function translation(x, y, z) {
   // Returns a 4x4 translation matrix applying the x, y and z coordinates for translation.
   
   const t = idmatrix()
-  t[0][3] = x
-  t[1][3] = y
-  t[2][3] = z
+  t.put(0,3,x)
+  t.put(1,3,y)
+  t.put(2,3,z)
   
   return t
 }
@@ -555,10 +602,10 @@ function scale(x, y, z) {
   
   // Could have used an idmatrix here, but we save a few cycles by avoiding to set then overwrite coords.
   const t = matrix(4, 4)
-  t[0][0] = x
-  t[1][1] = y
-  t[2][2] = z
-  t[3][3] = 1
+  t.put(0,0,x)
+  t.put(1,1,y)
+  t.put(2,2,z)
+  t.put(3,3,1)
   
   return t
 }
@@ -570,22 +617,15 @@ function rotation_x(rad) {
   const sr = Math.sin(rad)
   const t = idmatrix()
 
-  t[1][1] = cr
-  t[1][2] = -sr
-  t[2][1] = sr
-  t[2][2] = cr
+  t.put(1,1,cr)
+  t.put(1,2,-sr)
+  t.put(2,1,sr)
+  t.put(2,2,cr)
   
   return t
 }
 
-function angle(v) {
-  // The angle function converts between degrees and radians and vice versa.
-  
-  return Object.freeze({
-    rad: function() { return (v * (Math.PI/180))},
-    deg: function() { return (v * (180/Math.PI))}
-  })
-}
+
 
 function rotation_y(rad) {
   // Takes an angle in radians and returns a rotation matrix for the y-axis
@@ -594,10 +634,10 @@ function rotation_y(rad) {
   const sr = Math.sin(rad)
   const t = idmatrix()
 
-  t[0][0] = cr
-  t[0][2] = sr
-  t[2][0] = -sr
-  t[2][2] = cr
+  t.put(0,0,cr)
+  t.put(0,2,sr)
+  t.put(2,0,-sr)
+  t.put(2,2,cr)
   
   return t
 }
@@ -609,10 +649,10 @@ function rotation_z(rad) {
   const sr = Math.sin(rad)
   const t = idmatrix()
 
-  t[0][0] = cr
-  t[0][1] = -sr
-  t[1][0] = sr
-  t[1][1] = cr
+  t.put(0,0,cr)
+  t.put(0,1,-sr)
+  t.put(1,0,sr)
+  t.put(1,1,cr)
   
   return t
 }
@@ -628,16 +668,26 @@ function shearing(xy, xz, yx, yz, zx, zy) {
   // shearing(xy, xz, yx, yz, zx, zy)
   
   const m = idmatrix()
-  m[0][1] = xy
-  m[0][2] = xz
-  m[1][0] = yx
-  m[1][2] = yz
-  m[2][0] = zx
-  m[2][1] = zy
+  m.put(0,1,xy)
+  m.put(0,2,xz)
+  m.put(1,0,yx)
+  m.put(1,2,yz)
+  m.put(2,0,zx)
+  m.put(2,1,zy)
   
   return m
   
 }
+
+function angle(v) {
+  // The angle function converts between degrees and radians and vice versa.
+  
+  return Object.freeze({
+    rad: function() { return (v * (Math.PI/180))},
+    deg: function() { return (v * (180/Math.PI))}
+  })
+}
+
 
 function transformations(trans) {
   // Transformations given as parameters will be applied in the reverse order
@@ -771,3 +821,4 @@ function transform(r, matr) {
   
   return ray(multiply_matrix_by_tuple(matr, r.origin), multiply_matrix_by_tuple(matr, r.direction))
 }
+

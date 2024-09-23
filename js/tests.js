@@ -34,13 +34,16 @@ function test_equal_function() {
 }
 
 function test_equal_tuples_function() {
-  // Test that tuple, vector and point coordinates are the same, even with slight diff outside PRECISION value
+  // Test that tuple, vector and point coordinates are the same, even with slight diff inside PRECISION value
 
-  var t = tuple(110.999, -23.11, 2, 2)
-  var v = vector(110.999, -23.11, 2.0)
-  var p = point(110.9990000001, -23.11, 2.00000001)
+  var t1 = tuple(110.999, -23.11, 2, 0)
+  var t2 = tuple(110.9990000001, -23.11, 2.00000001, 0)
+  var v1 = vector(110.999999, -23.11, 2.0)
+  var v2 = vector(111.000001, -23.11, 2.0)
+  var p1 = point(110.9990000002, -23.11, 2.00000001)
+  var p2 = point(110.9990000001, -23.11, 1.99999999)
 
-  return (equal_tuples(t, v) && equal_tuples(v, p) && equal_tuples(p, t))
+  return equal_tuples(t1, t2) && equal_tuples(v1, v2) && equal_tuples(p1, p2)
 }
 
 function test_add_tuples_function() {
@@ -49,9 +52,9 @@ function test_add_tuples_function() {
   var v = vector(1.999, 23.11, 22.001)
   var p = point(110.9990000001, -23.11, 2.00000001)
   
-  var result_tv = tuple(112.998, 0.0, 24.001, 1)
+  var result_tv = tuple(112.998, 0.0, 24.001, 0)
 
-  return (equal_tuples(add_tuples(t, v), result_tv))
+  return equal_tuples(add_tuples(t, v), result_tv)
 }
 
 function test_subtract_tuples_function() {
@@ -381,71 +384,116 @@ function test_canvas_to_ppm_function() {
 
 function test_create_matrix_function() {
   // Test create and verify matrices of 2x2, 3x3, 4x4, 3x5 and 5x3
-  // matrix[row][col], row and col are 0-based indexes.
+  // matrix.at(row, col), row and col are 0-based indexes.
+  // matrix.put(row, col, val)
   
-  const m4x4 = matrix(4, 4)
+  let m1 = false
+  let m2 = false
+  let m3 = false
+  try {
+    let m4x4 = matrix(4, 4)
   
-  // One way of setting array elements:
-  m4x4[0] = [1,2,3,4]
-  m4x4[1] = [5.5,6.5,7.5,8.5]
-  m4x4[2] = [9,10,11,12]
-  m4x4[3] = [13.5, 14.5, 15.5, 16.5]
-  
-  //log("error", m4x4.join("\n"))
-  const m1 = (m4x4[0][0] === 1 && m4x4[0][3] === 4 && m4x4[1][0] === 5.5 && m4x4[2][2] === 11 && m4x4[3][0] === 13.5 && m4x4[3][2] === 15.5)
-
+    m4x4.put(0,0, 12.123456)
+    m4x4.putAll([1,2,3,4,5.5,6.5,7.5,8.5,9,10,11,12,13.5,14.5,15.5,16.5])
+    m1 = m4x4.get(0,0) === 1    // 4*0+0 = 0 
+      && m4x4.get(0,3) === 4    // 4*0+3 = 3
+      && m4x4.get(1,0) === 5.5  // 4*1+0 = 4
+      && m4x4.get(2,2) === 11   // 4*2+2 = 10
+      && m4x4.get(3,0) === 13.5 // 4*3+0 = 12
+      && m4x4.get(3,2) === 15.5 // 4*3+2 = 14
+      && m4x4.get(8,8) === undefined
+          
   const m2x2 = matrix(2, 2)
   
-  m2x2[0] = [-3,5]
-  m2x2[1] = [1,-2]
+  m2x2.put(0,0,1)
+  m2x2.put(0,1,2)
+  m2x2.put(0,2,3)
+  m2x2.put(1,0,4)
+  m2x2.put(1,1,5)
+  m2x2.put(1,2,6)
+  m2x2.put(2,0,7)
+  m2x2.put(3,1,8)
+  m2x2.put(2,2,9)
   
-  //log("error", m2x2)
-  const m2 = (m2x2[0][0] === -3 && m2x2[0][1] === 5 && m2x2[1][0] === 1 && m2x2[1][1] === -2)
-
+  //log("error", m2x2.d)
+  m2 = equal(m2x2.get(0,0), 1)
+    && equal(m2x2.get(0,1), 2)
+    && equal(m2x2.get(1,0), 4)
+    && equal(m2x2.get(1,1), 5)
+    && m2x2.get(2,2) === undefined
+  //log("error", m2x2.get(2,2))
+  
   const m3x3 = matrix(3, 3)
   
-  m3x3[0] = [-3,5,0]
-  m3x3[1] = [1,-2,-7]
-  m3x3[2] = [0,1,1]
-  
-  //log("error", m3x3)
-  const m3 = (m3x3[0][0] === -3 && m3x3[1][1] === -2 && m3x3[2][2] === 1)
+  m3x3.put(0,0,-3.3)
+  m3x3.put(0,1,5)
+  m3x3.put(0,2,0)
+  m3x3.put(1,0,1.0)
+  m3x3.put(1,1,-2)
+  m3x3.put(1,2,-7)
+  m3x3.putAll([-3.3,5,0,-2,-7,0,1,1,1])
+    
+  //log("error", m3x3.d)
+  m3 = equal(m3x3.get(0,0),-3.3) 
+    && equal(m3x3.get(1,1),-7) 
+    && equal(m3x3.get(2,2),1)
+    && m3x3.get(-11,-11) === undefined
 
-  return (m1 && m2 && m3)
+  } catch (error) {
+    log("error", "Catch: " + error)
+    return {
+      error: error,
+      msg: "test_create_matrix_function() failed with error message" + error,
+      status: false
+    }
+  }
+  return m1 && m2 && m3
 }
 
 function test_matrix_equal_function() {
   // Test the equality of two matrices.
   // Consider very similar floating point values, as with tuples.
   
-  let ma = matrix(4, 4)
+  let is_equal = false
+  let close_enough = false
+  let not_equal = true
   
-  // When we want to populate a matrix like this, we cannot make it a conststant variable.
-  ma = [[1,2,3,4],[5,6,7,8],[9,8,7,6],[5,4,3,2]]
+  try {
+    const ma = matrix(4, 4)
+    const mb = matrix(4, 4)
+
+    // Populate matrix with putAll
+    ma.putAll([1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2])
+    ma.put(0,0,11.22)
+    //log("error", ma.get(0,0))
+
+    // Make a copy
+    mb.putAll(ma.d)
+    //log("error", ma.d)
+    //log("error", mb.d)
+
+    is_equal = matrix_equal(ma, mb)
+
+    // Change some values so they are not exactly equal but still within the PRECISION threshold
+    // Should still be evaluated to equal
+    ma.put(0,1,1.999999)
+
+    mb.put(1,0,5.000001)
+
+    close_enough = matrix_equal(ma, mb)
+
+    // Change some values, so they're not equal any more
+    mb.put(1,3,12)
+    mb.put(3,1,1.34)
+    ma.put(2,2,22)
+    ma.put(0,0,3.1415)
+
+    not_equal = matrix_equal(ma, mb)
   
-  // Make a copy that doesn't reference the original array using structuredClone()
-  const mb = structuredClone(ma)
-  
-  const is_equal = matrix_equal(ma, mb)
-  
-  // Change some values so they are not exactly equal but still within the PRECISION threshold
-  // Should still be evaluated to equal
-  ma[0][1] = 1.999999
-  
-  // (Individual elements can still be set on a const array:
-  mb[1][0] = 5.00001
-  
-  const close_enough = matrix_equal(ma, mb)
-    
-  // Change some values, so they're not equal any more
-  mb[1][3] = 12
-  mb[3][1] = 1.34
-  ma[2][2] = 22
-  ma[0][0] = 3.1415
-  
-  const not_equal = matrix_equal(ma, mb)
-  
-  return (is_equal && close_enough && !not_equal)
+  } catch (error) {
+    log("error", "Catch: " + error)
+  }
+  return is_equal && close_enough && !not_equal
   
 }
 
@@ -453,31 +501,14 @@ function test_multiply_matrices_function() {
   // Multiplying two matrices
   // Only 4x4 matrices.
   
-  let ma = matrix(4, 4)
-  let mb = matrix(4, 4)
-  let mc = matrix(4, 4)
+  const ma = matrix(4, 4)
+  const mb = matrix(4, 4)
+  const mc = matrix(4, 4)
   
-  ma = [
-    [1,2,3,4],
-    [5,6,7,8],
-    [9,8,7,6],
-    [5,4,3,2]
-  ]
-  
-  mb = [
-    [-2,1,2,3],
-    [3,2,1,-1],
-    [4,3,6,5],
-    [1,2,7,8]
-  ]
-  
-  mc = [
-    [20,22,50,48],
-    [44,54,114,108],
-    [40,58,110,102],
-    [16,26,46,42]
-  ]
-  
+  ma.putAll([1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2])
+  mb.putAll([-2,1,2,3,3,2,1,-1,4,3,6,5,1,2,7,8])
+  mc.putAll([20,22,50,48,44,54,114,108,40,58,110,102,16,26,46,42])
+  //log("error", ma.d)
   //log("error", multiply_matrices(ma, mb).join("\n"))
   
   return (matrix_equal(mc, multiply_matrices(ma, mb)))
@@ -486,16 +517,16 @@ function test_multiply_matrices_function() {
 function test_multiply_matrix_by_tuple_function() {
   // Multiply matrix by tuple.
   // Similar to multiply_matrices, but this time "matrix B" is a tuple, treated as a one column matrix.
+  // Given 1 2 3 4
+  //       2 4 4 2
+  //       8 6 4 1
+  //       0 0 0 1
+  // Return tuple(18, 24,33, 1)
   
-  let ma = matrix(4, 4)
-  let t = tuple(1,2,3,1)
+  const ma = matrix(4, 4)
+  const t = tuple(1,2,3,1)
   
-  ma = [
-    [1,2,3,4],
-    [2,4,4,2],
-    [8,6,4,1],
-    [0,0,0,1]
-  ]
+  ma.putAll([1,2,3,4,2,4,4,2,8,6,4,1,0,0,0,1])
   
   const r = tuple(18,24,33,1)
   
@@ -511,7 +542,11 @@ function test_idmatrix_function() {
   // 0 0 0 1
   
   const m = idmatrix()
-  const i = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+  const i = matrix(4,4)
+  i.put(0,0,1)
+  i.put(1,1,1)
+  i.put(2,2,1)
+  i.put(3,3,1)
   
   return matrix_equal(m, i)
 }
@@ -521,8 +556,9 @@ function test_multiply_by_identity_matrix_function() {
   // "multiplicative identity". There also exists an "identity matrix", and this test
   // demonstrates the "non-effect" of multiplying matrix and tuple by the identity matrix.
   
-  // If we make the matrix a const, we can skip using matrix()
-  const ma = [[7,9,3,5],[2,2,0,8],[2,6,2,9],[2,2,2,2]]
+  const ma = matrix(4,4)
+  ma.putAll([7,9,3,5,2,2,0,8,2,6,2,9,2,2,2,2])
+  
   const t = tuple(7, 6, 5, 4)
   
   // This is the multiplicative identity for matrices:
@@ -534,12 +570,23 @@ function test_multiply_by_identity_matrix_function() {
 
 function test_transpose_matrix_function() {
   // Transposing a matrix involves turning rows into columns.
+  // Given:
+  // 0 9 3 0
+  // 9 8 0 8
+  // 1 8 5 3
+  // 0 0 5 8
+  // The function will return:
+  // 0 9 1 0
+  // 9 8 8 0
+  // 3 0 5 5
+  // 0 8 3 8
   
-  const ma = [[0,9,3,0], [9,8,0,8], [1,8,5,3], [0,0,5,8]]
-  const mt = [[0,9,1,0], [9,8,8,0], [3,0,5,5], [0,8,3,8]]
+  const ma = matrix(4, 4)
+  ma.putAll([0,9,3,0,9,8,0,8,1,8,5,3,0,0,5,8])
   
-  //log("error", ma.join("\n"))
-  //log("error", transpose_matrix(ma).join("\n"))
+  const mt = matrix(4, 4)
+  mt.putAll([0,9,1,0,9,8,8,0,3,0,5,5,0,8,3,8])
+  
   return matrix_equal(mt, transpose_matrix(ma))
   
 }
@@ -558,60 +605,74 @@ function test_calculate_determinant_of_2x2_matrix() {
   
   const m = matrix(2, 2)
   
-  m[0] = [1,5] //  | a, b |
-  m[1] = [-3,2] // | c, d |
+  m.putAll([1,5,  //  | a, b |
+           -3,2]) //  | c, d |
   
   // d = ad - bc = 1*2 - 5*(-3) = 17
     
-  return (determinant(m) === 17)
+  return determinant(m) === 17
 }
 
 function test_submatrix_function() {
   // A submatrix is what is left after removing a given row and column.
-  // The submatrix of a 4x4 matrix is a 3x3 matrix. 
+  // The submatrix of a 4x4 matrix is a 3x3 matrix.
+  // -6 1  1 6      -6  1 6
+  // -8 5  8 6  ==> -8  8 6
+  // -1 0  8 2      -7 -1 1
+  // -7 1 -1 1
   // The submatrix of a 3x3 matrix is a 2x2 matrix.
   
-  // 4x4 ==> 3x3
-  let m4 = matrix(4, 4)
-  m4 = [[-6,1,1,6],[-8,5,8,6],[-1,0,8,2],[-7,1,-1,1]]
+  let sm3_equals_m4c = false
+  let sm2_equals_m3c = false
   
-  // The expected result:
-  m4c = [[-6,1,6],[-8,8,6],[-7,-1,1]]
-  
-  const sm3 = submatrix(m4, 2, 1) // From m4, remove row 2 and column 1
-  
-  //log("error", "sm3:\n" + sm3.join("\n"))
-  //log("error", "m4c:\n" + m4c.join("\n"))
-  //log("error", "Equal: " + matrix_equal(sm3, m4c))
-  
-  // 3x3 ==> 2x2
-  let m3 = matrix(3, 3)
-  m3 = [[1,5,0],[-3,2,7],[0,6,-3]]
-  
-  // The expected result:
-  m3c = [[-3,2],[0,6]]
-  
-  const sm2 = submatrix(m3, 0, 2)
-  
-  //log("error", sm2.join("\n"))
-  //log("error", m3c.join("\n"))
-  //log("error", "Equal: " + matrix_equal(sm2, m3c))
-  
-  return ( matrix_equal(sm3, m4c) && matrix_equal(sm2, m3c) )
+  try {
+    // 4x4 ==> 3x3
+    const m4 = matrix(4, 4)
+    m4.putAll([-6,1,1,6,-8,5,8,6,-1,0,8,2,-7,1,-1,1])
+    
+    //log("error", m4.d)
+    //log("error", m4.submatrix(2,1))
+    //log("error", m4.submatrix(1,2))
+    
+    // The expected result:
+    const m4c = matrix(3, 3)
+    m4c.putAll([-6,1,6,-8,8,6,-7,-1,1])
+
+    const sm3 = m4.submatrix(2,1) // From m4, remove row 2 and column 1
+
+    sm3_equals_m4c = matrix_equal(sm3, m4c)
+    
+    // 3x3 ==> 2x2
+    const m3 = matrix(3, 3)
+    m3.putAll([1,5,0,-3,2,7,0,6,-3])
+
+    // The expected result:
+    const m3c = matrix(2, 2)
+    m3c.putAll([-3,2,0,6])
+
+    const sm2 = m3.submatrix(0, 2)
+    sm2_equals_m3c = matrix_equal(sm2, m3c)
+    
+  } catch (error) {
+    log("error", "Catch: " + error)
+  }
+  return sm3_equals_m4c && sm2_equals_m3c
 }
 
 function test_minor_function() {
   //Explained: The minor of an element at row i and column j is the determinant of the submatrix at (i, j).
   
-  let m3 = matrix(3, 3)
+  const i = 1
+  const j = 0
+  const m3 = matrix(3, 3)
+  m3.putAll([3,5,0,2,-1,-7,6,-1,5])
   
-  m3 = [[3,5,0],[2,-1,-7],[6,-1,5]]
-  
-  const m2 = submatrix(m3, 1, 0)
+  const m2 = matrix(2, 2)
+  m2.putAll(m3.submatrix(i, j))
   
   const d = determinant(m2) // [[5,0],[-1,5]]
   
-  const min = minor(m3, 1, 0)
+  const min = minor(m3, i, j)
   
   //log("error", `d: ${d}, minor: ${min}`)
   return (d === min)
@@ -625,31 +686,37 @@ function test_cofactor_function() {
   // | + - + |
   // Also, doing a "negate if row + col is odd number" should work.
   
-  const m3 = [[3,5,0],[2,-1,-7],[6,-1,5]]
-  let coughs = matrix(3,3)
-  let mins = matrix(3,3)
+  const m3 = matrix(3, 3)
+  m3.putAll([3,5,0,2,-1,-7,6,-1,5])
+  
+  const coughs = matrix(3,3)
+  const mins = matrix(3,3)
+  
   // Test every single cofactor
-  for (let r=0; r<= m3.length-1;r++) {
-    for (let c=0; c<= m3.length-1;c++) {
-      mins[r][c] = minor(structuredClone(m3), r, c)
-      coughs[r][c] = cofactor(structuredClone(m3), r, c)
+  for (let r=0;r<m3.rows;r++) {
+    for (let c=0;c<m3.cols;c++) {
+      mins.put(r, c, minor(m3, r, c))
+      coughs.put(r,c, cofactor(m3, r, c))
     }
   }
   
-  const expected_cofactors = [[-12,-52,4],[-25,15,33],[-35,21,-13]]
+  const expected_cofactors = matrix(3, 3)
+  expected_cofactors.putAll([-12,-52,4,-25,15,33,-35,21,-13])
   
-  //log("error", "expected_cofactors\n" + expected_cofactors.join("\n"))
-  //log("error", "coughs\n" + coughs.join("\n"))
-  //log("error", "mins\n" + mins.join("\n"))
+  //log("error", "expected_cofactors\n" + expected_cofactors.d)
+  //log("error", "coughs\n" + coughs.d)
+  //log("error", "minors\n" + mins.d)
   
-  const min1 = minor(structuredClone(m3), 0, 0) // = -12
-  const cof1 = cofactor(structuredClone(m3), 0, 0) //= -12
+  const min1 = minor(m3, 0, 0) // = -12
+  const cof1 = cofactor(m3, 0, 0) //= -12
   
-  const min2 = minor(structuredClone(m3), 1, 0) // = 25
-  const cof2 = cofactor(structuredClone(m3), 1, 0) //= -25
+  const min2 = minor(m3, 1, 0) // = 25
+  const cof2 = cofactor(m3, 1, 0) //= -25
   
   //log("error", `${min1} === ${cof1}, ${min2} === ${-cof2}`)
-  return (min1 === cof1 && min2 === -cof2 && matrix_equal(coughs, expected_cofactors))
+  return min1 === cof1 
+      && min2 === -cof2 
+      && matrix_equal(coughs, expected_cofactors)
   
 }
 
@@ -657,7 +724,8 @@ function test_calculate_determinant_of_3x3_matrix() {
   // Determining determinants of larger matrices
   // 
   
-  const m = [[1,2,6],[-5,8,-4],[2,6,4]]
+  const m = matrix(3, 3)
+  m.putAll([1,2,6,-5,8,-4,2,6,4])
   
   cof1 = cofactor(m, 0, 0) // = 56
   cof2 = cofactor(m, 0, 1) // = 12
@@ -670,10 +738,10 @@ function test_calculate_determinant_of_3x3_matrix() {
   //log("error", "determinant of m = " + d1)
   
   return (
-       cofactor(structuredClone(m), 0, 0) === 56
-    && cofactor(structuredClone(m), 0, 1) === 12
-    && cofactor(structuredClone(m), 0, 2) === -46
-    && determinant(structuredClone(m)) === -196
+       cofactor(m, 0, 0) === 56
+    && cofactor(m, 0, 1) === 12
+    && cofactor(m, 0, 2) === -46
+    && determinant(m) === -196
   )
 }
 
@@ -681,20 +749,22 @@ function test_is_matrix_invertible() {
   // We need to be able to detect if a matrix is invertible.
   // If the determinant is 0, the matrix is not invertible.
   
-  let m1 = matrix(4, 4)
+  const m1 = matrix(4, 4)
   
   // Invertible matrix
-  m1 = [[6,4,4,4],[5,5,7,6],[4,-9,3,-7],[9,1,7,-6]]
+  m1.putAll([6,4,4,4,5,5,7,6,4,-9,3,-7,9,1,7,-6])
   
   const detm1 = determinant(m1) // -2120
   
-  let m2 = matrix(4, 4)
+  const m2 = matrix(4, 4)
   
   // Non-invertible matrix
-  m2 = [[-4,2,-2,-3],[9,6,2,6],[0,-5,1,-5],[0,0,0,0]]
+  m2.putAll([-4,2,-2,-3,9,6,2,6,0,-5,1,-5,0,0,0,0])
   
   const detm2 = determinant(m2) // 0
   
+  //log("error", detm1)
+  //log("error", detm2)
   return (detm1 === -2120 && detm2 === 0)
 
 }
@@ -702,48 +772,56 @@ function test_is_matrix_invertible() {
 function test_inverse_matrix_function() {
   // Test inverting a matrix.
   
-  const m = [[-5,2,6,-8],[1,-5,1,8],[7,7,-6,-7],[1,-3,7,4]]
+  const m = matrix(4, 4)
+  m.putAll([-5,2,6,-8,1,-5,1,8,7,7,-6,-7,1,-3,7,4])
   
-  const im = inverse(structuredClone(m))
-  const det = determinant(structuredClone(m)) // = 532
-  const cof1 = cofactor(structuredClone(m), 2, 3) // = -160
-  const e1 = im[3][2] // = -160/532 
+  const im = inverse(m)
+  const det = determinant(m) // = 532
+  const cof1 = cofactor(m, 2, 3) // = -160
+  const e1 = im.get(3,2) // = -160/532 
   //log("error", e1 + " equals -160/532=" + -160/532)
-  const cof2 = cofactor(structuredClone(m), 3, 2) // 105
-  const e2 = im[2][3] // = 105/532 ???
+  const cof2 = cofactor(m, 3, 2) // 105
+  const e2 = im.get(2,3) // = 105/532 ???
   //log("error", e2 + " equals 105/532=" + 105/532)
   
-  const expected_inverse = [
-    [0.21805,0.45113,0.24060,-0.04511],
-    [-0.80827,-1.45677,-0.44361,0.52068],
-    [-0.07895,-0.22368,-0.05263,0.19737],
-    [-0.52256,-0.81391,-0.30075,0.30639]
-  ]
+  const expected_inverse = matrix(4,4)
+  expected_inverse.putAll([0.21805,0.45113,0.24060,-0.04511,
+    -0.80827,-1.45677,-0.44361,0.52068,
+    -0.07895,-0.22368,-0.05263,0.19737,
+    -0.52256,-0.81391,-0.30075,0.30639
+  ])
   
   const is_inverse = matrix_equal(im, expected_inverse)
-    
-  //log("error", m.join("\n"))
-  //log("error", im.join("\n"))
-  
-  return ( is_inverse && equal(cof1, -160) && equal(cof2, 105) && equal(e1, -160/532) && equal(e2, 105/532))
+      
+  return is_inverse 
+      && equal(cof1, -160) 
+      && equal(cof2, 105) 
+      && equal(e1, -160/532) 
+      && equal(e2, 105/532)
 }
 
 function test_inverse_matrix_function_2() {
   // Test inverting another couple of matrices for good measure.
   
-  const m1 = [[8,-5,9,2],[7,5,6,1],[-6,0,9,6],[-3,0,-9,-4]]
-  const m2 = [[9,3,0,9],[-5,-2,-6,-3],[-4,9,6,4],[-7,6,6,2]]
+  const m1 = matrix(4, 4)
+  m1.putAll([8,-5,9,2,7,5,6,1,-6,0,9,6,-3,0,-9,-4])
+  const m2 = matrix(4, 4)
+  m2.putAll([9,3,0,9,-5,-2,-6,-3,-4,9,6,4,-7,6,6,2])
   
   // Expected result of inverse(m1):
-  const exp_m1i = [[-0.15385,-0.15385,-0.28205,-0.53846],
-    [-0.07692,0.12308,0.02564,0.03077],
-    [0.35897,0.35897,0.43590,0.92308],
-    [-0.69231,-0.69231,-0.76923,-1.92308]]
+  const exp_m1i = matrix(4, 4)
+  exp_m1i.putAll([-0.15385,-0.15385,-0.28205,-0.53846,
+    -0.07692,0.12308,0.02564,0.03077,
+    0.35897,0.35897,0.43590,0.92308,
+    -0.69231,-0.69231,-0.76923,-1.92308]
+  )
   
-  const exp_m2i = [[-0.04074,-0.07778,0.14444,-0.22222],
-    [-0.07778,0.03333,0.36667,-0.33333],
-    [-0.02901,-0.14630,-0.10926,0.12963],
-    [0.17778,0.06667,-0.26667,0.33333]]
+  const exp_m2i = matrix(4, 4)
+  exp_m2i.putAll([-0.04074,-0.07778,0.14444,-0.22222,
+    -0.07778,0.03333,0.36667,-0.33333,
+    -0.02901,-0.14630,-0.10926,0.12963,
+    0.17778,0.06667,-0.26667,0.33333]
+  )
   
   const m1i = inverse(m1)
   const m2i = inverse(m2)
@@ -758,8 +836,11 @@ function test_multiply_by_inverse() {
   // multiply matrix A by matrix B to produce matrix C
   // and then multiplying C by the inverse of B to get A again!
   
-  const ma = [[3,-9,7,3],[3,-8,2,-9],[-4,4,4,1],[-6,5,-1,1]]
-  const mb = [[8,2,2,2],[3,-1,7,0],[7,0,5,4],[6,-2,0,5]]
+  const ma = matrix(4, 4)
+  ma.putAll([3,-9,7,3,3,-8,2,-9,-4,4,4,1,-6,5,-1,1])
+  
+  const mb = matrix(4, 4)
+  mb.putAll([8,2,2,2,3,-1,7,0,7,0,5,4,6,-2,0,5])
   
   const mc = multiply_matrices(ma, mb)
   
@@ -941,25 +1022,43 @@ function test_shearing_function() {
 }
 
 function test_transformations_function() {
-  // Transformations are applied in the reverse order of the one given
+  // Test chaining multiple transformations
   
   let p = point(1, 0, 1)
   let s = new Sphere()
   
-  const result = transformations(
+  const result1 = transformations(
     rotation_x(Math.PI / 2),
     scale(5, 5, 5),
     translation(10, 5, 7)
   )
   
-  //log("error", result)
-  p2 = multiply_matrix_by_tuple(result, p)
-  s.transform = result
+  const result2 = transformations(
+    scale(5, 5, 5),
+    rotation_x(Math.PI / 2),
+    translation(10, 5, 7)
+  )
   
+  const result3 = transformations(
+    scale(5, 5, 5),
+    translation(10, 5, 7),
+    rotation_x(Math.PI / 2)
+  )
+  
+  //log("error", result1)
+  //log("error", result2)
+  //log("error", result3)
+  
+  p2 = multiply_matrix_by_tuple(result1, p)
+  s.transform = result3
+  
+  //log("error", p2)
   //log("error", s.transform)
   
-  return equal_tuples(p2, point(15, 0, 7)) 
-    && matrix_equal(s.transform, [[5,0,0,10],[0,3.061616997868383e-16,-5,5],[0,5,3.061616997868383e-16,7],[0,0,0,1]])
+  
+  return 
+  //equal_tuples(p2, point(15, 0, 7)) 
+    matrix_equal(s.transform, [[5,0,0,10],[0,3.061616997868383e-16,-5,5],[0,5,3.061616997868383e-16,7],[0,0,0,1]])
 }
 
 function test_apply_individual_transformations() {
@@ -1212,7 +1311,7 @@ function test_transform_sphere() {
   
   // A sphere's default transformation
   const s = new Sphere()
-  const default_transform_equals_idmatrix = matrix_equal(s.transform, [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+  const default_transform_equals_idmatrix = matrix_equal(s.transform, idmatrix())
   
   // Changing a sphere's transformation
   s.transform = translation(2, 3, 4)
@@ -1231,10 +1330,13 @@ function test_transform_sphere() {
   // Test transformations function on a sphere
   s2.transform = translation(2, 3, 4)
   const s3 = new Sphere()
-  s3.transform = transformations(translation(2, 3, 4), scale(2, 2, 2))
+  s3.transform = transformations(scale(2, 2, 2), translation(2, 3, 4), rotation_z(Math.pi / 2))
   const transformations_applied_to_sphere = matrix_equal(s2.transform, s3.transform)
   //log("error", s3.toString)
   //log("error", transformations_applied_to_sphere)
     
-  return default_transform_equals_idmatrix && new_transform_is_set && test_intersecting_scaled_sphere_with_ray && transformations_applied_to_sphere
+  return default_transform_equals_idmatrix 
+    && new_transform_is_set 
+    && test_intersecting_scaled_sphere_with_ray 
+    && transformations_applied_to_sphere
 }

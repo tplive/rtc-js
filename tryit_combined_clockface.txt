@@ -33,10 +33,34 @@ window.onerror = function(errorMsg, url, lineNumber){
 // *** FUNCTION DEFINITIONS
 
 
-// *** CONSTANTS
-
-const PRECISION = 5
-const EPSILON = 1.0*10**(-PRECISION)
+// *** CONFIGURATION OBJECT
+const C = function() {
+  // The configuration object holds all "global" objects, arrays and configuration values in one place.
+  // Should be initialized on startup.
+  
+  const _precision = 5
+  const _epsilon = 1.0*10**(-_precision)
+  
+  var _counter = 0
+  
+  var _intersections = []
+  var config = {
+    a:1,
+    b:2
+  }
+  function init(){
+  }
+  function scroll(){
+  }
+  function highlight(){
+  }
+  return {
+    PRECISION:_precision,
+    EPSILON:_epsilon,
+    intersections:_intersections,
+    unique_id: function unique_id() {return _counter++}
+  }
+}();
 
 // *** HELPER FUNCTIONS
 
@@ -49,10 +73,10 @@ function log(domId, msg) {
   element.appendChild(para);
 }
 
-function downloadPPMfile(ppm_data, name) {
-  // Download PPM file. Does NOT check that input data is valid PPM.
+function downloadPPMfile(can, name) {
+  // Download PPM file. Takes canvas and file firstname as input.
   
-  var dataStr = "data:text/ppm;charset=utf-8," + encodeURIComponent(ppm_data)
+  var dataStr = "data:text/ppm;charset=utf-8," + encodeURIComponent(canvas_to_ppm(can))
   var downloadAnchorNode = document.createElement("a")
   downloadAnchorNode.innerHTML = "Click here to download file " + name + ".ppm"
   downloadAnchorNode.setAttribute("href",     dataStr)
@@ -67,7 +91,7 @@ function equal(a, b) {
   // By subtract a from b and comparing the result to a small constant EPSILON, we
   // can call them equal.
   
-  return (Math.abs(a - b) < EPSILON.toFixed(PRECISION))
+  return (Math.abs(a - b) < C.EPSILON.toFixed(C.PRECISION))
 }
 
 function equal_tuples(a, b) {
@@ -94,9 +118,9 @@ function negate_tuple(t) {
   return tuple(t.x * -1, t.y * -1, t.z * -1, t.w * -1)
 }
 
-function multiply_vector(s, t) {
+function multiply_vector(v, s) {
   // Multiply each component of the tuple t by the scalar value s
-  return tuple(t.x * s, t.y * s, t.z * s, t.w * s)
+  return tuple(v.x * s, v.y * s, v.z * s, v.w * s)
 }
 
 function divide_vector(s, t) {
@@ -213,6 +237,7 @@ function html_canvas(parent, width, height) {
 
 
 
+
 function canvas(w, h) {
   // Create a canvas abstraction object. It has a width and a height and a pixel array.
   // Each pixel is defined by three values, r, g, b.
@@ -222,7 +247,12 @@ function canvas(w, h) {
   // So 0 < x < w - 1, and 0 < y < h - 1
   
   const b = 3 // Bits per pixel. rgb = 3. rgba = 4.
-  const d = Array(w * h * b).fill(0)
+  
+  //const d = Array(w * h * b).fill(0)
+  
+  // Typed Array
+  const d = new Uint8ClampedArray(w * h * b).fill(0)
+  
   //log("error", `w * h * b = ${w} * ${h} * ${b} = ${d.length}`)
   
   return {
@@ -241,11 +271,11 @@ function canvas(w, h) {
       return color(this.data[i], this.data[i+1], this.data[i+2])
     },
     write_pixel: function(x, y, color) {
-    // Make sure pixels are within the canvas.
+    // Ignore pixels outside the canvas.
       if (x < 0 || y < 0 || x > w - 1 || y > h - 1) {
-        throw `Coordinate values out of bounds: x, y: ${x}, ${y}`
+        return
       }
-      const i = (w * y + x) * b
+      const i = (w * Math.round(y) + Math.round(x)) * b
       // For debugging
       //log("error", `w: ${w} h: ${h} x: ${x} y: ${y} i: ${i} color: ${color.toString()} `)
       
@@ -419,12 +449,11 @@ function determinant(m) {
   
   let det = 0
   
-  let mc = structuredClone(m)
-  
   if (m.length == 2) {
     det = (m[0][0] * m[1][1] - m[0][1] * m[1][0])
   } else {
-    for (let i =0; i <= m[0].length -1;i++) {
+    let mc = structuredClone(m)
+    for (let i = 0; i <= m[0].length - 1;i++) {
       det = det + m[0][i] * cofactor(mc, 0, i)
     }
   }
@@ -519,6 +548,7 @@ function inverse(ma) {
   //log("error", "m2\n" + m2.join("\n"))
   
   // DO NOT use (for x in y) as x and y will be strings.
+  // DO remember to do "length -1".
   for (let r = 0; r <= m.length-1; r++) {
     //log("error", m[r])
     for (let c = 0; c <= m.length-1; c++) {
@@ -646,35 +676,139 @@ function shearing(xy, xz, yx, yz, zx, zy) {
   
 }
 
-function transform() {
-  // Transform is a function that makes it possible to chain 
-  // translation, scaling, rotation and shearing into a single operation.
+function transformations(trans) {
+  // Transformations given as parameters will be applied in the reverse order
+  // We can apply translation, scaling, rotation and shearing into a single operation.
   
-  this.m = idmatrix()
+  let m = idmatrix()
+  //log("error", "Start: " + m)
+
   
-  this.rotate_x = function(rad) {
-    log("error", "This is rotate_x: " + rad)
-    this.m = multiply_matrices(this.m, rotation_x(rad))
-    return this
-  }
-  
-  this.rotate_y = function(rad) {
-    log("error", "This is rotate_y: " + rad)
-    this.m = multiply_matrices(this.m, rotation_y(rad))
-    return this
-  }
-  this.rotate_z = function(rad) {
-    log("error", "This is rotate_z: " + rad)
-    this.m = multiply_matrices(this.m, rotation_z(rad))
-    return this
-  }
-      
-   if (this instanceof transform) {
-        return this.transform
-    } else {
-        return new transform()
+  for (let i=0;i < arguments.length;i++) {
+    
+    // Unless argument is a point or vector, multiply by m
+    if (!(arguments[i].w === 1 || arguments[i].w === 0)) {
+      //log("error", `Applying ${i}: ${arguments[i]}`)
+      m = multiply_matrices(arguments[i], m)
+      //log("error", "Result: " + m)
     }
+  }
+  
+  return m
 }
+
+// *** RAY FUNCTIONS
+
+function ray(o, d) {
+  // Return a "ray", consisting of a point called origin and a vector called direction.
+  
+  // Check that o is a point and d is a vector, by checking the w value of each
+  if (!(o.w === 1 && d.w === 0) ) {
+    throw `ray(): Origin must be a point (was ${o.toString()}), and Direction must be a vector (was ${d.toString()})`
+  }
+  
+  return Object.freeze({
+    origin:o,
+    direction:d,
+    toString: function() { return `origin: point(${this.origin}) direction: vector(${this.direction})`}
+  })
+  
+}
+
+function position(ray, t) {
+  // Compute a ray's direction by t to find the total distance traveled
+  return add_tuples(multiply_vector(ray.direction, t), ray.origin)
+}
+
+class Sphere {
+  // The Sphere class represents a sphere object with data. This is the new norm.
+  // Default values are set in the constructor and/or parameters.
+  // Using getters and setters allows direct assignment, such as sphere.transform = translation(1, 2, 3)
+  // Constructor fields are not really private.
+  
+  constructor() {
+    this._id = C.unique_id()
+    this._transform = idmatrix()
+  }
+  
+  get id() {
+    return this._id
+  }
+  
+  get transform() {
+    return this._transform
+  }
+  
+  get toString() {
+    return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform}`
+  }
+  
+  set transform(value) {
+    this._transform = multiply_matrices(this._transform, value) 
+  }
+}
+
+function intersect(s, ra) {
+  // Intersect returns an array of points where a given ray (ra) intersects a given sphere (s)
+  
+  // Vector from sphere's center to the ray origin
+  // Remember: The sphere is centered at the world origin (0, 0, 0)
+  
+  const r = transform(ra, inverse(s.transform)) // Ray passed to intersect should be transformed by the inversed transformation matrix
+
+  const sphere_to_ray = subtract_tuples(r.origin, point(0, 0, 0))
+  const a = dot(r.direction, r.direction)
+  const b = 2 * dot(r.direction, sphere_to_ray)
+  const c = dot(sphere_to_ray, sphere_to_ray) - 1
+  
+  const discriminant = b**2 - 4*a*c
+  
+  // The discriminant is the key - if it's negative, the ray misses the sphere
+  if (discriminant < 0 ) { return [] }
+  
+  // Otherwise, the equation has two solutions, which could be the same, if the
+  // ray intersects at a perfect tangent
+  const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
+  const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
+  
+  return [intersection(t1, s), intersection(t2, s)]
+}
+
+function intersection(t_value, sphere) {
+  // The intersection function encapsulates t value and object
+  
+  return Object.freeze({
+    t:t_value,
+    object:sphere
+  })
+}
+
+function intersections() {
+  // This method takes an arbitrary number of intersection objects as input and
+  // aggregates them in an array
+  let arr = []
+  for (let i=0; i < arguments.length;i++) {
+    arr.push(arguments[i])
+  }
+  return arr
+}
+
+function hit(list_of_intersections) {
+  // This function returns the intersection with the lowest non-negative number from a list of intersections
+  
+  if (!Array.isArray(list_of_intersections)) {return } // There are no intersections, return undefined
+    
+  list_of_intersections = list_of_intersections.filter( item => { if (item.t > 0) {return item}} )
+  
+  return list_of_intersections.sort().reverse()[0]
+}
+
+function transform(r, matr) {
+  // Transform applies a transformation matrix to a ray
+  
+  return ray(multiply_matrix_by_tuple(matr, r.origin), multiply_matrix_by_tuple(matr, r.direction))
+}
+
 </script>
 
 <script>
@@ -691,7 +825,7 @@ const size = 300 // Size of canvas
 const radius = 6/8 * size/2 // Clock face radius
 
 // My canvas
-//const can = canvas(size, size)
+const can = canvas(size, size)
 const c1 = color(1.0, 1.0, 1.0)
 const s = scale_color(c1)
 
@@ -722,16 +856,16 @@ for (let i=0; i < 12; i++) {
 for (let j=0; j < hours.length; j++) {
   p = hours[j]
   log("error", `${j} X, Y: ${p.x}, ${p.y}`)
-  //can.write_pixel(p.x, p.y, s)
+  can.write_pixel(p.x, p.y, s)
   context.fillStyle = `rgb(${s.red}, ${s.green}, ${s.blue}`
   context.fillRect(p.x, p.y, 2, 2)
 }
 
 // How about we create the entire canvas and set the pixels just in time?
-//const ppm = canvas_to_ppm(can)
+const ppm = canvas_to_ppm(can)
 // Show canvas
 //log("error", ppm)
-//downloadPPMfile(ppm, "plot")
+downloadPPMfile(can, "plot")
 
 
 // Performance measurement

@@ -354,12 +354,39 @@ const C = function() {
 
 <p> Jeg ser nå at <code>transformations()</code> funksjonen ikke gjør det den skal. Som den er laget nå returnerer den en tuple, mens det jeg vil, er at den skal returnere en matrise som jeg så kan "apply" på en shape. Som dette: <code>shape.transform = transformations(scale(5, 5, 5), rotation_y(1, 2, 3))</code>. Jeg jobber mer med det og får det til, bortsett fra at når jeg legger til en rotasjon, så blir den NaN i alle felt. TODO.</p>
 
-<p>Angående bakgrunnskjøring... Det finnes en standardisert måte å kjøre JS i bakgrunnen på som kalles <a href="https://www.w3schools.com/js/js_api_web_workers.asp">Web Workers</a>. Implementasjonen er svært enkel, og vil løse problemene jeg har her. Det eneste hinderet er at den ikke støtter å kjøre under <code>file:///</code> protokollen, jeg må ha en lokal HTTP server. Og det finnes jo ikke på DFS, dermed stopper dette opp. En HTTP server følger med installasjoner av Python og Golang. Python sin versjon startes slik: <code>./python.exe -m SimpleHttpServer</code> og server filene fra <code>./</code> på <code>localhost:8080</code>. Dette er uproblematisk sikkerhetsmessig, men som nevnt ikke tilgjengelig på DFS. Jeg får lov å jobbe videre på det på skole-pcen, men a) den er uten nett og b) bare tilgjengelig på dagtid... Foreløpig framdrift lagres her: <code>./web_worker_raycast_chapter5.html</code> og <code>./web_worker_raycast_chapter5.js</code></p>
+<h3>&#9203; Bakgrunnsdigresjonen</h3>
+<p>Angående bakgrunnskjøring... Det finnes en standardisert måte å kjøre JS i bakgrunnen på som kalles <a href="https://www.w3schools.com/js/js_api_web_workers.asp">Web Workers</a>. Implementasjonen er svært enkel, og vil løse problemene jeg har med at nettleseren henger under kjøring. Det "eneste" hinderet er at den ikke støtter å kjøre under <code>file:///</code> protokollen, jeg må ha en lokal HTTP server. Og det finnes jo ikke på DFS, dermed stopper dette opp.</p>
+
+<p>En HTTP server følger med når man installerer av Python og Golang. Python sin versjon startes slik: <code>./python -m http.server 8000</code> og server dermed filene fra der du står <code>./</code> på <code>localhost:8000</code>. Dette er sikkerhetsmessig ubetenkelig, men som nevnt ikke tilgjengelig på DFS.</p> 
+<p>Jeg får lov å jobbe videre på dette på skole-pcen, men a) den er uten nett og b) bare tilgjengelig på dagtid... Foreløpig framdrift lagres her: <code>./web_worker_raycast_chapter5.html</code> og <code>./web_worker_raycast_chapter5.js</code></p>
+<p>Framdrift pr 8. mai 2024: Jeg har fått i gang web worker. Jeg kan kjøre rendering som bakgrunnsprosess, og den rapporterer tilbake hvert pixel som så tegnes i canvas i browseren. Meget stilig, og akkurat som jeg ønsket meg! Dette skjer selvsagt ikke uten plunder og heft. Det er sånn med web workers at de kjører i en separat, ekstern JS fil, og sånn må det visst være, trolig at sikkerhetsmessige årsaker. En JS-fil kan ikke uten videre inkludere funksjoner fra en annen JS-fil. Det ble det skikk på i ES6, den store JS-overhalingen fra 2015. Der kan man bruke import / eksport av funksjoner, men det krever en del omstrukturering for meg. Blant annet må hver enkelt funksjon som skal kunne eksporteres prefikses med "export": </p>
+<pre>
+export function doStuff() {
+...
+}
+</pre>
+<p>og så henter man inn den spesifikke funksjonen fra en JS modul (type="module") på følgende vis:</p>
+<pre>
+&lt;script type="module"&gt;
+import { doStuff } from "./js/functions.js"
+</pre>
+
+<p>Vel og bra, men dette kan jeg jo ikke gjøre i W3schools sin editor. Ei heller kan jeg sette "export" foran alle funksjoner, og likevel bruke dem som "ikke-eksporterte" funksjoner. Og hva gjør jeg fra det tidligere nevnte "web-worker.js" skriptet, som ikke er en HTML-fil og ikke har en script-tag som kan settes til type=module? Fortsatt uavklart.</p>
+
+<p>Men det jeg kan gjøre, er jo å jobbe videre på DFS, uten bakgrunnsrendering, med ny funksjonalitet. Det er da ikke sånn at jeg mangler utfordringer...&#128565; Så jeg tenker vi sier at vi kommer tilbake til dette på et senere tidspunkt, feks når jeg har mer normal tilgang til PC og Internett.</p>
+
+<h3>&#127767; Chapter 6, Light and Shading</h3>
 <p></p>
 <p></p>
 <p></p>
 <p></p>
 <p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+
+
 <p>TODO:
 <ul>
   <li>Fikse det som er galt med transformations() når jeg legger på en rotation.</li>
