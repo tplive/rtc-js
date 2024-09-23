@@ -62,6 +62,7 @@ window.onerror = function(errorMsg, url, lineNumber){
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
+<script src="./js/patterns.js"></script>
 <script src="./js/shapes.js"></script>
 <script src="./js/functions.js"></script>
 <script src="./js/tests.js"></script>
@@ -205,6 +206,9 @@ runTest("shape_list", test_plane_function)
 runTest("pattern_list", test_stripe_pattern_function)
 runTest("pattern_list", test_stripe_at_function)
 runTest("pattern_list", test_lighting_has_stripe_pattern)
+runTest("pattern_list", test_stripe_at_object_function)
+runTest("pattern_list", test_pattern_has_inherited_from_abstract_class)
+
 
 
 const end = performance.now()

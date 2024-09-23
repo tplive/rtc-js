@@ -1588,6 +1588,7 @@ function test_sphere_has_material() {
 function test_lighting_function() {
   // Test that the lighting() function can shade objects correctly
   
+  const s = sphere()
   const m = material()
   const position = point(0, 0, 0)
   const in_shadow = true
@@ -1596,37 +1597,37 @@ function test_lighting_function() {
   const eyev1    = vector(0, 0, -1)
   const normalv1 = vector(0, 0, -1)
   const light1   = point_light(point(0, 0, -10), color(1, 1, 1))
-  const r1       = lighting(m, light1, position, eyev1, normalv1, !in_shadow)
+  const r1       = lighting(m, s, light1, position, eyev1, normalv1, !in_shadow)
   
   // Lighting with the eye between light and surface, eye offset 45°
   const eyev2    = vector(0, Math.sqrt(2)/2, -Math.sqrt(2)/2)
   const normalv2 = vector(0, 0, -1)
   const light2   = point_light(point(0, 0, -10), color(1, 1, 1))
-  const r2       = lighting(m, light2, position, eyev2, normalv2, !in_shadow)
+  const r2       = lighting(m, s, light2, position, eyev2, normalv2, !in_shadow)
   
   // Lighting with eye opposite surface, light offset 45°
   const eyev3    = vector(0, 0, -1)
   const normalv3 = vector(0, 0, -1)
   const light3   = point_light(point(0, 10, -10), color(1, 1, 1))
-  const r3       = lighting(m, light3, position, eyev3, normalv3, !in_shadow)
+  const r3       = lighting(m, s, light3, position, eyev3, normalv3, !in_shadow)
   
   // Lighting with eye in the path of the reflection vector
   const eyev4    = vector(0, -Math.sqrt(2)/2, -Math.sqrt(2)/2)
   const normalv4 = vector(0, 0, -1)
   const light4   = point_light(point(0, 10, -10), color(1, 1, 1))
-  const r4       = lighting(m, light4, position, eyev4, normalv4, !in_shadow)
+  const r4       = lighting(m, s, light4, position, eyev4, normalv4, !in_shadow)
     
   // Lighting with the light behind the surface
   const eyev5    = vector(0, 0, -1)
   const normalv5 = vector(0, 0, -1)
   const light5   = point_light(point(0, 0, 10), color(1, 1, 1))
-  const r5       = lighting(m, light5, position, eyev5, normalv5, !in_shadow)
+  const r5       = lighting(m, s, light5, position, eyev5, normalv5, !in_shadow)
   
   // Lighting with the surface in shadow, added 12.06.24
   const eyev6      = vector(0, 0, -1)
   const normalv6   = vector(0, 0, -1)
   const light6     = point_light(point(0, 0, -10), color(1, 1, 1))
-  const r6         = lighting(m, light6, position, eyev6, normalv6, in_shadow)
+  const r6         = lighting(m, s, light6, position, eyev6, normalv6, in_shadow)
   
   
   // When lighting function negates lightv, specular dot disappears. When we don't negate, it works, but then this
@@ -2097,6 +2098,8 @@ function test_plane_function() {
   return res1 && res2 && res3 && res4 && res5
 }
 
+// *** TEST PATTERN FUNCTIONS
+
 function test_stripe_pattern_function() {
   // Testing the stripe pattern function
   
@@ -2114,33 +2117,36 @@ function test_stripe_at_function() {
   
   const white = color(1,1,1)
   const black = color(0,0,0)
-  
+
   const pattern = stripe_pattern(white, black)
   
   // A stripe pattern is constant i y
-  const res1 = stripe_at(pattern, point(0, 0, 0)).equals(white) 
-            && stripe_at(pattern, point(0, 1, 0)).equals(white) 
-            && stripe_at(pattern, point(0, 2, 0)).equals(white)
+    // Only call ._at from the outside for testing!
+  const res1 = pattern._at(point(0, 0, 0)).equals(white) 
+            && pattern._at(point(0, 1, 0)).equals(white) 
+            && pattern._at(point(0, 2, 0)).equals(white)
   
   // A stripe pattern is constant in z
-  const res2 = stripe_at(pattern, point(0, 0, 0)).equals(white) 
-            && stripe_at(pattern, point(0, 0, 1)).equals(white) 
-            && stripe_at(pattern, point(0, 0, 2)).equals(white)
+  // Only call ._at from the outside for testing!
+  const res2 = pattern._at(point(0, 0, 0)).equals(white) 
+            && pattern._at(point(0, 0, 1)).equals(white) 
+            && pattern._at(point(0, 0, 2)).equals(white)
   
   // A stripe pattern alternates in x
-  const res3 = stripe_at(pattern, point(0, 0, 0)).equals(white) 
-            && stripe_at(pattern, point(0.9, 0, 0)).equals(white) 
-            && stripe_at(pattern, point(1, 0, 0)).equals(black)
-            && stripe_at(pattern, point(-0.1, 0, 0)).equals(black)
-            && stripe_at(pattern, point(-1, 0, 0)).equals(black)
-            && stripe_at(pattern, point(-1.1, 0, 0)).equals(white)
+  // Only call ._at from the outside for testing!
+  const res3 = pattern._at(point(0, 0, 0)).equals(white) 
+            && pattern._at(point(0.9, 0, 0)).equals(white) 
+            && pattern._at(point(1, 0, 0)).equals(black)
+            && pattern._at(point(-0.1, 0, 0)).equals(black)
+            && pattern._at(point(-1, 0, 0)).equals(black)
+            && pattern._at(point(-1.1, 0, 0)).equals(white)
   
   return res1 && res2 && res3
 }
 
 function test_lighting_has_stripe_pattern() {
-  // Test that material has pattern and that
-  // the lighting() function applies pattern.
+  // Test that material has the stripe pattern and that
+  // the lighting() function applies the stripe pattern.
   
   const m = material()
   m.pattern = stripe_pattern(color(1, 1, 1), color(0, 0, 0))
@@ -2148,13 +2154,88 @@ function test_lighting_has_stripe_pattern() {
   m.diffuse = 0
   m.specular = 0
   
+  const s = sphere()
+  s.material = m
+  
   const eyev = vector(0, 0, -1)
   const normalv = vector(0, 0, -1)
   const light = point_light(point(0, 0, -10), color(1, 1, 1))
   
   // Lighting with a pattern applied
-  const c1 = lighting(m, light, point(0.9, 0, 0), eyev, normalv, false)
-  const c2 = lighting(m, light, point(1.1, 0, 0), eyev, normalv, false)
+  const c1 = lighting(m, s, light, point(0.9, 0, 0), eyev, normalv, false)
+  const c2 = lighting(m, s, light, point(1.1, 0, 0), eyev, normalv, false)
     
   return c1.equals(color(1, 1, 1)) && c2.equals(color(0, 0, 0))
+}
+
+function test_stripe_at_object_function() {
+  // Test that pattern follows the object's transformation
+  // Makes sure pattern is applied in object space instead of 
+  // world space.
+  
+  const white = color(1, 1, 1)
+  const black = color(0, 0, 0)
+  const obj = sphere()
+  const pattern = stripe_pattern(white, black)
+  
+  // Stripes with an object transformation
+  obj.transform = scaling(2, 2, 2)
+  const c1 = pattern.atShape(obj, point(1.5, 0, 0))
+  
+  // Stripes with a pattern transformation
+  pattern.transform = scaling(2, 2, 2)
+  const c2 = pattern.atShape(obj, point(1.5, 0, 0))
+  
+  // Stripes with both an object and pattern transformation
+  obj.transform = scaling(2, 2, 2)
+  pattern.transform = translation(0.5, 0, 0)
+  const c3 = pattern.atShape(obj, point(2.5, 0 ,0))
+  
+  return c1.equals(white) 
+      && c2.equals(white) 
+      && c3.equals(white)
+}
+
+function test_pattern_has_inherited_from_abstract_class() {
+  // Test to see that a pattern has inherited the AbstractPattern's
+  // functionality.
+  
+  // Check that transform and id are inherited and applied from AbstractPattern
+  const s1 = sphere()
+  const p1 = test_pattern()
+  const p_has_transform = p1.transform.equals(idmatrix())
+  const p_has_id = typeof p1.id == 'number' && p1.id > 0
+  
+  // Check that transformation can be set
+  p1.transform = translation(1, 2, 3)
+  const p_can_transform = p1.transform.equals(translation(1, 2, 3))
+  
+  // A pattern with an object transformation
+  const s2 = sphere()
+  s2.transform = scaling(2, 2, 2)
+  const p2 = test_pattern()
+  const c2 = p2.atShape(s2, point(2, 3, 4))
+  const res2 = c2.equals(color(1, 1.5, 2))
+  
+  // A pattern with a pattern transformation
+  const s3 = sphere()
+  const p3 = test_pattern()
+  p3.transform = scaling(2, 2, 2)
+  const c3 = p3.atShape(s3, point(2, 3, 4))
+  const res3 = c3.equals(color(1, 1.5, 2))
+  
+  // A pattern with both an object and pattern transformation
+  const s4 = sphere()
+  s4.transform = scaling(2, 2, 2)
+  const p4 = test_pattern()
+  p4.transform = translation(0.5, 1, 1.5)
+  c4 = p4.atShape(s4, point(2.5, 3, 3.5))
+  const res4 = c4.equals(color(0.75, 0.5, 0.25))
+    
+  return p_has_transform 
+      && p_has_id
+      && p_can_transform
+      && res2
+      && res3
+      && res4
 }

@@ -1017,14 +1017,26 @@ return _intersections.sort( function(a, b) {
   <h3>&#127937; Kapittel 10, Patterns</h3>
   
   <p>Vi skal lage mønster på objektene! Her møter jeg igjen en "gammel" kjenning fra matematikken: parameterframstilling!</p>
+  <h4>StripePattern</h4>
   <p>Funksjonen for å lage et stripemønster langs x-aksen, er gitt ved:
-$$color(point, c_a, c_b) = \begin{cases}c_a, if floor(point_x) % 2 = 0
-\\ c_b, otherwise 
+$$color(point, c_a, c_b) = \begin{cases}c_a:   \texttt{if floor(point_x) % 2 == 0}
+\\ c_b:   otherwise 
 \end{cases}$$
   </p>
 <p>Så her er det bare å dykke inn. Jeg skriver tester for <code>stripe_pattern(c1, c2)</code> og <code>stripe_at(pattern, point)</code>.</p>
 <p>Endrer på <code>Material</code> så materialet kan ha et pattern, og endrer <code>lighting()</code> så den setter farge på objektene ut fra pattern. Det ser sånn ut i en tidlig fase:</p>
 <p><img src="./chapter10_patterns_early_test.png" /></p>
+
+<p>For implementasjon av flere patterns, er det lurt å refaktorere med abstrakt klasse. AbstractPattern og alle arvingene blir flyttet til egen fil <code>patterns.js</code>. <code>stripe_at</code> og <code>stripe_at_object</code> blir til en "privat" metode <code>pattern._stripe_at</code> som får data fra en public metode <code>atShape()</code> implementert i <code>AbstractPattern</code>, etter samme mønster som for <code>AbstractShapes</code>. Jeg lager en testklasse <code>RandomPattern</code> som bare svarer med en tilfeldig farge for hver pixel, den fungerer på første forsøk, og gir et snurrig resultat. <code>TestPattern</code> bruker punktets x, y z koordinater til fargeverdier, og brukes for å teste klassenes funksjon. Jeg får noen ideer til andre mønstre, men skal først implementere forslagene i boka.</p>
+
+<h4>GradientPattern</h4>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
   <p></p>
   <p></p>
   <p></p>
