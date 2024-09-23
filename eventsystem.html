@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<body>
+  <div id="eventsystem" ng-app="eventsystem">
+    <h1>Eventsystem</h1>
+
+    <input type="text" id="add_name">
+    <p>{{ test }}</p>
+
+    <table class="persons">
+      <tr><th>Startnr</th><th>Navn</th><th>Brakke</th><th>Team</th></tr>
+      <tr class="persons_row"></tr>
+    </table>
+    <button onclick="add_user()">Add {{ test }} to database</button>
+
+    <div id="dl"></div>
+    <pre>{{ output_db() }}</pre>
+
+  </div>
+</body>
+<script src="./js/angular.min.js"></script>
+<script src="./js/eventsystem.js"></script>
+<script>
+  // *** EVENT SYSTEM ANGULAR APP
+  var app = angular.module('eventsystem', [])
+
+  // *** EVENT SYSTEM ANGULAR CONTROLLER
+  app.controller('esController', function ($scope) {
+
+    $scope.test = "Test"
+
+    $scope.output_db = function() { db.toJson() }
+  })
+
+</script>
+<script>
+  window.addEventListener("load", display_users)
+  const db = new EventDatabase()
+  db.loadDatabaseFromLocalStorage()
+
+  //display_users()
+
+  // db.addPerson(new Person(88, "Thomas", "R", "Weeners"))
+  // db.addPerson(new Person(77, "Stefan", "S", "Peeners"))
+
+  download_db(db, "db1")
+
+</script>
+
+
+
+</html>

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<head>
+  <meta charset="UTF-8">
+</head>
+
+<link rel="stylesheet" href="/w3css/4/w3.css">
+<!--<script src="./js/angular.min.js"></script>-->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+<style>
+
+@import url('https://fonts.googleapis.com/css?family=Coda|Crimson+Text|Gothic+A1|M+PLUS+1p|M+PLUS+Rounded+1c|Nanum+Gothic|Nanum+Myeongjo|Noto+Sans&display=swap');
+
+pre {
+  background-color: lightgrey;
+}
+
+body {
+  font-family: Crimson Text;
+}
+</style>
+
+<body ng-app="eventsystem" ng-controller="esController">
+  <script>
+    window.onerror = function(errorMsg, url, lineNumber){
+      const error = document.getElementById("error")
+      error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+    }
+  </script>
+  
+  <div class="w3-container">
+    <h1>Eventsystem</h1>
+
+    <table>
+      <tr>
+        <td>Startnr: <input type="text" ng-model="add_startnr"></td>
+        <td>Navn: <input type="text" ng-model="add_name"></td>
+        <td>Brakke: <input type="text" ng-model="add_brakke"></td>
+        <td>Team: <input type="text" ng-model="add_team"></td>
+      </tr>
+    </table>
+    <p>{{ test }}</p>
+
+    <table class="w3-table w3-bordered w3-striped">
+      <tr>
+        <th>Edit</th>
+        <th>Startnr</th>
+        <th>Navn</th>
+        <th>Brakke</th>
+        <th>Team</th>
+      </tr>
+      <tr ng-repeat="user in users">
+      <td>
+        <button class="w3-btn w3-ripple" ng-click="editUser(user.id)">&#9998; Edit</button>
+      </td>
+      <td>{{ user._sn }}</td>
+      <td>{{ user._name }}</td>
+      <td>{{ user._house }}</td>
+      <td>{{ user._team }}</td>
+      
+    </tr>
+      
+      <tr class="persons_row"></tr>
+    </table>
+    <button ng-click="add_user()">Add {{ add_name }} to database</button>
+
+    <div id="dl"></div>
+    <pre>Output_db: {{ output_db }}</pre>
+    
+    <pre id="error">Log: </pre>
+  </div>
+</body>
+
+<!--<script src="./js/eventsystem.js"></script>-->
+<script>
+// *** HELPER FUNCTIONS
+
+function log(domId, msg) {
+    
+  const para = document.createElement("p");
+  const node = document.createTextNode(msg);
+  para.appendChild(node);
+  const element = document.getElementById(domId);
+  element.appendChild(para);
+}
+
+// *** EVENTSYSTEM
+
+class EventDatabase {
+
+  constructor() {
+    this._db_local_name = "eventsystem"
+    this._ppl_local_name = "es_ppl"
+    this._people = []
+    this._activities = []
+    this._events = []
+    this._registrations = []
+  }
+
+  addPerson(p) {
+    console.log(`addPerson(${p.name}) `)
+    this._people.push(p)
+  }
+
+  getPerson(pid) { return this._people.find(e => e.id === pid) }
+
+  getPeople() { return this._people }
+
+  addEvent(e) {
+    this._activities.push(e)
+  }
+  loadData(d) {
+    const jp = JSON.parse(d)
+  
+    if (jp._people) { this._people = jp._people }
+    if (jp._activities) { this._activities = jp._activities }
+
+  }
+  loadDatabaseFromLocalStorage() {
+    console.log("loadDatabaseFromLocalStorage()")
+    const stored_db = localStorage.getItem(this._db_local_name)
+
+    if (stored_db) {
+      this.loadData(stored_db)
+    }
+  }
+  
+  loadPeopleFromLocalStorage() {
+    const stored_ppl = localStorage.getItem(this._ppl_local_name)
+    if (stored_ppl != undefined) {
+      this._people = JSON.parse(stored_ppl)
+    }
+  }
+  toJson() { return JSON.stringify(this) }
+
+  toLocalStorage() {
+    localStorage.setItem(this._db_local_name, this.toJson())
+  }
+  
+  peopleToLocalStorage() {
+    localStorage.setItem(this._db_local_name, this.toJson())
+  }
+}
+
+class Person {
+  constructor(start_number, name, house, team) {
+    this._id = "p_" + cerealnum.next
+    this._sn = start_number
+    this._name = name
+    this._house = house
+    this._team = team
+    this._active = true
+  }
+
+  get id() { return this._id }
+  get name() { return this._name }
+  get start_num() { return this._start_number }
+  get house() { return this._house }
+  get team() { return this._team }
+
+}
+
+function download_db(database, name) {
+  // Download database as JSON file.
+
+  let json_data = database.toJson()
+  let filename = name != "" ? name : "eventdatabase"
+
+  var el = document.createElement("a")
+  let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(json_data)
+  el.setAttribute("href", dataStr)
+  el.innerHTML = "Click here to download file " + filename + ".json"
+  el.setAttribute("download", filename + ".json")
+  document.querySelector("#dl").replaceWith(el)
+}
+
+const cerealnum = {
+  _n: function() {
+    if (isNaN(localStorage.getItem("cerealnum")) {
+      return 101
+    } else {
+      return localStorage.getItem("cerealnum")
+    }
+  },
+  get next() {
+    if (localStorage.getItem("cerealnum") <= _n)
+    localStorage.setItem("cerealnum", _n++),
+    return this._n++ 
+  },
+}
+
+function fetch_users(scope) {
+  
+  log("error", db.getPeople())
+  return db.getPeople()
+  
+}
+
+</script>
+<script>
+  // *** EVENT SYSTEM ANGULAR APP
+  var app = angular.module('eventsystem', [])
+
+  // *** EVENT SYSTEM ANGULAR CONTROLLER
+  app.controller('esController', function ($scope) {
+    	
+    $scope.db = initDb()
+    
+    $scope.add_startnr = "111"
+    $scope.add_name = "Janus"
+    $scope.add_brakke = "R"
+    $scope.add_team = "Win"
+    
+    $scope.users = $scope.db.getPeople()
+
+    $scope.output_db = $scope.db.getPeople()
+    
+    $scope.add_user = function() {
+      $scope.db._people.push(new Person($scope.add_startnr, $scope.add_name, $scope.add_brakke, $scope.add_team))
+      $scope.db.peopleToLocalStorage()
+    }
+  
+  })
+
+</script>
+<script>
+  const db = new EventDatabase()
+  db.loadDatabaseFromLocalStorage()
+  
+  function initDb() {  
+    return db
+  }
+  //db.addPerson(new Person(88, "Thomas", "R", "Weeners"))
+  //db.addPerson(new Person(77, "Stefan", "S", "Peeners"))
+
+  //download_db(db, "db1")
+
+</script>
+
+
+
+</html>

@@ -1103,5 +1103,744 @@ const symbols = [
   symbol: "🤬",
   keywords: ["angry","swear","cuss","curse","red","grawlixes","obscenities","rage","profanity"]
 },
+{
+  decimal: 128110,
+  hex: "0x1F46E",
+  category: "Person Roles",
+  name: "Police",
+  symbol: "👮",
+  keywords: ["officer","man","cop"]
+},
+{
+  decimal: 128111,
+  hex: "0x1F46F",
+  category: "Person Roles",
+  name: "Bunnies",
+  symbol: "👯",
+  keywords: ["playboy","girls","costume"]
+},
+{
+  decimal: 128112,
+  hex: "0x1F470",
+  category: "Person Roles",
+  name: "Bride",
+  symbol: "👰",
+  keywords: ["wedding","woman","marriage","marry"]
+},
+{
+  decimal: 128114,
+  hex: "0x1F472",
+  category: "Person Roles",
+  name: "Man Gua pi mao",
+  symbol: "👲",
+  keywords: ["china","asian","male","hat","cap"]
+},
+{
+  decimal: 128115,
+  hex: "0x1F473",
+  category: "Person Roles",
+  name: "Man turban",
+  symbol: "👳",
+  keywords: ["white","beard"]
+},
+{
+  decimal: 128119,
+  hex: "0x1F477",
+  category: "Person Roles",
+  name: "Construction worker",
+  symbol: "👷",
+  keywords: ["hard","hat","builder","bob","dozer"]
+},
+{
+  decimal: 128120,
+  hex: "0x1F478",
+  category: "Person Roles",
+  name: "Princess",
+  symbol: "👸",
+  keywords: ["royalty", "pretty","tiara","woman","girl"]
+},
+{
+  decimal: 128372,
+  hex: "0x1F574",
+  category: "Person Roles",
+  name: "Business suit",
+  symbol: "🕴",
+  keywords: ["hat","spy","tie","shirt","jacket"]
+},
+{
+  decimal: 128373,
+  hex: "0x1F575",
+  category: "Person Roles",
+  name: "Detective or Spy",
+  symbol: "🕵",
+  keywords: ["man","hat","spy","tie","shirt","jacket","magnify","glass","trench","coat","frock"]
+},
+{
+  decimal: 128129,
+  hex: "0x1F481",
+  category: "Person Roles",
+  name: "Helpdesk",
+  symbol: "💁",
+  keywords: ["woman","person","tipping","hand","purple","sassy","sarcasm","help"]
+},
+{
+  decimal: 128131,
+  hex: "0x1F483",
+  category: "Person Roles",
+  name: "Dancer",
+  symbol: "💃",
+  keywords: ["woman","dancing","red","dress","sexy","sassy"]
+},
+{
+  decimal: 128130,
+  hex: "0x1F482",
+  category: "Person Roles",
+  name: "Guardsman",
+  symbol: "💂",
+  keywords: ["guard","military","british","red","coat","black","hat"]
+},
+{
+  decimal: 129332,
+  hex: "0x1F934",
+  category: "Person Roles",
+  name: "Prince",
+  symbol: "🤴",
+  keywords: ["royalty","crown","man"]
+},
+{
+  decimal: 129333,
+  hex: "0x1F935",
+  category: "Person Roles",
+  name: "Man in tuxedo",
+  symbol: "🤵",
+  keywords: ["white","shirt","suit","black","jacket"]
+},
+{
+  decimal: 128106,
+  hex: "0x1F46A",
+  category: "Family",
+  name: "Family",
+  symbol: "👪",
+  keywords: ["man","woman","child","boy","husband","wife"]
+},
+{
+  decimal: 128107,
+  hex: "0x1F46B",
+  category: "Family",
+  name: "Man and woman",
+  symbol: "👫",
+  keywords: ["man","woman","husband","wife","couple","pair","friends"]
+},
+{
+  decimal: 128108,
+  hex: "0x1F46C",
+  category: "Family",
+  name: "Two men",
+  symbol: "👬",
+  keywords: ["husband","couple","pair","friends"]
+},
+{
+  decimal: 128109,
+  hex: "0x1F46D",
+  category: "Family",
+  name: "Two women",
+  symbol: "👭",
+  keywords: ["wife","couple","pair","friends"]
+},
+{
+  decimal: 128143,
+  hex: "0x1F48F",
+  category: "Family",
+  name: "Kiss",
+  symbol: "💏",
+  keywords: ["couple","pair","friends","heart","love"]
+},
+{
+  decimal: 128145,
+  hex: "0x1F491",
+  category: "Family",
+  name: "Love",
+  symbol: "💑",
+  keywords: ["couple","pair","friends","heart","affection"]
+},
+{
+  decimal: 129328,
+  hex: "0x1F930",
+  category: "Family",
+  name: "Pregnant",
+  symbol: "🤰",
+  keywords: ["woman","girl","baby"]
+},
+{
+  decimal: 129329,
+  hex: "0x1F931",
+  category: "Family",
+  name: "Breast feeding",
+  symbol: "🤱",
+  keywords: ["woman","girl","milk","baby"]
+},
+{
+  decimal: 128100,
+  hex: "0x1F464",
+  category: "Persons",
+  name: "Bust",
+  symbol: "👤",
+  keywords: ["statue","person","man"]
+},
+{
+  decimal: 128101,
+  hex: "0x1F465",
+  category: "Persons",
+  name: "Busts",
+  symbol: "👥",
+  keywords: ["statues","men"]
+},
+{
+  decimal: 128102,
+  hex: "0x1F466",
+  category: "Persons",
+  name: "Boy",
+  symbol: "👦",
+  keywords: ["face","smile"]
+},
+{
+  decimal: 128103,
+  hex: "0x1F467",
+  category: "Persons",
+  name: "Girl",
+  symbol: "👧",
+  keywords: ["face","smile"]
+},
+{
+  decimal: 128104,
+  hex: 0x1F468,
+  category: "Persons",
+  name: "Man",
+  symbol: "👨",
+  keywords: ["face","happy"]
+},
+{
+  decimal: 128105,
+  hex: 0x1F469,
+  category: "Persons",
+  name: "Woman",
+  symbol: "👩",
+  keywords: ["face","happy"]
+},
+{
+  decimal: 128113,
+  hex: 0x1F471,
+  category: "Persons",
+  name: "Person blond",
+  symbol: "👱",
+  keywords: ["face","happy"]
+},
+{
+  decimal: 128116,
+  hex: 0x1F474,
+  category: "Persons",
+  name: "Older man",
+  symbol: "👴",
+  keywords: ["face","happy","glasses"]
+},
+{
+  decimal: 128117,
+  hex: 0x1F475,
+  category: "Persons",
+  name: "Older woman",
+  symbol: "👵",
+  keywords: ["face","happy","glasses"]
+},
+{
+  decimal: 128118,
+  hex: 0x1F476,
+  category: "Persons",
+  name: "Baby",
+  symbol: "👶",
+  keywords: ["face","happy","pacifier"]
+},
+{
+  decimal: 128378,
+  hex: 0x1F57A,
+  category: "Persons",
+  name: "Man dancing",
+  symbol: "🕺",
+  keywords: ["happy"]
+},
+{
+  decimal: 129485,
+  hex: 0x1F9CD,
+  category: "Persons",
+  name: "Person standing",
+  symbol: "🧍",
+  keywords: ["green"]
+},
+{
+  decimal: 129486,
+  hex: 0x1F9CE,
+  category: "Persons",
+  name: "Person kneeling",
+  symbol: "🧎",
+  keywords: ["sitting"]
+},
+{
+  decimal: 129489,
+  hex: 0x1F9D1,
+  category: "Persons",
+  name: "Adult",
+  symbol: "🧑",
+  keywords: ["happy","face","man"]
+},
+{
+  decimal: 129490,
+  hex: 0x1F9D2,
+  category: "Persons",
+  name: "Child",
+  symbol: "🧒",
+  keywords: ["happy","boy","face"]
+},
+{
+  decimal: 129491,
+  hex: 0x1F9D3,
+  category: "Persons",
+  name: "Older adult",
+  symbol: "🧓",
+  keywords: ["happy","face","white","hair","glasses"]
+},
+{
+  decimal: 129492,
+  hex: 0x1F9D4,
+  category: "Persons",
+  name: "Bearded man",
+  symbol: "🧔",
+  keywords: ["happy","face"]
+},
+{
+  decimal: 129493,
+  hex: 0x1F9D5,
+  category: "Persons",
+  name: "Headsharf",
+  symbol: "🧕",
+  keywords: ["happy","face","hijab"]
+},
+{
+  decimal: 129494,
+  hex: 0x1F9D6,
+  category: "Persons",
+  name: "Steamy room",
+  symbol: "🧖",
+  keywords: ["happy","face","woman","sauna","bath"]
+},
+{
+  decimal: 129495,
+  hex: 0x1F9D7,
+  category: "Persons",
+  name: "Climbing",
+  symbol: "🧗",
+  keywords: ["man","harness","helmet","boulder","rock","wall"]
+},
+{
+  decimal: 129496,
+  hex: 0x1F9D8,
+  category: "Persons",
+  name: "Lotus position",
+  symbol: "🧘",
+  keywords: ["woman","yoga","legs","crossed"]
+},
+{
+  decimal: 128134,
+  hex: 0x1F486,
+  category: "Gestures",
+  name: "Face massage",
+  symbol: "💆",
+  keywords: ["woman","relaxed","enjoy"]
+},
+{
+  decimal: 128135,
+  hex: 0x1F487,
+  category: "Gestures",
+  name: "Haircut",
+  symbol: "💇",
+  keywords: ["woman","enjoy","scissors"]
+},
+{
+  decimal: 128581,
+  hex: 0x1F645,
+  category: "Gestures",
+  name: "No good",
+  symbol: "🙅",
+  keywords: ["woman","arms","crossed"]
+},
+{
+  decimal: 128582,
+  hex: 0x1F646,
+  category: "Gestures",
+  name: "OK",
+  symbol: "🙆",
+  keywords: ["woman","arms","over","head"]
+},
+{
+  decimal: 128583,
+  hex: 0x1F647,
+  category: "Gestures",
+  name: "Bowing deeply",
+  symbol: "🙇",
+  keywords: ["boy","kneeling"]
+},
+{
+  decimal: 128587,
+  hex: 0x1F64B,
+  category: "Gestures",
+  name: "Raised hand",
+  symbol: "🙋",
+  keywords: ["woman","arm","up"]
+},
+{
+  decimal: 128588,
+  hex: 0x1F64C,
+  category: "Gestures",
+  name: "Celebration",
+  symbol: "🙌",
+  keywords: ["hands","up"]
+},
+{
+  decimal: 128591,
+  hex: 0x1F64F,
+  category: "Gestures",
+  name: "Folded hands",
+  symbol: "🙏",
+  keywords: ["plead","please","thank","you"]
+},
+{
+  decimal: 129318,
+  hex: 0x1F926,
+  category: "Gestures",
+  name: "Face palm",
+  symbol: "🤦",
+  keywords: ["woman","resign"]
+},
+{
+  decimal: 129335,
+  hex: 0x1F937,
+  category: "Gestures",
+  name: "Shrug",
+  symbol: "🤷",
+  keywords: ["woman","give","up","don't","know","no","idea"]
+},
+{
+  decimal: 128173,
+  hex: 0x1F4AD,
+  category: "Speak Bubbles",
+  name: "Thought Ballon",
+  symbol: "💭",
+  keywords: ["think","cartoon"]
+},
+{
+  decimal: 127877,
+  hex: 0x1F385,
+  category: "Fantasy Figures",
+  name: "Father Christmas",
+  symbol: "🎅",
+  keywords: ["santa","claus","xmas","white","beard"]
+},
+{
+  decimal: 128121,
+  hex: 0x1F479,
+  category: "Fantasy Figures",
+  name: "Japanese Ogre",
+  symbol: "👹",
+  keywords: ["red","face","devil","horns"]
+},
+{
+  decimal: 128123,
+  hex: 0x1F47B,
+  category: "Fantasy Figures",
+  name: "Ghost",
+  symbol: "👻",
+  keywords: ["white","tounge","happy","spectre"]
+},
+{
+  decimal: 128124,
+  hex: 0x1F47C,
+  category: "Fantasy Figures",
+  name: "Baby angel",
+  symbol: "👼",
+  keywords: ["halo","wings","happy","innocent"]
+},
+{
+  decimal: 128125,
+  hex: 0x1F47D,
+  category: "Fantasy Figures",
+  name: "Extraterrestrial",
+  symbol: "👽",
+  keywords: ["alien","green","black","eyes","happy"]
+},
+{
+  decimal: 129302,
+  hex: 0x1F916,
+  category: "Fantasy Figures",
+  name: "Robot",
+  symbol: "🤖",
+  keywords: ["metal","antennae"]
+},
+{
+  decimal: 129313,
+  hex: 0x1F921,
+  category: "Fantasy Figures",
+  name: "Clown",
+  symbol: "🤡",
+  keywords: ["face","white","red","nose","happy"]
+},
+{
+  decimal: 129464,
+  hex: 0x1F9B8,
+  category: "Fantasy Figures",
+  name: "Superhero",
+  symbol: "🦸",
+  keywords: ["mask","cape","woman"]
+},
+{
+  decimal: 129465,
+  hex: 0x1F9B9,
+  category: "Fantasy Figures",
+  name: "Supervillain",
+  symbol: "🦹",
+  keywords: ["mask","cape","woman"]
+},
+{
+  decimal: 129497,
+  hex: 0x1F9D9,
+  category: "Fantasy Figures",
+  name: "Mage",
+  symbol: "🧙",
+  keywords: ["wizard","magic","staff","pointy","hat","gandalf"]
+},
+{
+  decimal: 129498,
+  hex: 0x1F9DA,
+  category: "Fantasy Figures",
+  name: "Fairy",
+  symbol: "🧚",
+  keywords: ["magic","wings","wand","girl"]
+},
+{
+  decimal: 129499,
+  hex: 0x1F9DB,
+  category: "Fantasy Figures",
+  name: "Vampire",
+  symbol: "🧛",
+  keywords: ["blood","sucking","fangs"]
+},
+{
+  decimal: 129501,
+  hex: 0x1F9DD,
+  category: "Fantasy Figures",
+  name: "Elf",
+  symbol: "🧝",
+  keywords: ["legolas","pointy","ears"]
+},
+{
+  decimal: 129502,
+  hex: 0x1F9DE,
+  category: "Fantasy Figures",
+  name: "Genie",
+  symbol: "🧞",
+  keywords: ["djinn","bottle","lamp"]
+},
+{
+  decimal: 129503,
+  hex: 0x1F9DF,
+  category: "Fantasy Figures",
+  name: "Zombie",
+  symbol: "🧟",
+  keywords: ["green","brain","reanimated","horror","man","undead","monster"]
+},
+{
+  decimal: 128064,
+  hex: 0x1F440,
+  category: "Body Parts",
+  name: "Eyes",
+  symbol: "👀",
+  keywords: ["comic","see","behold","interest","read","look"]
+},
+{
+  decimal: 128067,
+  hex: 0x1F443,
+  category: "Body Parts",
+  name: "Nose",
+  symbol: "👃",
+  keywords: ["sniff","smell"]
+},
+{
+  decimal: 128068,
+  hex: 0x1F444,
+  category: "Body Parts",
+  name: "Mouth",
+  symbol: "👄",
+  keywords: ["lips","teeth","red","taste"]
+},
+{
+  decimal: 128069,
+  hex: 0x1F445,
+  category: "Body Parts",
+  name: "Tongue",
+  symbol: "👅",
+  keywords: ["lick","taste"]
+},
+{
+  decimal: 128170,
+  hex: 0x1F4AA,
+  category: "Body Parts",
+  name: "Flexed Biceps",
+  symbol: "💪",
+  keywords: ["strong","arm"]
+},
+{
+  decimal: 129463,
+  hex: 0x1F9B7,
+  category: "Body Parts",
+  name: "Tooth",
+  symbol: "🦷",
+  keywords: ["grinder","white"]
+},
+{
+  decimal: 129504,
+  hex: 0x1F9E0,
+  category: "Body Parts",
+  name: "Brain",
+  symbol: "🧠",
+  keywords: ["pink","think","head","smart","wise"]
+},
+{
+  decimal: 129505,
+  hex: 0x1F9E1,
+  category: "Body Parts",
+  name: "Heart",
+  symbol: "🧡",
+  keywords: ["red","love","affection"]
+},
+{
+  decimal: 128140,
+  hex: 0x1F48C,
+  category: "Heart Symbols",
+  name: "Love letter",
+  symbol: "💌",
+  keywords: ["heart","envelope"]
+},
+{
+  decimal: 128147,
+  hex: 0x1F493,
+  category: "Heart Symbols",
+  name: "Beating heart",
+  symbol: "💓",
+  keywords: ["heart","pulse"]
+},
+{
+  decimal: 128148,
+  hex: 0x1F494,
+  category: "Heart Symbols",
+  name: "Broken heart",
+  symbol: "💔",
+  keywords: ["ache","break","up"]
+},
+{
+  decimal: 128150,
+  hex: 0x1F496,
+  category: "Heart Symbols",
+  name: "Sparkling heart",
+  symbol: "💖",
+  keywords: ["glitter","shine"]
+},
+{
+  decimal: 128132,
+  hex: 0x1F484,
+  category: "Miscellaneous",
+  name: "Lipstick",
+  symbol: "💄",
+  keywords: ["red","mouth"]
+},
+{
+  decimal: 128137,
+  hex: 0x1F489,
+  category: "Miscellaneous",
+  name: "Syringe",
+  symbol: "💉",
+  keywords: ["red","blood","sample","needle"]
+},
+{
+  decimal: 128138,
+  hex: 0x1F48A,
+  category: "Miscellaneous",
+  name: "Pill",
+  symbol: "💊",
+  keywords: ["medicine","swallow","capsule"]
+},
+{
+  decimal: 128139,
+  hex: 0x1F48B,
+  category: "Miscellaneous",
+  name: "Kiss mark",
+  symbol: "💋",
+  keywords: ["lips","mouth"]
+},
+{
+  decimal: 128141,
+  hex: 0x1F48D,
+  category: "Miscellaneous",
+  name: "Ring",
+  symbol: "💍",
+  keywords: ["diamond","ring","engagement","marry"]
+},
+{
+  decimal: 128142,
+  hex: 0x1F48E,
+  category: "Miscellaneous",
+  name: "Gem stone",
+  symbol: "💎",
+  keywords: ["diamond","brilliant","cut"]
+},
+{
+  decimal: 128164,
+  hex: 0x1F4A4,
+  category: "Miscellaneous",
+  name: "Sleeping",
+  symbol: "💤",
+  keywords: ["zzz","snore","bored"]
+},
+{
+  decimal: 128169,
+  hex: 0x1F4A9,
+  category: "Miscellaneous",
+  name: "Pile of poo",
+  symbol: "💩",
+  keywords: ["happy","sarcasm","foobar"]
+},
+{
+  decimal: 128171,
+  hex: 0x1F4AB,
+  category: "Miscellaneous",
+  name: "Dizzy",
+  symbol: "💫",
+  keywords: ["stars"]
+},
+{
+  decimal: 127814,
+  hex: 0x1F346,
+  category: "Vegetables",
+  name: "Aubergine",
+  symbol: "🍆",
+  keywords: ["eggplant","purple","penis"]
+},
+{
+  decimal: 127825,
+  hex: 0x1F351,
+  category: "Fruit",
+  name: "Peach",
+  symbol: "🍑",
+  keywords: ["butt","pussy"]
+},
+
+
+
 
 ]

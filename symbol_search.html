@@ -94,19 +94,11 @@ app.controller('ssController', function($scope) {
   $scope.add_hexa = ""
   $scope.add_cate = ""
   $scope.add_keyw = ""
+  $scope.add_all = ""
   
   $scope.format_entry = function () {
-    //log("error", "Format entry")
-    const k = $scope.add_keyw.split(" ").map(e => `"${e}"`)
     
-    return `{
-  decimal: ${$scope.add_deci},
-  hex: "0x${$scope.add_hexa}",
-  category: "${$scope.add_cate}",
-  name: "${$scope.add_name}",
-  symbol: "${$scope.add_symb}",
-  keywords: [${k}]
-},`
+    return format_entries($scope)
   }
 })
     
@@ -133,7 +125,7 @@ app.controller('ssController', function($scope) {
         <th>Symbol</th>
         <th>Name</th>
         <th>Category</th>
-        <th>Decimal</th>
+        <th>Html entity</th>
         <th>Keywords</th>    
       </tr>
       <tr ng-repeat="x in results()"><td>{{x.symbol}}</td><td>{{x.name}}</td><td>{{x.category}}</td><td><code>&#{{x.decimal}};</code></td><td>{{x.keywords}}</td></tr>
@@ -148,6 +140,7 @@ app.controller('ssController', function($scope) {
           <td>Decimal: <input type="text" ng-model="add_deci"> Hex: <input type="text" ng-model="add_hexa"></td>
           <td>Category: <input type="text" ng-model="add_cate"> Keywords: <input type="text" ng-model="add_keyw"></td>
         </tr>
+        <td colspan=4>Symbol/Dec/Hex/Name:<input type="text" size="100%" ng-model="add_all"></td>
       </table>
       <pre>{{format_entry()}}</pre>
 </div>
@@ -198,7 +191,38 @@ function perform_search(searchterm) {
   return matches.length > 0 ? matches.sort() : []
 }
 
+function format_entries(i) {
+  let symb, deci, hexa, name = ""
+  
+  //log("error", "Format entries: " + i.add_all)
+    if (i.add_all != "") {
+      const a = i.add_all.split("	")
+      symb = a[0]
+      deci = a[1]
+      hexa = a[2]
+      name = a[3]
+    } else {
+      symb = i.add_symb
+      deci = i.add_deci
+      hexa = i.add_hexa
+      name = i.add_name
+    }
+    const k = i.add_keyw.split(" ").map(e => `"${e}"`)
+    
+    const r = `{
+  decimal: ${deci},
+  hex: 0x${hexa},
+  category: "${i.add_cate}",
+  name: "${name}",
+  symbol: "${symb}",
+  keywords: [${k}]
+},
 
+
+`
+
+  return r
+}
   
 
 function log(domId, msg) {
