@@ -788,16 +788,23 @@ function transformations(trans) {
   
   for (let i=0;i<arguments.length;i++) {
     if (arguments[i].d != undefined ) {
-      t.push(arguments[i])
+      // Only push arguments that are matrices, ie they have .d defined.
+      const mat = matrix(arguments[i].rows, arguments[i].cols)
+      mat.putAll(arguments[i].d)
+      t.push(mat)
     }
   }
+  
+  //log("error", "transformations(): t[0]) " + t[0].d)
   t = t.reverse()
   
   for (e in t) {
-    m.putAll(multiply_matrices(m, t[e]))
+    // To set the result of the multiplied matrices, add .d
+    m.putAll(multiply_matrices(m, t[e]).d)
     //log("error", `transformations(): ${e} ${t[e].d}`)
   }
-  //log("error", m.d)
+  //log("error", "transformations(): m.d " + m.d)
+  
   return m
 }
 

@@ -510,7 +510,9 @@ function test_matrix_equal_function() {
     log("error", "Catch: " + error)
   }
   
-  return is_equal && close_enough && !not_equal
+  return is_equal 
+      && close_enough 
+      && !not_equal
 }
 
 function test_multiply_matrices_function() {
@@ -520,12 +522,10 @@ function test_multiply_matrices_function() {
   const ma = matrix(4, 4)
   const mb = matrix(4, 4)
   const mc = matrix(4, 4)
-  
   ma.putAll([1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2])
   mb.putAll([-2,1,2,3,3,2,1,-1,4,3,6,5,1,2,7,8])
   mc.putAll([20,22,50,48,44,54,114,108,40,58,110,102,16,26,46,42])
-  //log("error", ma.d)
-  multiply_matrices(ma, mb)
+  
   return mc.equals(multiply_matrices(ma, mb))
 }
 
@@ -674,7 +674,9 @@ function test_submatrix_function() {
   } catch (error) {
     log("error", "Catch: " + error)
   }
-  return sm3_equals_m4c && sm2_equals_m3c
+  
+  return sm3_equals_m4c 
+      && sm2_equals_m3c
 }
 
 function test_minor_function() {
@@ -693,6 +695,7 @@ function test_minor_function() {
   const min = minor(m3, i, j)
   
   //log("error", `d: ${d}, minor: ${min}`)
+  
   return (d === min)
 }
 
@@ -732,10 +735,10 @@ function test_cofactor_function() {
   const cof2 = cofactor(m3, 1, 0) //= -25
   
   //log("error", `${min1} === ${cof1}, ${min2} === ${-cof2}`)
-  return min1 === cof1 
+  
+  return min1 === cof1
       && min2 === -cof2 
       && coughs.equals(expected_cofactors)
-  
 }
 
 function test_calculate_determinant_of_3x3_matrix() {
@@ -755,12 +758,10 @@ function test_calculate_determinant_of_3x3_matrix() {
   //log("error", "cofactor (0,2) = " + cof3)
   //log("error", "determinant of m = " + d1)
   
-  return (
-       cofactor(m, 0, 0) === 56
-    && cofactor(m, 0, 1) === 12
-    && cofactor(m, 0, 2) === -46
-    && determinant(m) === -196
-  )
+  return cofactor(m, 0, 0) === 56
+      && cofactor(m, 0, 1) === 12
+      && cofactor(m, 0, 2) === -46
+      && determinant(m) === -196
 }
 
 function test_is_matrix_invertible() {
@@ -783,8 +784,8 @@ function test_is_matrix_invertible() {
   
   //log("error", detm1)
   //log("error", detm2)
+  
   return (detm1 === -2120 && detm2 === 0)
-
 }
 
 function test_inverse_matrix_function() {
@@ -846,7 +847,8 @@ function test_inverse_matrix_function_2() {
   
   //log("error", m2i.join("\n"))
   
-  return m1i.equals(exp_m1i) && m2i.equals(exp_m2i)
+  return m1i.equals(exp_m1i) 
+      && m2i.equals(exp_m2i)
 }
 
 function test_multiply_by_inverse() {
@@ -889,7 +891,9 @@ function test_translation_function() {
   //log("error", result2.toString())
   //log("error", result3.toString())
   
-  return result1.equals(point(2, 1, 7)) && result2.equals(point(-8, 7, 3)) && result3.equals(vector(-3, 4, 5))
+  return result1.equals(point(2, 1, 7)) 
+      && result2.equals(point(-8, 7, 3)) 
+      && result3.equals(vector(-3, 4, 5))
   
 }
 
@@ -925,7 +929,9 @@ function test_angle_function() {
   // The angle function converts between degrees and radians and vice versa.
   
   //log("error", angle(Math.PI/2).deg())
-  return angle(360).rad() === 2 * Math.PI && angle(Math.PI/2).deg() === 90 
+  
+  return angle(360).rad() === 2 * Math.PI 
+      && angle(Math.PI/2).deg() === 90 
 }
 
 function test_rotation_x_function() {
@@ -1036,36 +1042,54 @@ function test_shearing_function() {
 function test_transformations_function() {
   // Test chaining multiple transformations
   
+  // Objects to transform
   let p = point(1, 0, 1)
     
+  // Transformations to apply
   const rx = rotation_x(Math.PI / 2)
+  const rz = rotation_z(Math.PI / 2)
+  const ry = rotation_y(Math.PI / 2)
   const sc = scaling(5, 5, 5)
   const tr = translation(10, 5, 7)
   
-  const rec = recursive_transformations([tr, sc, rx])
+  // Transformations one by one:
+  // Apply rotation first
+  const p1 = rx.times_tuple(p)
+  const r1 = p1.equals(point(1, -1, 0))
+  //log("error", `Rotated matrix: ${p1}`)
   
-  //log("error", "test_transformations_function(): " + rec.d)
+  // Then apply scaling
+  const p2 = sc.times_tuple(p1)
+  const r2 = p2.equals(point(5, -5, 0))
+  //log("error", `Rotated and scaled: ${p2}`)
+  
+  // Then apply translation
+  const p3 = tr.times_tuple(p2)
+  const r3 = p3.equals(point(15, 0, 7))
+  //log("error", `Rotated and scaled and translated: ${p3}`)
   
   // These transformations should be applied in reverse order; tr, sc, rx
-  const result1 = transformations(tr, sc, rx)
+  const chained1 = transformations(tr, sc, rx, rz, ry)
   
-  const result2 = multiply_matrices(idmatrix(), multiply_matrices(rx, multiply_matrices(sc, tr)))
-  //log("error", "manual " + result2.d)
-  //log("error", "tr rx sc " + transformations(tr, sc, rx).d)
-  //log("error", "sc tr rx " + transformations(sc, tr, rx).d)
+  // Manually applying tranformations in reverse order:
+  const chained2 = multiply_matrices(
+                     idmatrix(), 
+                       multiply_matrices(ry, 
+                         multiply_matrices(rz, 
+                           multiply_matrices(rx, 
+                             multiply_matrices(sc, tr)
+                           )
+                         )
+                       )
+                     )
+  //log("error", "test_transformations_function(): chained1: " + chained1.d)
+  //log("error", "test_transformations_function(): chained2: " + chained2.d)
   
-  p2 = result1.times_tuple(p)
-  
-  
-  //log("error", p2)
-  
-  const expected = matrix(4, 4)
-  expected.putAll([5,0,0,10,0,3.0616169991140216e-16,-5,-7,0,5,3.0616169991140216e-16,5,0,0,0,1])
-  
-  //log("error", p2)
-    
-  return p2.equals(point(15, 0, 7))
-    //&& matrix_equal(s.transform, expected)
+  return r1 
+      && r2 
+      && r3 
+      && chained1.equals(chained2)
+
 }
 
 function test_apply_individual_transformations() {
@@ -1088,7 +1112,9 @@ function test_apply_individual_transformations() {
   const p4 = t.times_tuple(p3)
   //log("error", `Rotated and scaled and translated: ${p4}`)
   
-  return r1 && r2 && p4.equals(point(15, 0, 7))
+  return r1 
+      && r2 
+      && p4.equals(point(15, 0, 7))
 }
 
 // *** RAY TESTS
@@ -1317,7 +1343,7 @@ function test_transform_sphere() {
   //   * that its transformation can be assigned
   
   const s = new Sphere()
-  const s2 = new Sphere()
+  
   
   // Transformations to apply
   const tr = translation(2, 3, 4)
@@ -1338,23 +1364,29 @@ function test_transform_sphere() {
     
   // Intersecting a scaled sphere with a ray
   const r = ray(point(0, 0, -5), vector(0, 0, 1))
-  
-  s2.transform = sc.d
+  const s2 = new Sphere()
+  s2.transform = sc
   
   const xs = intersect(s2, r)
   const test_intersecting_scaled_sphere_with_ray = xs.length === 2 && xs[0].t === 3 && xs[1].t === 7
   
-  log("error", "test_transform_sphere() " + s2.transform.d)
-  log("error", "xs.length: " + xs.length)
-  log("error", "xs[0].t: " + xs[0].t)
-  log("error", "xs[1].t: " + xs[1].t)
+  //log("error", "test_transform_sphere() " + s2.transform.d)
+  //log("error", "xs.length: " + xs.length)
+  //log("error", "xs[0].t: " + xs[0].t)
+  //log("error", "xs[1].t: " + xs[1].t)
   
   // Test transformations function on a sphere
+  //log("error", "tr.d: " + tr.d)
   s2.transform.putAll(tr.d)
+  //log("error", "s2.transform: " + s2.transform.d)
   const s3 = new Sphere()
-  s3.transform.putAll(transformations(sc, tr, rz))
-
-  //log("error", s3.transform.d)
+  const t1 = transformations(sc, tr, rz)
+  
+  s3.transform = t1
+  
+  log("error", "t1.d: " + t1.d)
+  log("error", "s2.transform: " + s2.toString)
+  log("error", "s3.transform: " + s3.toString)
   
   const transformations_applied_to_sphere = s2.transform.equals(s3.transform)
   //log("error", s3.toString)
@@ -1363,7 +1395,7 @@ function test_transform_sphere() {
   return default_transform_equals_idmatrix 
     && new_transform_is_set 
     && test_intersecting_scaled_sphere_with_ray 
-    //&& transformations_applied_to_sphere
+    && transformations_applied_to_sphere
 }
 
 function test_normal_function() {
