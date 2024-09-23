@@ -1522,3 +1522,10 @@ function cube() {
   
   return new Cube()
 }
+
+function cylinder() {
+  // Factory function for Cylinder
+  // Class is implemented in shapes.js
+  
+  return new Cylinder()
+}

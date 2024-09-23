@@ -2321,7 +2321,7 @@ const symbols = [
 },
 {
   decimal: 8986,
-  hex: 0x00,
+  hex: 0x,
   category: "Time",
   name: "Wristwatch",
   symbol: "⌚",
@@ -2329,7 +2329,7 @@ const symbols = [
 },
 {
   decimal: 8987,
-  hex: 0x00,
+  hex: 0x,
   category: "Time",
   name: "Hourglass",
   symbol: "⌛",
@@ -2337,7 +2337,7 @@ const symbols = [
 },
 {
   decimal: 9193,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Fast forward",
   symbol: "⏩",
@@ -2345,7 +2345,7 @@ const symbols = [
 },
 {
   decimal: 9194,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Fast backwards",
   symbol: "⏪",
@@ -2353,7 +2353,7 @@ const symbols = [
 },
 {
   decimal: 9196,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Fast downwards",
   symbol: "⏬",
@@ -2361,7 +2361,7 @@ const symbols = [
 },
 {
   decimal: 9195,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Fast upwards",
   symbol: "⏫",
@@ -2369,7 +2369,7 @@ const symbols = [
 },
 {
   decimal: 9197,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Skip forward",
   symbol: "⏭",
@@ -2377,7 +2377,7 @@ const symbols = [
 },
 {
   decimal: 9198,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Skip backward",
   symbol: "⏮",
@@ -2385,7 +2385,7 @@ const symbols = [
 },
 {
   decimal: 9199,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Play Pause",
   symbol: "⏯",
@@ -2393,7 +2393,7 @@ const symbols = [
 },
 {
   decimal: 9200,
-  hex: 0x00,
+  hex: 0x,
   category: "Time",
   name: "Alarm clock",
   symbol: "⏰",
@@ -2401,7 +2401,7 @@ const symbols = [
 },
 {
   decimal: 9201,
-  hex: 0x00,
+  hex: 0x,
   category: "Time",
   name: "Stop watch",
   symbol: "⏱",
@@ -2409,7 +2409,7 @@ const symbols = [
 },
 {
   decimal: 9202,
-  hex: 0x00,
+  hex: 0x,
   category: "Time",
   name: "Kitchen timer",
   symbol: "⏲",
@@ -2417,7 +2417,7 @@ const symbols = [
 },
 {
   decimal: 9203,
-  hex: 0x00,
+  hex: 0x,
   category: "Time",
   name: "Hourglass running",
   symbol: "⏳",
@@ -2425,7 +2425,7 @@ const symbols = [
 },
 {
   decimal: 9204,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Left arrow",
   symbol: "⏴",
@@ -2433,7 +2433,7 @@ const symbols = [
 },
 {
   decimal: 9205,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Right arrow",
   symbol: "⏵",
@@ -2441,7 +2441,7 @@ const symbols = [
 },
 {
   decimal: 9206,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Up arrow",
   symbol: "⏶",
@@ -2449,7 +2449,7 @@ const symbols = [
 },
 {
   decimal: 9207,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Down arrow",
   symbol: "⏷",
@@ -2457,7 +2457,7 @@ const symbols = [
 },
 {
   decimal: 9208,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Pause",
   symbol: "⏸",
@@ -2465,7 +2465,7 @@ const symbols = [
 },
 {
   decimal: 9209,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Stop",
   symbol: "⏹",
@@ -2473,7 +2473,7 @@ const symbols = [
 },
 {
   decimal: 9210,
-  hex: 0x00,
+  hex: 0x,
   category: "Audio / Video",
   name: "Record",
   symbol: "⏺",
@@ -2481,7 +2481,7 @@ const symbols = [
 },
 {
   decimal: 9748,
-  hex: 0x00,
+  hex: 0x,
   category: "Weather",
   name: "Umbrella with drops",
   symbol: "☔",
@@ -2489,7 +2489,7 @@ const symbols = [
 },
 {
   decimal: 9749,
-  hex: 0x00,
+  hex: 0x,
   category: "Things",
   name: "Cup on plate",
   symbol: "☕",
@@ -2497,7 +2497,7 @@ const symbols = [
 },
 {
   decimal: 9750,
-  hex: 0x00,
+  hex: 0x,
   category: "Shapes",
   name: "Outline house",
   symbol: "☖",
@@ -2505,7 +2505,7 @@ const symbols = [
 },
 {
   decimal: 9751,
-  hex: 0x00,
+  hex: 0x,
   category: "Shapes",
   name: "Solid house",
   symbol: "☗",
@@ -2513,7 +2513,7 @@ const symbols = [
 },
 {
   decimal: 9752,
-  hex: 0x00,
+  hex: 0x,
   category: "Shapes",
   name: "Clover",
   symbol: "☘",
@@ -2521,7 +2521,7 @@ const symbols = [
 },
 {
   decimal: 9753,
-  hex: 0x00,
+  hex: 0x,
   category: "Shapes",
   name: "Fleuron",
   symbol: "☙",
@@ -2529,7 +2529,7 @@ const symbols = [
 },
 {
   decimal: 9754,
-  hex: 0x00,
+  hex: 0x,
   category: "People",
   name: "Hand pointing left",
   symbol: "☚",
@@ -2537,7 +2537,7 @@ const symbols = [
 },
 {
   decimal: 9755,
-  hex: 0x00,
+  hex: 0x,
   category: "People",
   name: "Hand pointing right",
   symbol: "☛",
@@ -2545,7 +2545,7 @@ const symbols = [
 },
 {
   decimal: 9756,
-  hex: 0x00,
+  hex: 0x,
   category: "People",
   name: "Hand pointing left",
   symbol: "☜",
@@ -2553,7 +2553,7 @@ const symbols = [
 },
 {
   decimal: 9757,
-  hex: 0x00,
+  hex: 0x,
   category: "People",
   name: "Hand pointing up",
   symbol: "☝",
@@ -2561,7 +2561,7 @@ const symbols = [
 },
 {
   decimal: 9758,
-  hex: 0x00,
+  hex: 0x,
   category: "People",
   name: "Hand pointing right",
   symbol: "☞",
@@ -2569,7 +2569,7 @@ const symbols = [
 },
 {
   decimal: 9759,
-  hex: 0x00,
+  hex: 0x,
   category: "People",
   name: "Hand pointing down",
   symbol: "☟",
@@ -2577,7 +2577,7 @@ const symbols = [
 },
 {
   decimal: 9760,
-  hex: 0x00,
+  hex: 0x,
   category: "People",
   name: "Skull and bones",
   symbol: "☠",
@@ -2585,7 +2585,7 @@ const symbols = [
 },
 {
   decimal: 9761,
-  hex: 0x00,
+  hex: 0x,
   category: "Math",
   name: "Bourbaki dangerous bend",
   symbol: "☡",
@@ -2593,7 +2593,7 @@ const symbols = [
 },
 {
   decimal: 9762,
-  hex: 0x00,
+  hex: 0x,
   category: "Signs",
   name: "Radioactive",
   symbol: "☢",
@@ -2601,7 +2601,7 @@ const symbols = [
 },
 {
   decimal: 9763,
-  hex: 0x00,
+  hex: 0x,
   category: "Signs",
   name: "Biohazard",
   symbol: "☣",
@@ -2609,7 +2609,7 @@ const symbols = [
 },
 {
   decimal: 9764,
-  hex: 0x00,
+  hex: 0x,
   category: "Signs",
   name: "Caduceus",
   symbol: "☤",
@@ -2617,7 +2617,7 @@ const symbols = [
 },
 {
   decimal: 9765,
-  hex: 0x00,
+  hex: 0x,
   category: "Signs",
   name: "Ankh",
   symbol: "☥",
@@ -2625,7 +2625,7 @@ const symbols = [
 },
 {
   decimal: 9766,
-  hex: 0x00,
+  hex: 0x,
   category: "Signs",
   name: "Orthodox cross",
   symbol: "☦",
@@ -2633,7 +2633,7 @@ const symbols = [
 },
 {
   decimal: 9767,
-  hex: 0x00,
+  hex: 0x,
   category: "Signs",
   name: "Chi Rho",
   symbol: "☧",
@@ -2641,7 +2641,7 @@ const symbols = [
 },
 {
   decimal: 9774,
-  hex: 0x00,
+  hex: 0x,
   category: "Signs",
   name: "Peace",
   symbol: "☮",
@@ -2649,7 +2649,7 @@ const symbols = [
 },
 {
   decimal: 9775,
-  hex: 0x00,
+  hex: 0x,
   category: "Signs",
   name: "Yin and Yang",
   symbol: "☯",
@@ -2657,7 +2657,7 @@ const symbols = [
 },
 {
   decimal: 9800,
-  hex: 0x00,
+  hex: 0x,
   category: "Zodiac",
   name: "Aries",
   symbol: "♈",
@@ -2665,7 +2665,7 @@ const symbols = [
 },
 {
   decimal: 9801,
-  hex: 0x00,
+  hex: 0x,
   category: "Zodiac",
   name: "Taurus",
   symbol: "♉",
@@ -2673,7 +2673,7 @@ const symbols = [
 },
 {
   decimal: 9802,
-  hex: 0x00,
+  hex: 0x,
   category: "Zodiac",
   name: "Gemini",
   symbol: "♊",
@@ -2681,7 +2681,7 @@ const symbols = [
 },
 {
   decimal: 9803,
-  hex: 0x00,
+  hex: 0x,
   category: "Zodiac",
   name: "Cancer",
   symbol: "♋",
@@ -2689,7 +2689,7 @@ const symbols = [
 },
 {
   decimal: 9804,
-  hex: 0x00,
+  hex: 0x,
   category: "Zodiac",
   name: "Leo",
   symbol: "♌",
@@ -2697,7 +2697,7 @@ const symbols = [
 },
 {
   decimal: 9805,
-  hex: 0x00,
+  hex: 0x,
   category: "Zodiac",
   name: "Virgo",
   symbol: "♍",
@@ -2705,7 +2705,7 @@ const symbols = [
 },
 {
   decimal: 9806,
-  hex: 0x00,
+  hex: 0x,
   category: "Zodiac",
   name: "Libra",
   symbol: "♎",
@@ -2713,7 +2713,7 @@ const symbols = [
 },
 {
   decimal: 9807,
-  hex: 0x00,
+  hex: 0x,
   category: "Zodiac",
   name: "Scorpio",
   symbol: "♏",
@@ -2721,7 +2721,7 @@ const symbols = [
 },
 {
   decimal: 9808,
-  hex: 0x00,
+  hex: 0x,
   category: "Zodiac",
   name: "Sagittarius",
   symbol: "♐",
@@ -2729,7 +2729,7 @@ const symbols = [
 },
 {
   decimal: 9809,
-  hex: 0x00,
+  hex: 0x,
   category: "Zodiac",
   name: "Capricorn",
   symbol: "♑",
@@ -2737,7 +2737,7 @@ const symbols = [
 },
 {
   decimal: 9812,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "King",
   symbol: "♔",
@@ -2745,7 +2745,7 @@ const symbols = [
 },
 {
   decimal: 9813,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "Queen",
   symbol: "♕",
@@ -2754,7 +2754,7 @@ const symbols = [
 
 {
   decimal: 9814,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "Rook",
   symbol: "♖",
@@ -2762,7 +2762,7 @@ const symbols = [
 },
 {
   decimal: 9815,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "Bishop",
   symbol: "♗",
@@ -2770,7 +2770,7 @@ const symbols = [
 },
 {
   decimal: 9816,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "Knight",
   symbol: "♘",
@@ -2778,7 +2778,7 @@ const symbols = [
 },
 {
   decimal: 9817,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "Pawn",
   symbol: "♙",
@@ -2786,7 +2786,7 @@ const symbols = [
 },
 {
   decimal: 9818,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "King",
   symbol: "♚",
@@ -2794,7 +2794,7 @@ const symbols = [
 },
 {
   decimal: 9819,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "Queen",
   symbol: "♛",
@@ -2802,7 +2802,7 @@ const symbols = [
 },
 {
   decimal: 9820,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "Rook",
   symbol: "♜",
@@ -2810,7 +2810,7 @@ const symbols = [
 },
 {
   decimal: 9821,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "Bishop",
   symbol: "♝",
@@ -2818,7 +2818,7 @@ const symbols = [
 },
 {
   decimal: 9822,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "Knight",
   symbol: "♞",
@@ -2826,7 +2826,7 @@ const symbols = [
 },
 {
   decimal: 9823,
-  hex: 0x00,
+  hex: 0x,
   category: "Chess",
   name: "Pawn",
   symbol: "♟",
@@ -2834,7 +2834,7 @@ const symbols = [
 },
 {
   decimal: 9824,
-  hex: 0x00,
+  hex: 0x,
   category: "Cards",
   name: "Spades",
   symbol: "♠",
@@ -2842,7 +2842,7 @@ const symbols = [
 },
 {
   decimal: 9825,
-  hex: 0x00,
+  hex: 0x,
   category: "Cards",
   name: "Hearts",
   symbol: "♡",
@@ -2850,7 +2850,7 @@ const symbols = [
 },
 {
   decimal: 9826,
-  hex: 0x00,
+  hex: 0x,
   category: "Cards",
   name: "Diamonds",
   symbol: "♢",
@@ -2858,7 +2858,7 @@ const symbols = [
 },
 {
   decimal: 9827,
-  hex: 0x00,
+  hex: 0x,
   category: "Cards",
   name: "Clubs",
   symbol: "♣",
@@ -2866,7 +2866,7 @@ const symbols = [
 },
 {
   decimal: 9828,
-  hex: 0x00,
+  hex: 0x,
   category: "Cards",
   name: "Spades",
   symbol: "♤",
@@ -2874,7 +2874,7 @@ const symbols = [
 },
 {
   decimal: 9829,
-  hex: 0x00,
+  hex: 0x,
   category: "Cards",
   name: "Hearts",
   symbol: "♥",
@@ -2882,7 +2882,7 @@ const symbols = [
 },
 {
   decimal: 9830,
-  hex: 0x00,
+  hex: 0x,
   category: "Cards",
   name: "Diamonds",
   symbol: "♦",
@@ -2890,7 +2890,7 @@ const symbols = [
 },
 {
   decimal: 9831,
-  hex: 0x00,
+  hex: 0x,
   category: "Cards",
   name: "Clubs",
   symbol: "♧",
@@ -2898,7 +2898,7 @@ const symbols = [
 },
 {
   decimal: 9855,
-  hex: 0x00,
+  hex: 0x,
   category: "Signs",
   name: "Wheelchair",
   symbol: "♿",
@@ -2906,7 +2906,7 @@ const symbols = [
 },
 {
   decimal: 9875,
-  hex: 0x00,
+  hex: 0x,
   category: "Nautical",
   name: "Anchor",
   symbol: "⚓",
@@ -2914,7 +2914,7 @@ const symbols = [
 },
 {
   decimal: 9889,
-  hex: 0x00,
+  hex: 0x,
   category: "Weather",
   name: "Lightning",
   symbol: "⚡",
@@ -2922,525 +2922,12 @@ const symbols = [
 },
 {
   decimal: 9898,
-  hex: 0x00,
+  hex: 0x,
   category: "Symbols",
   name: "White Circle",
   symbol: "⚪",
   keywords: ["round","empty","marble","pearl"]
 },
-{
-  decimal: 9899,
-  hex: 0x00,
-  category: "Symbols",
-  name: "Black Circle",
-  symbol: "⚫",
-  keywords: ["round","solid","marble","pearl"]
-},
-{
-  decimal: 9917,
-  hex: 0x00,
-  category: "Sports",
-  name: "Football",
-  symbol: "⚽",
-  keywords: ["soccer","white","black","ball"]
-},
-{
-  decimal: 9918,
-  hex: 0x00,
-  category: "Sports",
-  name: "Baseball",
-  symbol: "⚾",
-  keywords: ["bat","ball","round","red","white","stitched"]
-},
-{
-  decimal: 9924,
-  hex: 0x00,
-  category: "Weather",
-  name: "Snowman",
-  symbol: "⛄",
-  keywords: ["top","hat","scarf","red","white","carrot","man"]
-},
-{
-  decimal: 9925,
-  hex: 0x00,
-  category: "Weather",
-  name: "Partly cloudy",
-  symbol: "⛅",
-  keywords: ["sun","cloud","cover","white"]
-},
-{
-  decimal: 9940,
-  hex: 0x00,
-  category: "Signs",
-  name: "No entry sign",
-  symbol: "⛔",
-  keywords: ["red","white","stop"]
-},
-{
-  decimal: 9971,
-  hex: 0x00,
-  category: "Sports",
-  name: "Golf course",
-  symbol: "⛳",
-  keywords: ["green","golf","flag","ball","putt"]
-},
-{
-  decimal: 9977,
-  hex: 0x00,
-  category: "Sports",
-  name: "Person bouncing ball",
-  symbol: "⛹",
-  keywords: ["man","exercise","gym"]
-},
-{
-  decimal: 9989,
-  hex: 0x00,
-  category: "Signs",
-  name: "Green checkmark",
-  symbol: "✅",
-  keywords: ["white","mark","ok","go","done","todo"]
-},
-{
-  decimal: 10024,
-  hex: 0x00,
-  category: "Signs",
-  name: "Sparkle",
-  symbol: "✨",
-  keywords: ["stars","shine","explode","sparkling"]
-},
-{
-  decimal: 10062,
-  hex: 0x00,
-  category: "Signs",
-  name: "Green crossmark",
-  symbol: "❎",
-  keywords: ["white","mark","not","ok","go","done","todo"]
-},
-{
-  decimal: 10060,
-  hex: 0x00,
-  category: "Signs",
-  name: "Red crossmark",
-  symbol: "❌",
-  keywords: ["red","mark","not","ok","done","todo","stop","no","fail","negative"]
-},
-{
-  decimal: 10067,
-  hex: 0x00,
-  category: "Signs",
-  name: "Red questionmark",
-  symbol: "❓",
-  keywords: ["red","mark","ask","ponder","wonder","enquire"]
-},
-{
-  decimal: 10078,
-  hex: 0x00,
-  category: "Signs",
-  name: "White questionmark",
-  symbol: "❔",
-  keywords: ["white","mark","ask","ponder","wonder","enquire"]
-},
-{
-  decimal: 11088,
-  hex: 0x00,
-  category: "Signs",
-  name: "Gold star",
-  symbol: "⭐",
-  keywords: [""]
-},
-{
-  decimal: 11093,
-  hex: 0x00,
-  category: "Shapes",
-  name: "Hollow Red Circle",
-  symbol: "⭕",
-  keywords: [""]
-},
-{
-  decimal: 127374,
-  hex: 0x00,
-  category: "Symbols",
-  name: "AB Button",
-  symbol: "🆎",
-  keywords: ["blood","type","red","white"]
-},
-{
-  decimal: 127375,
-  hex: 0x00,
-  category: "Signs",
-  name: "WC Button",
-  symbol: "🆏",
-  keywords: ["water","closet","black","white"]
-},
-{
-  decimal: 127377,
-  hex: 0x00,
-  category: "Symbols",
-  name: "CL Button",
-  symbol: "🆑",
-  keywords: ["clear","calculator","red","white"]
-},
-{
-  decimal: 127378,
-  hex: 0x00,
-  category: "Symbols",
-  name: "Cool Button",
-  symbol: "🆒",
-  keywords: ["blue","interest","approval"]
-},
-{
-  decimal: 127379,
-  hex: 0x00,
-  category: "Symbols",
-  name: "Free Button",
-  symbol: "🆓",
-  keywords: ["blue","gratis","libre","available"]
-},
-{
-  decimal: 127380,
-  hex: 0x00,
-  category: "Symbols",
-  name: "ID Button",
-  symbol: "🆔",
-  keywords: ["purple","identification"]
-},
-{
-  decimal: 127381,
-  hex: 0x00,
-  category: "Symbols",
-  name: "New Button",
-  symbol: "🆕",
-  keywords: ["blue","pristine","nouveau","latest"]
-},
-{
-  decimal: 127382,
-  hex: 0x00,
-  category: "Symbols",
-  name: "NG Button",
-  symbol: "🆖",
-  keywords: ["blue","no","not","good","bad","wrong","failed"]
-},
-{
-  decimal: 127384,
-  hex: 0x00,
-  category: "Symbols",
-  name: "SOS Button",
-  symbol: "🆘",
-  keywords: ["red","morse","distress","emergency","help","urgent","alert"]
-},
-{
-  decimal: 127385,
-  hex: 0x00,
-  category: "Symbols",
-  name: "Up! Button",
-  symbol: "🆙",
-  keywords: ["blue"]
-},
-{
-  decimal: 127386,
-  hex: 0x00,
-  category: "Symbols",
-  name: "VS Button",
-  symbol: "🆚",
-  keywords: ["orange","versus","against","competition","division","comparison"]
-},
-{
-  decimal: 127757,
-  hex: 0x00,
-  category: "Weather",
-  name: "Earth",
-  symbol: "🌍",
-  keywords: ["green","blue","planet","africa"]
-},
-{
-  decimal: 127758,
-  hex: 0x00,
-  category: "Weather",
-  name: "Earth",
-  symbol: "🌎",
-  keywords: ["green","blue","planet","americas"]
-},
-{
-  decimal: 127759,
-  hex: 0x00,
-  category: "Weather",
-  name: "Earth",
-  symbol: "🌏",
-  keywords: ["green","blue","planet","asia","pacific"]
-},
-{
-  decimal: 127789,
-  hex: 0x00,
-  category: "Food",
-  name: "Hot dog",
-  symbol: "🌭",
-  keywords: ["sausage","bread","ketchup","mustard"]
-},
-{
-  decimal: 127790,
-  hex: 0x00,
-  category: "Food",
-  name: "Taco",
-  symbol: "🌮",
-  keywords: ["taco","salad","shell","mexican"]
-},
-{
-  decimal: 127791,
-  hex: 0x00,
-  category: "Food",
-  name: "Burrito",
-  symbol: "🌮",
-  keywords: ["mexican"]
-},
-{
-  decimal: 127792,
-  hex: 0x00,
-  category: "Food",
-  name: "Chestnut",
-  symbol: "🌰",
-  keywords: ["nut","tree","raisins","testicles","balls","buns"]
-},
-{
-  decimal: 127793,
-  hex: 0x00,
-  category: "Nature",
-  name: "Seedling",
-  symbol: "🌱",
-  keywords: ["green","leaf","sprout","plant","tiny","stem","sprung"]
-},
-{
-  decimal: 127794,
-  hex: 0x00,
-  category: "Nature",
-  name: "Evergreen tree",
-  symbol: "🌲",
-  keywords: ["pine","fir","cedar"]
-},
-{
-  decimal: 127795,
-  hex: 0x00,
-  category: "Nature",
-  name: "Deciduous tree",
-  symbol: "🌳",
-  keywords: ["round","lush","leafy","oak","maple","birch"]
-},
-{
-  decimal: 127796,
-  hex: 0x00,
-  category: "Nature",
-  name: "Palm tree",
-  symbol: "🌴",
-  keywords: ["long","green","feather","beach","tropical","summer","fun","vacation"]
-},
-{
-  decimal: 127797,
-  hex: 0x00,
-  category: "Nature",
-  name: "Cactus",
-  symbol: "🌵",
-  keywords: ["spiky","green","desert","middle","finger","fu","resilience","survival","harsh","dry","spines"]
-},
-{
-  decimal: 127799,
-  hex: 0x00,
-  category: "Nature",
-  name: "Tulip",
-  symbol: "🌷",
-  keywords: ["flower","plant","pink","green"]
-},
-{
-  decimal: 127800,
-  hex: 0x00,
-  category: "Nature",
-  name: "Cherry Blossom",
-  symbol: "🌸",
-  keywords: ["flower","plant","pink","petals"]
-},
-{
-  decimal: 127801,
-  hex: 0x00,
-  category: "Nature",
-  name: "Rose",
-  symbol: "🌹",
-  keywords: ["flower","plant","red","romance","love","appreciation"]
-},
-{
-  decimal: 127802,
-  hex: 0x00,
-  category: "Nature",
-  name: "Hibiscus",
-  symbol: "🌺",
-  keywords: ["flower","plant","pink","red","green","leaves","summer","beauty","femininity","happiness"]
-},
-{
-  decimal: 127803,
-  hex: 0x00,
-  category: "Nature",
-  name: "Sunflower",
-  symbol: "🌻",
-  keywords: ["flower","plant","yellow","brown","sun","summer"]
-},
-{
-  decimal: 127804,
-  hex: 0x00,
-  category: "Nature",
-  name: "Blossom",
-  symbol: "🌼",
-  keywords: ["flower","plant","white","orange","petals","leaves","green"]
-},
-{
-  decimal: 127805,
-  hex: 0x00,
-  category: "Nature",
-  name: "Corn Cob",
-  symbol: "🌽",
-  keywords: ["mais","maize","dick","penis","porn","erection"]
-},
-{
-  decimal: 127806,
-  hex: 0x00,
-  category: "Nature",
-  name: "Sheaf of Rice",
-  symbol: "🌾",
-  keywords: ["ris","plant","wheat","hvete","grain","korn"]
-},
-{
-  decimal: 127807,
-  hex: 0x00,
-  category: "Nature",
-  name: "Herb",
-  symbol: "🌿",
-  keywords: ["urter","sprig","basil","weed","marijuana","sage","oregano"]
-},
-{
-  decimal: 127808,
-  hex: 0x00,
-  category: "Nature",
-  name: "Four Leaf Clover",
-  symbol: "🍀",
-  keywords: ["good","luck","fortune","success","green","optimism","st","patricks","day"]
-},
-{
-  decimal: 127809,
-  hex: 0x00,
-  category: "Nature",
-  name: "Maple Leaf",
-  symbol: "🍁",
-  keywords: ["fall","autumn","red","orange","canada"]
-},
-{
-  decimal: 127810,
-  hex: 0x00,
-  category: "Nature",
-  name: "Fallen Leaf",
-  symbol: "🍂",
-  keywords: ["fall","autumn","red","orange","weed","marijuana"]
-},
-{
-  decimal: 127811,
-  hex: 0x00,
-  category: "Nature",
-  name: "Leaf Fluttering in Wind",
-  symbol: "🍃",
-  keywords: ["green","weed","marijuana","spring","fresh"]
-},
-{
-  decimal: 127812,
-  hex: 0x00,
-  category: "Nature",
-  name: "Mushroom",
-  symbol: "🍄",
-  keywords: ["fungus","toadstool","red","white","super","mario","shroom","posion","psychedelic"]
-},
-{
-  decimal: 127813,
-  hex: 0x00,
-  category: "Nature",
-  name: "Tomato",
-  symbol: "🍅",
-  keywords: ["red","green","ketchup","flush","embarrassed","rotten","tomatoes"]
-},
-{
-  decimal: 127815,
-  hex: 0x00,
-  category: "Nature",
-  name: "Grapes",
-  symbol: "🍇",
-  keywords: ["purple","berry","cluster","wine","vine"]
-},
-{
-  decimal: 127816,
-  hex: 0x00,
-  category: "Nature",
-  name: "Melon",
-  symbol: "🍈",
-  keywords: ["green","cantaloupe","honeydew","tits","rack","breasts","boobies","hooters"]
-},
-{
-  decimal: 127817,
-  hex: 0x00,
-  category: "Nature",
-  name: "Watermelon",
-  symbol: "🍉",
-  keywords: ["green","red","palestine","juicy","fresh","slice"]
-},
-{
-  decimal: 127818,
-  hex: 0x00,
-  category: "Nature",
-  name: "Tangerine",
-  symbol: "🍊",
-  keywords: ["orange","citrus","mandarin","clementine"]
-},
-{
-  decimal: 127819,
-  hex: 0x00,
-  category: "Nature",
-  name: "Lemon",
-  symbol: "🍋",
-  keywords: ["yellow","sour","citrus","bitterness"]
-},
-{
-  decimal: 127820,
-  hex: 0x00,
-  category: "Nature",
-  name: "Banana",
-  symbol: "🍌",
-  keywords: ["yellow","sweet","dick","penis","erection","monkey","business","crazy"]
-},
-{
-  decimal: 127821,
-  hex: 0x00,
-  category: "Nature",
-  name: "Pineapple",
-  symbol: "🍍",
-  keywords: ["yellow","green","swingers","open","relationship","complicated","cannabis","getting","high"]
-},
-{
-  decimal: 127822,
-  hex: 0x00,
-  category: "Nature",
-  name: "Red Apple",
-  symbol: "🍎",
-  keywords: ["doctor","teacher","new","york","love"]
-},
-{
-  decimal: 127823,
-  hex: 0x00,
-  category: "Nature",
-  name: "Green Apple",
-  symbol: "🍏",
-  keywords: ["sassy","playful","cool","confident","envy"]
-},
-{
-  decimal: 127824,
-  hex: 0x00,
-  category: "Nature",
-  name: "Pear",
-  symbol: "🍐",
-  keywords: ["green","shaped","failure"]
-},
-
 
 
 

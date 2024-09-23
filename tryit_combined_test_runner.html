@@ -59,6 +59,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#129482; Testing Cubes functions</h2>
 <ul id="cubes_list"></ul>
 
+<h2>&#127913; Testing Cylinders functions</h2>
+<ul id="cylinders_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -494,6 +497,41 @@ class Cube extends AbstractShape {
   get toString() { return `Cube(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
 
+class Cylinder extends AbstractShape {
+  // The cylinder is for convenience defined as an infinitely long shape, 
+  // with a radius of 1. The cylinder has controls to set its length 
+  // and to allow one or both ends to be either open or capped.
+  
+  constructor() {
+    super()
+  }
+    
+  _intersect(local_ray) {
+    const a = local_ray.direction.x ** 2 + local_ray.direction.z ** 2
+    
+    // ray is parallel to the y axis
+    if (a <= C.EPSILON) { return [] }
+    
+    const b = 2 * local_ray.origin.x * local_ray.direction.x + 
+              2 * local_ray.origin.z * local_ray.direction.z
+    
+    const c = local_ray.origin.x ** 2 + local_ray.origin.z ** 2 - 1
+    
+    const disc = b**2-4*a*c
+    
+    // ray does not intersect the cylinder
+    if (disc < 0) { return [] }
+    
+    //placeholder to ensure tests that expect ray to miss, passes
+    return [ intersection(1, this) ]    
+  }
+  
+  _normal_at(local_normal) {
+    
+  }
+  
+  get toString() { return `Cylinder(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}
 
 </script>
 
@@ -2023,6 +2061,15 @@ function cube() {
   
   return new Cube()
 }
+
+function cylinder() {
+  // Factory function for Cylinder
+  // Class is implemented in shapes.js
+  
+  return new Cylinder()
+}
+
+
 
 </script>
 <script>
@@ -4808,6 +4855,33 @@ function test_normal_on_cube() {
   return !res.includes(false)
 }
 
+function test_ray_misses_cylinder() {
+  // Test the case where the ray misses the cylinder
+  
+  const cyl = cylinder()
+  
+  const cases = [
+        ray(point(1, 0, 0),  vector(0, 1, 0)),
+        ray(point(0, 0, 0),  vector(0, 1, 0)),
+        ray(point(0, 0, -5), vector(1, 1, 1)),  
+  ]
+  
+  const results = []
+  
+  for (c of cases) {
+    const direction = c.direction.normalize()
+    const r = ray(c.origin, direction)
+    const xs = cyl._intersect(r)
+    if (xs.length === 0) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+  }
+  
+  return !results.includes(false)  
+}
+
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -4977,6 +5051,8 @@ runTest("reflect_list", test_object_can_omit_casting_shadow)
 runTest("cubes_list", test_ray_intersects_cube)
 runTest("cubes_list", test_ray_misses_cube)
 runTest("cubes_list", test_normal_on_cube)
+
+runTest("cylinders_list", test_ray_misses_cylinder)
 
 
 

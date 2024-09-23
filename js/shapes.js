@@ -246,3 +246,39 @@ class Cube extends AbstractShape {
   
   get toString() { return `Cube(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
+
+class Cylinder extends AbstractShape {
+  // The cylinder is for convenience defined as an infinitely long shape, 
+  // with a radius of 1. The cylinder has controls to set its length 
+  // and to allow one or both ends to be either open or capped.
+  
+  constructor() {
+    super()
+  }
+    
+  _intersect(local_ray) {
+    const a = local_ray.direction.x ** 2 + local_ray.direction.z ** 2
+    
+    // ray is parallel to the y axis
+    if (a <= C.EPSILON) { return [] }
+    
+    const b = 2 * local_ray.origin.x * local_ray.direction.x + 
+              2 * local_ray.origin.z * local_ray.direction.z
+    
+    const c = local_ray.origin.x ** 2 + local_ray.origin.z ** 2 - 1
+    
+    const disc = b**2-4*a*c
+    
+    // ray does not intersect the cylinder
+    if (disc < 0) { return [] }
+    
+    //placeholder to ensure tests that expect ray to miss, passes
+    return [ intersection(1, this) ]    
+  }
+  
+  _normal_at(local_normal) {
+    
+  }
+  
+  get toString() { return `Cylinder(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}

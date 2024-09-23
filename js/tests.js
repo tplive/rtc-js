@@ -2778,3 +2778,30 @@ function test_normal_on_cube() {
   //log("error", res)
   return !res.includes(false)
 }
+
+function test_ray_misses_cylinder() {
+  // Test the case where the ray misses the cylinder
+  
+  const cyl = cylinder()
+  
+  const cases = [
+        ray(point(1, 0, 0),  vector(0, 1, 0)),
+        ray(point(0, 0, 0),  vector(0, 1, 0)),
+        ray(point(0, 0, -5), vector(1, 1, 1)),  
+  ]
+  
+  const results = []
+  
+  for (c of cases) {
+    const direction = c.direction.normalize()
+    const r = ray(c.origin, direction)
+    const xs = cyl._intersect(r)
+    if (xs.length === 0) {
+      results.push(true)
+    } else {
+      results.push(false)
+    }
+  }
+  
+  return !results.includes(false)  
+}
