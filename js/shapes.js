@@ -223,11 +223,25 @@ class Cube extends AbstractShape {
     const tmin = Math.max(xt.min, yt.min, zt.min)
     const tmax = Math.min(xt.max, yt.max, zt.max)
     
+    if (tmin > tmax) { return [] }
+    
     return [ intersection(tmin, this), intersection(tmax, this) ]
   }
   
   _normal_at(local_normal) {
-  
+    
+    const maxc = Math.max(Math.abs(local_normal.x), Math.abs(local_normal.y), Math.abs(local_normal.z))
+    
+    if (maxc === Math.abs(local_normal.x)) {
+      
+      return vector(local_normal.x, 0, 0)
+    } else if (maxc === Math.abs(local_normal.y)) {
+      
+      return vector(0, local_normal.y, 0)
+    } else {
+      
+      return vector(0, 0, local_normal.z)
+    }
   }
   
   get toString() { return `Cube(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }

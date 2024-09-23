@@ -1104,7 +1104,7 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
 <p>Now, back to our regular scheduled programme...</p>
 <p>1. juli 2024. Det er noen dager siden sist jeg kunne oppdatere dokumentasjonen. Ikke fordi jeg ikke har jobbet med prosjektet, men fordi jeg har hatt $0$ framgang... &#128517; Opprinnelig duret jeg gjennom den og trodde at en grønn test var det som skulle til, og jeg jobbet meg videre til test #6, men så ramlet alt sammen. Viste seg at den tidligere testen min ikke holdt vann. Min nemesis starter på side 151 i boka:</p>
 <p>Test #2: Determining $n_1$ and $n_2$: <var>Show that <code>prepare_computations()</code> determines $n_1$ and $n_2$ correctly at six different points of intersection</var>.</p>
-<p>Hørtes jo egentlig greit ut, vi har fra før tatt vare på alle intersections, og skal nå begynne å bruke dem (ikke bare "the hit") for å beregne refraksjonsindeksen når strålen passerer fra et materiale med èn verdi $n_1$ og over i et annet materiale med en annen verdi $n_2$. Dette gjøres med Snell's lov, som beskriver forholdet mellom innkommende stråle $\theta _i$ og refraktert stråle $\theta _t$, og ser slik ut: </p>
+<p>Hørtes jo egentlig greit ut, vi har fra før tatt vare på alle intersections, og skal nå begynne å bruke dem (ikke bare "the hit") for å beregne refraksjonsindeksen når strålen passerer fra et materiale med èn verdi $n_1$ og over i et annet materiale med en annen verdi $n_2$. Dette gjøres etter Snell's lov, som beskriver forholdet mellom innkommende stråle $\theta _i$ og refraktert stråle $\theta _t$, og ser slik ut: </p>
 
 <p>$$ {\sin \theta _i \over \sin \theta _t} = {n_2 \over n_1 } $$</p>
 
@@ -1115,7 +1115,26 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
 <p><img src="./chapter11_refraction_sphere_world_14_glass_balls3.png" /></p>
 
 <p>..men nå begynner rendringen å ta alvorlig lang tid igjen. <a href="./chapter11_refraction_sphere_world_14_glass_balls_1920x1080.png">Dette bildet i 1920x1080</a> tok 8.5 minutter.. &#129397;</p>
-<p></p>
+<p>16. juli 2024: Note to self - rendret senere <a href="./chapter12_table_mirror_sculpture_room_UHD.png">dette bildet</a> i 4K oppløsning (3840x2610) på 11.4 minutter, så det er da ikke SÅ ille. 651M matriser. &#128517;</p>
+
+<h3>&#129482; Kapittel 12, Cubes</h3>
+<p>Kuben er her implementert bestående av parvise plan, i det som kalles en Axis-Aligned Bounding Box (AABB). Det gjør beregning av intersections mye lettere, og så bruker man transforms som vanlig. Intersections behandles også i par, for når en stråle går gjennom kuben, kan den skjære planene til kuben både innenfor og utenfor det som defineres som kuben. Derfor må koden finne "largest minimum" og "smallest maximum" av t-verdiene. Ugreit å forklare, så vi tar med en liten illustrasjon:</p>
+<p><img src="./aabb_intersection.png" /></p>
+<p>Koden må håndtere tilfeller der retningsvektor-komponenter (si det ti ganger fort!) er 0, for vi liker ikke å dele på 0. Det gjør vi ved å sjekke absoluttverdien av komponenten; er den større enn <code>C.EPSILON</code>, kan vi dele skjæringen på retningskomponenten. Hvis ikke, ganges den med <code>Infinity</code>. Fun fact: I Javascript regnes et tall $n$ som <code>Infinity</code> hvis: $$1.797693134862315 \times 10^{308} \lt n \lt -1.797693134862316 \times 10^{308}$$ </p>
+<p>Dette sikrer at $t_{far}$ og $t_{near}$ (se illustrasjonen over) i det minste har korrekt fortegn, pluss eller minus.</p>
+
+<p>Siden det er syv caser som skal sjekkes, seks plan pluss stråle fra innsida av kubden, finner jeg det enklest å skrive testene som looper som resulterer i et array med bools. Jeg kan da feile testen dersom arrayet inneholder <code>false</code>. </p>
+
+<h4>Putting it together</h4>
+<p>Utfordringen i boka er å lage et rom bestående av en stor kube, og så lage et bord bare av kuber, plassere kuber rundt omkring. Neste er: kan du lage et rom som har forskjellig materiale i tak og gulv kontra veggene? Det er ikke så vanskelig så jeg bruker litt tid på å jobbe med scener bestående av kuber.</p>
+<p>Så finner jeg ut at jeg vil lage et klinkekuletårn av glasskuler. Stilig effekt det, ser jeg for meg, men hvordan beregner man hvordan kulene stabler? Jeg begynner med å plassere to kuler ved siden av hverandre. Ikke så vanskelig å få dem til å tangere, det er bare å flytte kule nr 2 $2r$ til siden. Den tredje kula skal ligge i midten, så midtpunktene av hver kule danner en likesidet trekant. Etter en del knoting finner jeg at jeg må  beregne midtpunktet i trekanten. Normalene til midtpunkt på trekantens bein skjærer hverandre i midtpunktet. I tillegg får jeg en rettvinklet trekant med en vinkel på $30^\circ$. Jeg tenker: dersom jeg finner høyden på trekanten (motstående til $60^\circ$) og høyden til midtpunktet (motstående til $30^\circ$) så har jeg avstanden i z-retningen. Avstand i y-retningen er $r$, altså midt mellom kulene. Tre kuler plassert. Ser bra ut. Hva med kula som skal hvile oppå disse? Det blir rett og slett litt for avansert for meg, jeg kommer ikke i mål.</p>
+<p>Men, mens jeg jobber på med det, jobbes det også i underbevisstheten og jeg kommer opp med en ny hypotese: hva om jeg flytter kule 2 rett ut som før, og så bare roterer kule 3 $60^\circ$ rundt y-aksen, og så kule 4 først $30^\circ$ rundt y og så $60^\circ$ rundt z-aksen?</p>
+<p>Teorien er sunn og frisk den, det er bare det at jeg oppdager det som må være en bug i beregningen av rotasjonsmatrise.. Kulene 1 - 3 plasserer seg helt nydelig som de skal. Kule 4 derimot - not so much.. Den vandrer av gårde, i helt merkelige retninger, og jeg får den i hvert fall ikke til å hvile i midtpunktet. Jeg prøver å "modellere" dette i matrise-kalkulatoren, men jeg klarer ikke å se hva som er feil... &#128542; og må gi meg på det. Blir en ny TODO, og det første forsøket er dokumentert i <code><a href="../tryit_combined_pyramid_alg.html">../tryit_combined_pyramid_alg.html</a></code>.</p>
+<p>I stedet lar jeg kreativiteten gå bananas og jobber meg fram til dette mesterverket:</p>
+<p><img src="./chapter12_table_mirror_sculpture_room_800x600.png" /></p>
+<p>Jeg håper senere kapitler implementerer bedre skyggelegging, for nå begynner jeg å bli kresen på det.. &#128527;</p>
+
+<h3>&#127913; Kapittel 13, Cylinders</h3>
   <p></p>
   <p></p>
   <p></p>
@@ -1126,6 +1145,8 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
 
   <p>TODO:
   <ul>
+    <li>Finne ut hva som er galt med rotasjonsmatrisen som gjør at det er umulig å rotere en kule opp på klinkekuletårnet. Forsøket er dokumentert i <code><a href="../tryit_combined_pyramid_alg.html">../tryit_combined_pyramid_alg.html</a></code></li>
+    <li>Kodeoptimalisering på Cube - trenger ikke teste mer etter at den finner at strålen bommer. Se side 176.</li>
     <li>Implementere ferdig no_shadow() funksjonalitet på objektene, slik at feks en vannoverflate ikke legger alt "i vannet" i skygge.
     <li>Rendre Sisyfos som dytter en blank og fin, halvgjennomsiktig, refrakterende kule opp en bratt bakke...</li> 
     <li>Fikse bugs med plan som ikke rendrer korrekt når de transleres. Acne, "gjennomsiktighet" og skygge.</li>

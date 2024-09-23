@@ -2311,6 +2311,186 @@ const symbols = [
   symbol: "🧊",
   keywords: ["glass","melt","water"]
 },
+{
+  decimal: 127913,
+  hex: 0x1F3A9,
+  category: "People",
+  name: "Top Hat",
+  symbol: "🎩",
+  keywords: ["cylinder","black","gold","formal","important","vip"]
+},
+{
+  decimal: 8986,
+  hex: 0x,
+  category: "Time",
+  name: "Wristwatch",
+  symbol: "⌚",
+  keywords: ["clock","face","hands","hour","minute"]
+},
+{
+  decimal: 8987,
+  hex: 0x,
+  category: "Time",
+  name: "Hourglass",
+  symbol: "⌛",
+  keywords: ["sand","glass", "full", "running", "out"]
+},
+{
+  decimal: 9193,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Fast forward",
+  symbol: "⏩",
+  keywords: ["blue","right","arrows","button"]
+},
+{
+  decimal: 9194,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Fast backwards",
+  symbol: "⏪",
+  keywords: ["blue","left","arrows","button","reverse"]
+},
+{
+  decimal: 9196,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Fast downwards",
+  symbol: "⏬",
+  keywords: ["blue","down","descent","arrows","button"]
+},
+{
+  decimal: 9195,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Fast upwards",
+  symbol: "⏫",
+  keywords: ["blue","up","ascent","arrows","button"]
+},
+{
+  decimal: 9197,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Skip forward",
+  symbol: "⏭",
+  keywords: ["blue","right","arrows","button"]
+},
+{
+  decimal: 9198,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Skip backward",
+  symbol: "⏮",
+  keywords: ["blue","left","arrows","button","reverse"]
+},
+{
+  decimal: 9199,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Play Pause",
+  symbol: "⏯",
+  keywords: ["blue","right","arrow","button"]
+},
+{
+  decimal: 9200,
+  hex: 0x,
+  category: "Time",
+  name: "Alarm clock",
+  symbol: "⏰",
+  keywords: ["bells","wake","up","call","morning"]
+},
+{
+  decimal: 9201,
+  hex: 0x,
+  category: "Time",
+  name: "Stop watch",
+  symbol: "⏱",
+  keywords: ["timing","run","performance","telemetry"]
+},
+{
+  decimal: 9202,
+  hex: 0x,
+  category: "Time",
+  name: "Kitchen timer",
+  symbol: "⏲",
+  keywords: ["timing","cooking","perfect","egg"]
+},
+{
+  decimal: 9203,
+  hex: 0x,
+  category: "Time",
+  name: "Hourglass running",
+  symbol: "⏳",
+  keywords: ["timing","sand","out"]
+},
+{
+  decimal: 9204,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Left arrow",
+  symbol: "⏴",
+  keywords: ["black", "play","reverse","backward"]
+},
+{
+  decimal: 9205,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Right arrow",
+  symbol: "⏵",
+  keywords: ["black","play","forward"]
+},
+{
+  decimal: 9206,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Up arrow",
+  symbol: "⏶",
+  keywords: ["black","ascent"]
+},
+{
+  decimal: 9207,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Down arrow",
+  symbol: "⏷",
+  keywords: ["black","descent"]
+},
+{
+  decimal: 9208,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Pause",
+  symbol: "⏸",
+  keywords: ["black","two","bars"]
+},
+{
+  decimal: 9209,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Stop",
+  symbol: "⏹",
+  keywords: ["black","square"]
+},
+{
+  decimal: 9210,
+  hex: 0x,
+  category: "Audio / Video",
+  name: "Record",
+  symbol: "⏺",
+  keywords: ["black","circle","dot"]
+},
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ]

@@ -27,7 +27,7 @@
   </script>
 
   <h1>
-    <h2>&#128150; REFRACTION
+    <h2>&#129482; CUBES
   </h1>
   <p id="perf"></p>
   <div id="kansas"></div>
@@ -227,6 +227,7 @@ class AbstractShape {
     this._transform = idmatrix()
     this._transform_inverse = idmatrix()
     this._material = material()
+    this._casts_shadow = true
     if (this.constructor == AbstractShape) { throw new TypeError("Cannot instantiate an abstract class.") }
   }
   
@@ -234,6 +235,7 @@ class AbstractShape {
   get transform() { return this._transform }
   get transform_inverse() { return this._transform_inverse }
   get material() { return this._material }
+  get casts_shadow() { return this._casts_shadow }
   get saved_ray() { return this._saved_ray }
   
   set transform(value) {
@@ -249,6 +251,8 @@ class AbstractShape {
       this._material = mat
     }
   }
+
+  set casts_shadow(tf) { this._casts_shadow = tf === true ? true : false }
   
   intersect(ray) {
     this._saved_ray = ray.transform(this._transform_inverse)
@@ -400,10 +404,73 @@ class Plane extends AbstractShape {
   get toString() { return `Plane(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
 
-  </script>
+class Cube extends AbstractShape {
+  // The cube is defined as an AABB - Axis-Aligned Bounding Box. That is, a shape where sides are
+  // aligned with the scene's axes - two are aligned with the x-axis, two with the y-axis and two
+  // with the z-axis. They always start centered in the origin and extend -1 and +1 in each direction.
+  // Then we use transformation matrices to scale, rotate and translate any way we want.
+  
+  constructor() {
+    super()
+  }
+  
+  _check_axis(origin, direction) {
+    const tmin_numerator = -1 - origin
+    const tmax_numerator = 1 - origin
+    
+    let tmin, tmax
+    
+    if (Math.abs(direction) >= C.EPSILON ) {
+      tmin = tmin_numerator / direction
+      tmax = tmax_numerator / direction
+    } else {
+      tmin = tmin_numerator * Infinity
+      tmax = tmax_numerator * Infinity
+    }
+    
+    if (tmin > tmax) {
+      [tmin, tmax] = [tmax, tmin]
+    }
+    
+    return { min: tmin, max: tmax }
+  }
+  
+  _intersect(local_ray) {
+    const xt = this._check_axis(local_ray.origin.x, local_ray.direction.x)
+    const yt = this._check_axis(local_ray.origin.y, local_ray.direction.y)
+    const zt = this._check_axis(local_ray.origin.z, local_ray.direction.z)
+    
+    const tmin = Math.max(xt.min, yt.min, zt.min)
+    const tmax = Math.min(xt.max, yt.max, zt.max)
+    
+    if (tmin > tmax) { return [] }
+    
+    return [ intersection(tmin, this), intersection(tmax, this) ]
+  }
+  
+  _normal_at(local_normal) {
+    
+    const maxc = Math.max(Math.abs(local_normal.x), Math.abs(local_normal.y), Math.abs(local_normal.z))
+    
+    if (maxc === Math.abs(local_normal.x)) {
+      
+      return vector(local_normal.x, 0, 0)
+    } else if (maxc === Math.abs(local_normal.y)) {
+      
+      return vector(0, local_normal.y, 0)
+    } else {
+      
+      return vector(0, 0, local_normal.z)
+    }
+  }
+  
+  get toString() { return `Cube(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
+}
 
-  <!--<script src="./js/functions.js"></script>-->
-  <script>
+</script>
+
+<!--<script src="./js/functions.js"></script>-->
+<script>
 // *** FUNCTION DEFINITIONS
 
 const π = Math.PI
@@ -1240,7 +1307,7 @@ function reflect(v_in, normal) {
   //log("error", "reflect() v_in: " + v_in)
   //log("error", "reflect() normal: " + normal)
   
-  return v_in.minus(normal.by_scalar(2 * v_in.dot(normal)))
+  return v_in.minus(normal.by_scalar(2).by_scalar(v_in.dot(normal)))
 }
 
 class PointLight {
@@ -1329,9 +1396,6 @@ class Material {
         && mat.diffuse === this._diffuse
         && mat.specular === this._specular
         && mat.shininess === this._shininess
-        && mat.reflective === this._reflective
-        && mat.transparency === this._transparency
-        && mat.refractive_index === this._refractive_index
   }
     
 }
@@ -1925,12 +1989,19 @@ function schlick(comps) {
   return r0 + (1 - r0) * (1 - cos)**5
 }
 
+function cube() {
+  // Factory function for Cube
+  // Class is implemented in shapes.js
+  
+  return new Cube()
+}
+
   </script>
 
   <script>
 // *** SCENE
 
-// Putting it together chapter 11. Refraction
+// Putting it together chapter 12. Cubes
 
 
 // Performance counter
@@ -1938,8 +2009,8 @@ const start = performance.now()
 
 // *** DEFINE SCENE
 
-const hsize = 1920
-const vsize = 1080 //Math.round(hsize * 0.5625) // 16:9
+const hsize = 800
+const vsize = 600 //Math.round(hsize * 0.5625) // 16:9
 
 // SCENE TELEMETRY
 tuple = profile(tuple)
@@ -1952,130 +2023,157 @@ intersect_world = profile(intersect_world)
 log("error", `Image dimensions: ${hsize} x ${vsize}`)
 
 // DEFINE WORLD
-const myworld = world()
-
-// BOX
-const side = 80
+const sky = color(0.7, 0.7, 1.0)
 const white = color(1, 1, 1)
 const black = color(0, 0, 0)
-const red = color(1, 0, 0)
-const green = color(0, 1, 0)
-const blue = color(0, 0, 1)
-const sky = color(0.8, 0.8, 1)
+const blue = color(0.4, 0.4, 1.0)
+const green = color(0.4, 1.0, 0.4)
+const red = color(1.0, 0.4, 0.4)
+const yellow = color(0.9, 0.9, 0.3)
+const brown = color(0.45, 0.25, 0.05)
+const lightbrown = brown.by_scalar(1.22222)
 
-/*
-const surface = plane()
-surface.material.transparency = 0.99
-surface.material.reflective = 0.6
-surface.material.refractive_index = 1.333
-myworld.addObject(surface)
+const myworld = world()
 
+const width  = 50
+const height = 40
+const depth  = 50
 
-const floor = sphere()
-floor.transform = translation(0, -10, 0).times_matrix(scaling(100, 0.01, 100))
-floor.material.pattern = chequered_pattern(black, white)
-floor.material.reflective = 0.6
-myworld.addObject(floor)
+const world_rotation = idmatrix()//.times_matrix(rotation_y(0))
 
-*/
-const bottom = plane()
-bottom.transform = translation(0, -4, 0)
-bottom.material.pattern = chequered_pattern(random_color(), random_color())
-bottom.material.reflective = 0.7
-bottom.material.pattern.transform = rotation_y(π / 4).times_matrix(scaling(3, 3, 3))
-myworld.addObject(bottom)
-/*
-const ceiling = plane()
-ceiling.transform = translation(0, side, 0)
-ceiling.material.color = sky
-myworld.addObject(ceiling)
+// MATERIALS
+const wood = material()
+wood.pattern = ring_pattern(brown, lightbrown)
+wood.pattern.transform = scaling(0.1, 0.1, 0.1)
 
-const back_wall = plane()
-back_wall.material.pattern = ring_pattern(random_color(), random_color())
-back_wall.material.pattern.transform = rotation_y(π / 4)
-back_wall.transform = translation(0, 0, side).times_matrix(rotation_x(π / 2))
-myworld.addObject(back_wall)
+const marble = material()
+marble.refractive_index = 1.42
+marble.diffuse = 0.1
+marble.ambient = 0.1
+marble.transparency = 1.0
+marble.reflectivity = 0.9
 
-const front_wall = plane()
-front_wall.material.pattern = ring_pattern(random_color(), random_color())
-front_wall.material.pattern.transform = rotation_y(π / 6)
-front_wall.transform = translation(0, 0, -side).times_matrix(rotation_x(π / 2))
-myworld.addObject(front_wall)
+const world_cube = cube()
+world_cube.transform = world_rotation.times_matrix(translation(0, height / 2, 0).times_matrix(scaling(width, height / 2, depth)))
+world_cube.material.color = sky
+world_cube.material.specular = 0.001
+world_cube.material.pattern = stripe_pattern(sky, sky.by_scalar(0.7))
+world_cube.material.pattern.transform = scaling(0.03, 1, 0.03).times_matrix(rotation_y( π / 3))
+myworld.addObject(world_cube)
 
-const left_wall = plane()
-left_wall.material.pattern = ring_pattern(random_color(), random_color())
-left_wall.material.pattern.transform = rotation_y(π / 4)
-left_wall.transform = translation(-side, 0, 0).times_matrix(rotation_z(π / 2))
-myworld.addObject(left_wall)
-*/
-
-// INSIDE
-const dyson = sphere()
-dyson.transform = translation(5, 5, 5).times_matrix(scaling(100, 100, 100))
-dyson.material.reflective = 1.0
-dyson.material.transparency = 0.01
-dyson.material.ambient = 0.1
-dyson.material.diffuse = 0.3
-dyson.material.shininess = 0.0
-dyson.material.specular = 0.0
-
-dyson.material.pattern = gradient_pattern(sky, white)
-myworld.addObject(dyson)
-
-// CAMERA AND LIGHT
-
-const cam = camera(hsize, vsize, π / 5)
-const from = point(20, 9, -25)
-const to = point(0, 1, 0)
-const up = vector(0, 1, 0)
-cam.transform = view_transform(from, to, up)
-
-const light = point_light(point(-15, 20, -15), color(1, 1, 1))
-log("error", "Light color: " + light.intensity.scaled())
-myworld.addLight(light)
-
+const flceil = cube()
+flceil.transform = world_rotation.times_matrix(translation(0, height / 2, 0).times_matrix(scaling(width, (height-2) / 2, depth)))
+flceil.material.pattern = chequered_pattern(color(0.1, 0.1, 0.1), white.by_scalar(0.6))
+flceil.material.reflective = 0.1
+flceil.material.ambient = 0
+flceil.material.pattern.transform = scaling(0.1, 0.1, 0.1)
+myworld.addObject(flceil)
 
 // SCENE OBJECTS
 
-// MATERIALS
+const surf_height = 10
+const table_thickness = 0.2
+const leg_thickness = 0.6
 
-const glass = material()
-glass.refractive_index = 1.52
-glass.reflective = 0.9
-glass.transparency = 0.9
-glass.ambient = 0.1
-glass.diffuse = 0.1
-glass.shininess = 600
-glass.specular = 1.0
-glass.color = blue
+const table = cube()
+table.transform = translation(0, surf_height, 0).times_matrix(scaling(12, table_thickness, 8))
+table.material = structuredClone(wood)
+table.material.reflective = 0.3
+//table.material.color = sky
+myworld.addObject(table)
 
-// BIG BALL
-const bb = sphere()
-bb.material.color = black
-bb.material.reflective = 0.9
-bb.transform = scaling(3, 3, 3)
-myworld.addObject(bb)
-// BALLS
+const leg1 = cube()
+leg1.transform = translation(11, surf_height/2, 7).times_matrix(scaling(leg_thickness, surf_height/2, leg_thickness))
+leg1.material = wood
+myworld.addObject(leg1)
 
-const balls = []
+const leg2 = cube()
+leg2.transform = translation(-11, surf_height/2, 7).times_matrix(scaling(leg_thickness, surf_height/2, leg_thickness))
+leg2.material = wood
+myworld.addObject(leg2)
 
-const nmb_balls = 14
-for (let j = 1; j <= 1; j++) {
-    
-  for (let i = 1; i <= nmb_balls; i++) {
-    const b = sphere()
-    b.material = glass
-    b.material.color = random_color()
-    b.transform = rotation_y( (2*π / nmb_balls) * i).times_matrix(translation(-5, 0, 0))
-    balls.push(b)
-  }
-}
+const leg3 = cube()
+leg3.transform = translation(-11, surf_height/2, -7).times_matrix(scaling(leg_thickness, surf_height/2, leg_thickness))
+leg3.material = wood
+myworld.addObject(leg3)
 
-for (e in balls) {
-  myworld.addObject(balls[e])
-  log("error", `${balls[e].toString}\n${balls[e].material.color}`)
-}
+const leg4 = cube()
+leg4.transform = translation(11, surf_height/2, -7).times_matrix(scaling(leg_thickness, surf_height/2, leg_thickness))
+leg4.material = wood
+myworld.addObject(leg4)
 
+const mirror = cube()
+mirror.transform = world_rotation.times_matrix(translation(width / 6, height / 2, depth -1).times_matrix(scaling(width/2, height/3, 0.3)))
+mirror.material.color = black
+mirror.material.reflective = 0.9
+myworld.addObject(mirror)
+
+const oledtv = cube()
+oledtv.transform = world_rotation.times_matrix(translation(width / 4, height / 2, -depth +2).times_matrix(scaling(width/2, height/3, 0.3)))
+oledtv.material.reflective = 0.05
+oledtv.material.pattern = gradient_pattern(sky, color(1, 0, 1))
+oledtv.material.pattern.transform = scaling(2.5, 1, 3)
+myworld.addObject(oledtv)
+
+const tc1 = cube()
+tc1.transform = translation(0, surf_height + 1.93, 0).times_matrix(scaling(1, 1, 1).times_matrix(rotation_x(π / 4).times_matrix(rotation_z(π / 4))))
+tc1.material.reflective = 0.2
+tc1.material.pattern = chequered_pattern(random_color(), random_color())
+tc1.material.pattern.transform = scaling(0.1, 0.2, 0.3)
+myworld.addObject(tc1)
+
+const paper = cube()
+paper.transform = translation(5, surf_height + table_thickness, -2).times_matrix(scaling(2, 0.1, 3).times_matrix(rotation_y(π / 7)))
+paper.material.reflective = 0.0
+paper.material.pattern = stripe_pattern(white, black)
+paper.material.pattern.transform = scaling(0.01, 0.001, 0.1).times_matrix(rotation_y(π))
+myworld.addObject(paper)
+
+const lampx = 25
+const lampy = 2.5
+const lampz = 0
+
+const ball1 = sphere()
+ball1.transform = translation(lampx, lampy + 3 + 3, lampz).times_matrix(scaling(3, 3, 3))
+ball1.material = marble
+myworld.addObject(ball1)
+
+const ball2 = sphere()
+ball2.transform = translation(lampx, lampy + 3 + 3 + 3 + 4, lampz).times_matrix(scaling(3, 4, 3))
+ball2.material.pattern = gradient_pattern(random_color(), random_color())
+ball2.material.reflective = 0.8
+myworld.addObject(ball2)
+
+const ball3 = sphere()
+ball3.transform = translation(lampx, lampy + 3 + 3 + 3 + 4 + 4 + 5, lampz).times_matrix(scaling(3, 5, 3))
+//ball3.material.pattern = gradient_pattern(random_color(), random_color())
+//ball3.material.reflective = 0.8
+ball3.material = marble
+myworld.addObject(ball3)
+
+const stand = cube()
+stand.transform = translation(lampx, lampy, lampz).times_matrix(scaling(3, 3, 3).times_matrix(rotation_y(1)))
+stand.material.color = color(0.8, 0.8, 0.2)
+stand.material.reflective = 0.9
+myworld.addObject(stand)
+
+// CAMERA AND LIGHT
+
+const cam = camera(hsize, vsize, π / 3)
+const from = point(-18, surf_height + 10, -38) // Forward
+//const from = point(0, surf_height + 2, 20) // Rear
+//const from = point(20, surf_height + 2, 15) // ~60 deg rear left
+//const from = point(-20, surf_height + 2, 15) // ~60 deg rear right
+//const from = point(20, surf_height + 2, 0) // From right
+//const from = point(-20, surf_height + 2, 0) // From left
+//const from = point(0, 30, -1) // From top (angle π / 80)
+const to = point(0, surf_height + 2, 0)
+const up = vector(0, 1, 0)
+cam.transform = view_transform(from, to, up)
+
+const light = point_light(point(20, 30, -25), color(1, 1, 1))
+log("error", "Light color: " + light.intensity.scaled())
+myworld.addLight(light)
 // AAND ACTION!
 
 const can = render(cam, myworld)

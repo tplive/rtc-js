@@ -2720,3 +2720,61 @@ function test_ray_intersects_cube() {
   
   return !res.includes(false)
 }
+
+function test_ray_misses_cube() {
+  // Test the case when a ray misses a cube
+  
+  const c = cube()
+  const rays = [
+    ray(point(-2, 0, 0), vector(0.2673, 0.5345, 0.8018)),
+    ray(point(0, -2, 0), vector(0.8018, 0.2673, 0.5345)),
+    ray(point(0, 0, -2), vector(0.5345, 0.8018, 0.2673)),
+    ray(point(2, 0, 2), vector(0, 0, -1)),
+    ray(point(0, 2, 2), vector(0, -1, 0)),
+    ray(point(2, 2, 0), vector(-1, 0, 0))
+  ]
+    
+  const res = []
+
+  for (let i = 0; i < rays.length; i++) {
+    const xs = c._intersect(rays[i])
+    if ( xs.length === 0 ) {
+      res.push(true)
+    } else { 
+      res.push(false) 
+    }
+  }
+  //log("error", res)
+  
+  return !res.includes(false)
+}
+
+function test_normal_on_cube() {
+  // Test that we have the normal on the surface of a cube.
+  
+  const c = cube()
+  const points = [
+    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
+    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
+    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
+    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
+    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
+    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
+    ray(point(1, 0.5, -0.8), vector(1, 0, 0)),
+	ray(point(1, 0.5, -0.8), vector(1, 0, 0))
+  ]
+  
+  const res = []
+  
+  for (let i = 0; i < points.length; i++) {
+    const normal = c._normal_at(points[i].origin)
+    if (normal.equals(points[i].direction)) {
+      res.push(true)
+    } else {
+      //log("error", `${normal} != ${points[i].direction}`)
+      res.push(false)
+    }
+  }
+  //log("error", res)
+  return !res.includes(false)
+}
