@@ -691,3 +691,25 @@ function test_calculate_determinant_of_3x3_matrix() {
     && determinant(structuredClone(m)) === -196
   )
 }
+
+function test_is_matrix_invertible() {
+  // We need to be able to detect if a matrix is invertible.
+  // If the determinant is 0, the matrix is not invertible.
+  
+  let m1 = matrix(4, 4)
+  
+  // Invertible matrix
+  m1 = [[6,4,4,4],[5,5,7,6],[4,-9,3,-7],[9,1,7,-6]]
+  
+  const detm1 = determinant(m1) // -2120
+  
+  let m2 = matrix(4, 4)
+  
+  // Non-invertible matrix
+  m2 = [[-4,2,-2,-3],[9,6,2,6],[0,-5,1,-5],[0,0,0,0]]
+  
+  const detm2 = determinant(m2) // 0
+  
+  return (detm1 === -2120 && detm2 === 0)
+
+}
