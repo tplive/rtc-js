@@ -8,7 +8,7 @@ body {
   font-family: sans-serif;
 }
 code {
-  background-color: lightgrey;
+  background-color: rgb(200,225,225);
   font-weight: bold;
 }
 
@@ -27,6 +27,10 @@ pre {
     padding: 1em 1.5em;
     display: block;
     word-wrap: break-word;
+}
+
+footer {
+  margin: 3rem;
 }
 
 </style>
@@ -85,9 +89,11 @@ function test_hypotenuse_function() {
 
 <p>Og kjører testen igjen. Denne gang skal den vel returnere true? Eller?</p>
 
-<p>Det er her elegansen i denne fremgangsmåten blir synlig. På grunn av forskjell i presisjon mellom JS og min kalkulator vil testen fortsatt feile. JS gir svaret <var>5.830951894845301</var>. At testen nå feiler er dens eneste mening og skal reise et rødt flagg hos meg, hvor jeg må gå grundigere inn i årsaken til at testen feiler. Hvis jeg sammenligner med kvadratroten av 34, så passerer testen som den skal.</p>
+<p>Det er her elegansen i test-drevet utvikling kommer til syne: På grunn av forskjell i "flyt-talls-presisjonen" mellom JS og min kalkulator vil testen fortsatt feile. JS gir svaret <var>5.830951894845301</var>. En test som feiler betyr at "noe" er galt, og vi må se nærmere på årsaken. Hvis jeg nå endrer testen så den istedet sammenligner resultatet av funksjonen mot det mer nøyaktige <var><span>&#8730;</span><span  style="border-top: 1px solid black">34</span></var>, så passerer testen som den skal.</p>
 
-<p>Dette kan ved første øyekast virke tungrodd og masse ekstra kode for å teste EN kodelinje, men dette er bare det grunnleggende, og det virker jo unødvendig å sammenligne <code>1 == 1</code>… Når jeg senere tester sammensatte funksjoner som feiler uventet, eller jeg gjør endringer som får tester til å feile som tidligere har fungert fint, vil jeg kunne avdekke slike subtile feil som avrunding etc. som ellers kunne gått ubemerket hen i lang tid før den senere skaper problemer helt andre steder i koden. Mikser vi inn et team av utviklere som gjør mer eller mindre tilfeldige endringer i hele kodebasen samtidig, mangedobles verdien av å ha gode grundige tester som sikkerhetsnett.</p>
+<p>Dette kan ved første øyekast virke tungrodd og masse ekstra kode for å teste EN kodelinje; hva er vitsen med å sammenligne <code>1 == 1</code>??? Når kompleksiteten øker og man begynner å kjøre tester på større operasjoner, vil testene kunne avdekke slike subtile feil som avrunding etc. Feil som ellers kunne gått ubemerket hen i lang tid og dukket opp i form av obskure problemer helt andre steder i koden.</p>
+
+<p>Når jeg senere gjør endringer i eksisterende kode (feks refaktorerer eller legger til / trekker fra funksjonalitet) som får tester til å feile som tidligere har fungert fint, blir feilene oppdaget tidlig og kan fikses mens man har endringen friskt i minne. Verdien av test-drevet utvikling øker eksponensielt med antall utviklere som jobber i og endrer kodebasen. Grundige tester fungerer som et sikkerhetsnett.</p>
 
 <p>13.04.2024: Finner <a href="https://stackoverflow.com/questions/14481381/how-to-catch-all-javascript-warnings-and-errors-to-an-output-div#33321914">en funksjon som kan vise feilkoder i HTML her</a>… &#128512;</p>
 
@@ -190,9 +196,9 @@ ma[0][2] = 99
 [[12,34,99,56],[12,34,99,56],[12,34,99,56],[12,34,99,56]]</pre>
 <p>Ser ut som hver eneste rad peker til samme posisjoner i minnet. Jeg vet ikke hvordan jeg lager et array med rader som peker til unike minneposisjoner, og jeg er redd dette kan komme tilbake og bite meg senere... Men for now dokumenterer jeg det her, og oppretter arrayet helt manuelt, slik:</p>
 <pre>const m = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]</pre>
-<p></p>
-<p></p>
-<p></p>
+<p>Neste dag (22.04.24): Joda, det kom og beit meg... &#128514;</p>
+<p>For å bøte på problemet, fikser jeg matrix() så den looper og lager array element for element. Blir nok bra det også. Hvem f..n vil egentlig ha array som peker hit og dit og her og der!? JS assa.. &#128527;</p>
+<p>Det gjør det så at jeg <del>enkelt</del> enklere får til <code>determinant()</code> og <code>submatrix()</code>-funksjonene, og disse verktøyene trengs for å jobbe seg videre mot inverteringsfunksjonen som tydeligvis blir mye mer komplisert for 3x3 og 4x4 matriser.</p>
 <p></p>
 <p></p>
 <p></p>
@@ -203,6 +209,9 @@ ma[0][2] = 99
 <p></p>
 <p></p>
 
+<footer><center>Copyright (c) 2024 Thomas &#129395;</center>
+
+</footer>
 </body>
 </html>
 

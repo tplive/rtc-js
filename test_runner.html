@@ -106,11 +106,25 @@ runTest("matrix_list", test_matrix_equal_function)
 runTest("matrix_list", test_multiply_matrices_function)
 runTest("matrix_list", test_multiply_matrix_by_tuple_function)
 runTest("matrix_list", test_multiply_by_identity_matrix_function)
+runTest("matrix_list", test_transpose_matrix_function)
+runTest("matrix_list", test_transpose_identity_matrix)
+runTest("matrix_list", test_calculate_determinant_of_2x2_matrix)
+runTest("matrix_list", test_submatrix_function)
+runTest("matrix_list", test_minor_function)
+runTest("matrix_list", test_cofactor_function)
+
 
 const end = performance.now()
 const elapsed = end - start
 
+const cumulated = localStorage.getItem("test_running_time")
+const runs = localStorage.getItem("runs")
+
+localStorage.setItem("runs", Number(runs) + 1)
+localStorage.setItem("test_running_time", Number(cumulated) + elapsed)
+
 log("perf", "Tests running time: " + Math.round(elapsed) + " ms.")
+log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
 </script>
 
 </body>

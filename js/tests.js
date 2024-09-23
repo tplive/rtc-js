@@ -581,3 +581,110 @@ function test_multiply_by_identity_matrix_function() {
   return (equal_tuples(t, multiply_matrix_by_tuple(id_matrix, t)) && matrix_equal(ma, multiply_matrices(ma, id_matrix)))
   
 }
+
+function test_transpose_matrix_function() {
+  // Transposing a matrix involves turning rows into columns.
+  
+  const ma = [[0,9,3,0], [9,8,0,8], [1,8,5,3], [0,0,5,8]]
+  const mt = [[0,9,1,0], [9,8,8,0], [3,0,5,5], [0,8,3,8]]
+  
+  //log("error", ma.join("\n"))
+  //log("error", transpose_matrix(ma).join("\n"))
+  return matrix_equal(mt, transpose_matrix(ma))
+  
+}
+
+
+function test_transpose_identity_matrix() {
+  //Transposing identity matrix should return identity matrix.
+  
+  const t = transpose_matrix([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+  
+    return matrix_equal(t, transpose_matrix(t))
+
+}
+
+function test_calculate_determinant_of_2x2_matrix() {
+  // Calculate determinant of a 2x2 matrix
+  
+  const m = matrix(2, 2)
+  
+  m[0] = [1,5]
+  m[1][0] = -3
+  m[1][1] = 2
+  
+  return (determinant(m) === 17)
+}
+
+function test_submatrix_function() {
+  // A submatrix is what is left after removing a given row and column.
+  // The submatrix of a 4x4 matrix is a 3x3 matrix. 
+  // The submatrix of a 3x3 matrix is a 2x2 matrix.
+  
+  // 4x4 ==> 3x3
+  let m4 = matrix(4, 4)
+  m4 = [[-6,1,1,6],[-8,5,8,6],[-1,0,8,2],[-7,1,-1,1]]
+  
+  // The expected result:
+  m4c = [[-6,1,6],[-8,8,6],[-7,-1,1]]
+  
+  const sm3 = submatrix(m4, 2, 1)
+  
+  //log("error", sm3.join("\n"))
+  //log("error", m4c.join("\n"))
+  //log("error", "Equal: " + matrix_equal(sm3, m4c))
+  
+  // 3x3 ==> 2x2
+  let m3 = matrix(3, 3)
+  m3 = [[1,5,0],[-3,2,7],[0,6,-3]]
+  
+  // The expected result:
+  m3c = [[-3,2],[0,6]]
+  
+  const sm2 = submatrix(m3, 0, 2)
+  
+  //log("error", sm2.join("\n"))
+  //log("error", m3c.join("\n"))
+  //log("error", "Equal: " + matrix_equal(sm2, m3c))
+  
+  return ( matrix_equal(sm3, m4c) && matrix_equal(sm2, m3c) )
+}
+
+function test_minor_function() {
+  //Explained: The minor of an element at row i and column j is the determinant of the submatrix at (i, j).
+  
+  let m3 = matrix(3, 3)
+  
+  m3 = [[3,5,0],[2,-1,-7],[6,-1,5]]
+  
+  const m2 = submatrix(m3, 1, 0)
+  
+  const d = determinant([[5,0],[-1,5]])
+  
+  const min = minor([[3,5,0],[2,-1,-7],[6,-1,5]], 1, 0)
+  
+  //log("error", `d: ${d}, minor: ${min}`)
+  return (d === min)
+}
+
+function test_cofactor_function() {
+  //The cofactor is a possible negation of the minor, depending on which row/col its at.
+  //The following figure is helpful:
+  // | + - + |
+  // | - + - |
+  // | + - + |
+  // Also, doing a "negate if row + col is odd number" should work.
+  
+  let m = matrix(3, 3)
+  const m3 = [[3,5,0],[2,-1,-7],[6,-1,5]]
+  
+  const min1 = minor([[3,5,0],[2,-1,-7],[6,-1,5]], 0, 0) // = -12
+  const cof1 = cofactor([[3,5,0],[2,-1,-7],[6,-1,5]], 0, 0) //= -12
+  
+  const min2 = minor([[3,5,0],[2,-1,-7],[6,-1,5]], 1, 0) // = 25
+  const cof2 = cofactor([[3,5,0],[2,-1,-7],[6,-1,5]], 1, 0) //= -25
+  
+  //log("error", `${min1}, ${cof1}, ${min2}, ${cof2}`)
+  return (min1 === cof1 && min2 === cof2)
+  
+}

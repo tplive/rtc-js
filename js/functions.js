@@ -269,10 +269,16 @@ ${split.join("")}
 
 function matrix(rows, cols) {
   
-  const columns = Array(cols).fill(0)
-  const array = Array(rows).fill(columns)
+  let a = []
   
-  return array
+  for (let r = 0; r <= rows; r++) {
+      a[r] = []
+    for (let c = 0; c <= cols; c++) {
+      a[r][c] = 0
+    }
+  }
+
+  return a
 }
 
 function matrix_equal(ma, mb) {
@@ -302,8 +308,7 @@ function multiply_matrices(a, b) {
   // Multiply matrices.
   // Only supports 4x4 matrices.
   
-  // For SOME reason, using matrix(4, 4) here yields a matrix where the rows all point to the same array in memory! :O
-  const m = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]
+  const m = matrix(4, 4)
   
   for (let r = 0; r <= 3; r++) {
     //log("error", "r: " + r)
@@ -345,4 +350,97 @@ function multiply_matrix_by_tuple(ma, t) {
   //log("error", t)
   //log("error", result)
   return tuple(result[0], result[1], result[2], result[3])
+}
+
+function transpose_matrix(m) {
+  // Turn rows into columns.
+  
+  const t = matrix(4, 4)
+  
+  for (let r = 0; r <= 3; r++) {
+    //log("error", "r: " + r)
+    for (let c = 0; c <= 3; c++) {
+     //log("error", "    c: " + c)
+     t[r][c] = m[c][r]
+    }
+  }
+  
+  return t
+  
+}
+
+function determinant(m) {
+  // Calculate the determinant of a 2x2 matrix.
+  // matrix = [[a,b],[c,d]]
+  // Calculation is ad - bc
+  
+  return (m[0][0] * m[1][1] - m[0][1] * m[1][0])
+}
+
+function submatrix(m, row, col) {
+  // Inputs
+  // m: matrix
+  // row: row to remove
+  // col: column to remove
+  // Calculates and returns submatrix with row r and col c removed
+  
+  const sml = m.length -1
+  
+  //let sm = matrix(sml, sml)
+  
+  //log("error", `Matrix is ${m.length} x ${m[0].length}`)
+  //log("error", m.join("\n"))
+  
+  for (let r in m) {
+    if ( r == row) {
+      //log("error", "Found row to remove: " + r)
+      m.splice(r, 1)
+    }
+    
+    for (let c in m[r]) {
+      if ( c == col) {
+        //log("error", "Found col to remove: " + c)
+        m[r].splice(c, 1)
+      }
+    }
+  }
+  //log("error", `Submatrix is ${m.length} x ${m[0].length}`)
+  //log("error", m.join("\n"))
+  
+  return m
+}
+
+function minor(ma, row, col) {
+  // Mansplained: The minor of an element at row i and column j is the determinant of the submatrix at (i, j).
+  // Inputs:
+  // ma: 3x3 array to calculate minor on.
+  // row: submatrix row
+  // col: submatrix column
+  // Returns the determinant of the submatrix.
+  
+  //log("error", ma.join("\n"))
+  const sm = submatrix(ma, row, col)
+  const d = determinant(sm)
+  return d
+  
+}
+
+function cofactor(ma, r, c) {
+  // Mansplained: 
+  // The cofactor is a possible negation of the minor, depending on which row/col its at.
+  // The following figure is helpful:
+  // | + - + |
+  // | - + - |
+  // | + - + |
+  // Also, doing a "negate if row + col is odd number" should work.
+  // Inputs:
+  // ma: The matrix to calculate cofactor on
+  // r: row to calculate cofactor on
+  // c: col to calculate cofactor on
+  // Returns cofactor of matrix at row, col.
+  
+  const min = minor(ma, r, c)
+  
+  // Determine if indexes at row+col (r-1 + c-1) is an odd number and if so, return the negative value of min, else return min.
+  return r - 1 + c - 1 % 2 == 0 ? min * -1 : min
 }
