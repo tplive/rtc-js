@@ -71,10 +71,13 @@ class AbstractShape {
   get id() { return this._id }
   get transform() { return this._transform }
   get material() { return this._material }
+  get saved_ray() { return this._saved_ray }
   
   set transform(value) {
     if (value.d != undefined) {
       this._transform = value
+      // Check if this is more expensive:
+      //this._transform_inverse = value.inverse()
     }
   }
   
@@ -83,10 +86,22 @@ class AbstractShape {
       this._material = mat
     }
   }
-  intersect(ray) { return local_intersect(ray.transform(this._transform.inverse())) }
+  
+  intersect(ray) {
+    this._saved_ray = ray.transform(this._transform.inverse())
+    
+    return this._intersect(this._saved_ray)
+  }
+  
+  normalAt(world_point) {
+    
+    this._transform_inverse = this._transform.inverse()
+    return this._normal_at(this._transform_inverse.times_tuple(world_point))
+  }
   
   _intersect(local_ray) { throw new Error("Abstract method.") }
-  
+  _normal_at(local_point) { throw new Error("Abstract method.") }
+    
   equals(obj) { return this._transform.equals(obj.transform) && this._material.equals(obj.material)}
   toString() { throw new Error("Abstract method.") } 
 }
@@ -124,9 +139,16 @@ class TestShape extends AbstractShape {
     const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
     const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
 
-    return [intersection(t1, s), intersection(t2, s)]
+    return [intersection(t1, this), intersection(t2, this)]
   }
   
+  _normal_at(local_normal) { 
+    
+    const world_normal = this._transform_inverse.transpose().times_tuple(local_normal)
+    
+    return world_normal.toVector().normalize()
+  }
+    
   get toString() { return `TestShape(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
 
@@ -140,8 +162,44 @@ class Sphere extends AbstractShape {
     super()
   }
   
+  _intersect(local_ray) {
+    // Intersect returns an array of points where a given ray (ra) intersects a given sphere (s)
+    // This is an internal method, should never be called from the outside.
+    // Instead call intersect, which is inherited from AbstractShape.
+    
+    // This is how a *Sphere* does intersection:
+  
+    // Vector from sphere's center to the ray origin
+    // Remember: The sphere is centered at the world origin (0, 0, 0)
+    
+    const sphere_to_ray = local_ray.origin.minus(point(0, 0, 0))
+    const a = local_ray.direction.dot(local_ray.direction)
+    const b = 2 * local_ray.direction.dot(sphere_to_ray)
+    const c = sphere_to_ray.dot(sphere_to_ray) - 1
+
+    const discriminant = b**2 - 4*a*c
+
+    // The discriminant is the key - if it's negative, the ray misses the sphere
+    if (discriminant < 0 ) { return [] }
+
+    // Otherwise, the equation has two solutions, which could be the same, if the
+    // ray intersects at a perfect tangent
+    const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
+    const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
+
+    return [intersection(t1, this), intersection(t2, this)]
+  }
+  
+  _normal_at(local_normal) { 
+    
+    const world_normal = this._transform_inverse.transpose().times_tuple(local_normal)
+    
+    return world_normal.toVector().normalize()
+  }
+  
   get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
+
 </script>
 
 <!--<script src="./js/functions.js"></script>-->
@@ -256,9 +314,9 @@ class Tuple {
   
   toString() { 
     if (this._w === 0) { 
-      return `point(x:${this._x}, y:${this._y}, z:${this._z})` 
+      return `vector(x:${this._x}, y:${this._y}, z:${this._z})` 
     } else if (this._w === 1) {
-      return `vector(x:${this._x}, y:${this._y}, z:${this._z})`
+      return `point(x:${this._x}, y:${this._y}, z:${this._z})`
     } else {
       return `tuple(x:${this._x}, y:${this._y}, z:${this._z}, w:${this._w}`
     }
@@ -266,8 +324,13 @@ class Tuple {
   
   isPoint() { return this._w === 1 }
   isVector() { return this._w === 0 }
+  toVector() {
+    this._w = 0
+    
+    return this
+  }
   
-  equals(t)   { return equal(this._x, t.x) && equal(this._y, t.y) && equal(this._z, t.z) && this._w === t.w }
+  equals(t)   { return equal(this._x, t.x) && equal(this._y, t.y) && equal(this._z, t.z) && equal(this._w, t.w) }
   minus(t)   { return new Tuple(this._x - t.x, this._y - t.y, this._z - t.z, this._w - t.w) }
   plus(t)    { return new Tuple(this._x + t.x, this._y + t.y, this._z + t.z, this._w + t.w) }
   negate()   { return new Tuple(-this._x, -this._y, -this._z, -this._w) }
@@ -1160,7 +1223,8 @@ function intersect(s, ra) {
   
   // Vector from shape's center to the ray origin
   // Remember: The shape is centered at the world origin (0, 0, 0)
-  
+  throw new Error(`intersect(s, ra) has been deprecated. Use s.intersect(ra) instead.`)
+
   const r = ra.transform(s.transform.inverse()) // Ray passed to intersect should be transformed by the inversed transformation matrix
   const shape_to_ray = r.origin.minus(point(0, 0, 0))
   const a = r.direction.dot(r.direction)
@@ -1216,6 +1280,8 @@ function normal_at(obj, world_point) {
   // This function takes an object and a point and returns the point's normal (perpendicular) vector.
   // This is an upgraded version of normal_at(), and will replace that function when done.
   
+  throw new Error(`normal_at(obj, world_point) has been deprecated. Use obj.normalAt(world_point) instead.`)
+
   const inv_obj_transform = obj.transform.inverse()
   const object_point = inv_obj_transform.times_tuple(world_point)
   const object_normal = object_point.minus(point(0, 0, 0))
@@ -1468,7 +1534,7 @@ function intersect_world(w, r) {
   
   for (e in w.objects) {
     
-    const f = intersect(w.objects[e], r)
+    const f = w.objects[e].intersect(r)
     
     for (g in f) {
       //log("error", "Intersection: " + f[g].t)
@@ -1493,7 +1559,7 @@ class PrepareComputations {
       this._r = r
       this._p = position(this._r, this._i.t)
       this._e = this._r.direction.negate()
-      this._n = normal_at(this._i.object, this._p)
+      this._n = this._i.object.normalAt(this._p)
       this._inside = this.is_inside()
 
     } else {
@@ -2943,7 +3009,7 @@ function test_intersect_sets_the_object_on_the_intersection() {
   const r = ray(point(0, 0, -5), vector(0, 0, 1))
   const s = sphere()
   
-  const xs = intersect(s, r)
+  const xs = s.intersect(r)
   return xs.length === 2 && xs[0].object === s && xs[1].object === s
 }
 
@@ -2954,7 +3020,7 @@ function test_ray_intersects_sphere_at_two_points() {
   const r = ray(point(0, 0, -5), vector(0, 0, 1))
   const s = sphere()
   
-  const xs = intersect(s, r)
+  const xs = s.intersect(r)
   
   return xs.length === 2 && xs[0].t === 4.0 && xs[1].t === 6.0
 }
@@ -2966,7 +3032,7 @@ function test_ray_intersects_sphere_at_tangent() {
   const r = ray(point(0, 1, -5), vector(0, 0, 1))
   const s = sphere()
   
-  const xs = intersect(s, r)
+  const xs = s.intersect(r)
   
   return xs.length === 2 && xs[0].t === 5.0 && xs[1].t === 5.0
 }
@@ -2978,7 +3044,7 @@ function test_ray_misses_a_sphere() {
   const r = ray(point(0, 2, -5), vector(0, 0, 1))
   const s = sphere()
   
-  const xs = intersect(s, r)
+  const xs = s.intersect(r)
   
   return xs.length === 0
 }
@@ -2992,7 +3058,7 @@ function test_ray_originates_inside_a_sphere() {
   const r = ray(point(0, 0, 0), vector(0, 0, 1))
   const s = sphere()
   
-  const xs = intersect(s, r)
+  const xs = s.intersect(r)
   
   return xs.length === 2 && xs[0].t === -1.0 && xs[1].t === 1.0
 }
@@ -3006,7 +3072,7 @@ function test_sphere_is_behind_a_ray() {
   const r = ray(point(0, 0, 5), vector(0, 0, 1))
   const s = sphere()
   
-  const xs = intersect(s, r)
+  const xs = s.intersect(r)
   
   return xs.length === 2 && xs[0].t === -6.0 && xs[1].t === -4.0
 }
@@ -3143,7 +3209,7 @@ function test_transform_sphere() {
   const s2 = sphere()
   s2.transform = sc
   
-  const xs = intersect(s2, r)
+  const xs = s2.intersect(r)
   const test_intersecting_scaled_sphere_with_ray = xs.length === 2 && xs[0].t === 3 && xs[1].t === 7
   
   //log("error", "test_transform_sphere() " + s2.transform.d)
@@ -3181,19 +3247,19 @@ function test_normal_at_function() {
   const sq3 = Math.sqrt(3)
   
   // ...on the x axis
-  const nx = normal_at(s, point(1, 0, 0))
+  const nx = s.normalAt(point(1, 0, 0))
   const rx = nx.equals(vector(1, 0, 0))
   
   // ...on the y axis
-  const ny = normal_at(s, point(0, 1, 0))
+  const ny = s.normalAt(point(0, 1, 0))
   const ry = ny.equals(vector(0, 1, 0))
   
   // ...on the z axis
-  const nz = normal_at(s, point(0, 0, 1))
+  const nz = s.normalAt(point(0, 0, 1))
   const rz = nz.equals(vector(0, 0, 1))
   
   // ...on a nonaxial point
-  const nn = normal_at(s, point(sq3/3, sq3/3, sq3/3))
+  const nn = s.normalAt(point(sq3/3, sq3/3, sq3/3))
   const rn = nn.equals(vector(sq3/3, sq3/3, sq3/3))
   
   // Test that the normal is a normalized vector
@@ -3207,7 +3273,7 @@ function test_normal_on_transformed_sphere() {
   const s1 = sphere()
   
   s1.transform = translation(0, 1, 0)
-  const n1 = normal_at(s1, point(0, 1.70711, -0.70711))
+  const n1 = s1.normalAt(point(0, 1.70711, -0.70711))
   const v1 = vector(0, 0.70711, -0.70711)
   
   // Test computing the normal on a transformed sphere
@@ -3216,7 +3282,7 @@ function test_normal_on_transformed_sphere() {
   const transforms = transformations(rotation_z(Math.PI/5), scaling(1, 0.5, 1))
   
   s2.transform = transforms
-  const n2 = normal_at(s2, point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
+  const n2 = s2.normalAt(point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
   const v2 = vector(0, 0.97014, -0.24254)
 
   return n1.equals(v1) && n2.equals(v2)
@@ -3716,6 +3782,58 @@ function test_test_shape_function() {
   return res1 && res2 && res3 && res4
 }
 
+function test_shape_inherited_intersect_function() {
+  // Test that the new AbstractShape's abstract intersect-function
+  // performs as expected - each concrete implementation class
+  // should have its own "private" intersect method, and should get the
+  // inversed transformation-matrix from the concrete inherited
+  // .intersect(ray) method.
+  
+  // Intersecting a scaled shape with a ray
+  const r = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s = test_shape()
+  s.transform = scaling(2, 2, 2)
+  const xs1 = s.intersect(r)
+
+  //log("error", "s.saved_ray: " + s.saved_ray)
+  const res1 = s.saved_ray.origin.equals(point(0, 0, -2.5))
+            && s.saved_ray.direction.equals(vector(0, 0, 0.5))
+  
+  // Intersecting a translated shape with a ray
+  s.transform = translation(5, 0, 0)
+  const xs2 = s.intersect(r)
+  const res2 = s.saved_ray.origin.equals(point(-5, 0, -5))
+            && s.saved_ray.direction.equals(vector(0, 0, 1))
+  
+  return res1 && res2
+}
+
+function test_shape_inherited_normal_at_function() {
+  // Test that the new AbstractShape's abstract normal_at-function
+  // performs as expected - each concrete implementation class
+  // should have its own "private" normal_at method, and should get the
+  // inversed transformation-matrix from the concrete inherited
+  // .normalAt(world_point) method.
+  
+  // Computing the normal on a translated shape
+  const s1 = test_shape()
+  s1.transform = translation(0, 1, 0)
+  const n1 = s1.normalAt(point(0, 1.70711, -0.70711))
+  const res1 = n1.equals(vector(0, 0.70711, -0.70711))
+  
+  // Computing the normal on a transformed shaped
+  const s2 = test_shape()
+  const m = scaling(1, 0.5, 1).times_matrix(rotation_z(π/5))
+  s2.transform = m
+  const n2 = s2.normalAt(point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2 ))
+  const res2 = n2.equals(vector(0, 0.97014, -0.24254))
+  
+  //log("error", "n1: " + n1)
+  //log("error", "n2: " + n2)
+  
+  return res1 && res2
+}
+
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -3849,6 +3967,8 @@ runTest("scene_list", test_render_function)
 runTest("scene_list", test_is_shadowed_function)
 
 runTest("shape_list", test_test_shape_function)
+runTest("shape_list", test_shape_inherited_intersect_function)
+runTest("shape_list", test_shape_inherited_normal_at_function)
 
 
 

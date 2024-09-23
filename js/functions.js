@@ -108,9 +108,9 @@ class Tuple {
   
   toString() { 
     if (this._w === 0) { 
-      return `point(x:${this._x}, y:${this._y}, z:${this._z})` 
+      return `vector(x:${this._x}, y:${this._y}, z:${this._z})` 
     } else if (this._w === 1) {
-      return `vector(x:${this._x}, y:${this._y}, z:${this._z})`
+      return `point(x:${this._x}, y:${this._y}, z:${this._z})`
     } else {
       return `tuple(x:${this._x}, y:${this._y}, z:${this._z}, w:${this._w}`
     }
@@ -118,8 +118,13 @@ class Tuple {
   
   isPoint() { return this._w === 1 }
   isVector() { return this._w === 0 }
+  toVector() {
+    this._w = 0
+    
+    return this
+  }
   
-  equals(t)   { return equal(this._x, t.x) && equal(this._y, t.y) && equal(this._z, t.z) && this._w === t.w }
+  equals(t)   { return equal(this._x, t.x) && equal(this._y, t.y) && equal(this._z, t.z) && equal(this._w, t.w) }
   minus(t)   { return new Tuple(this._x - t.x, this._y - t.y, this._z - t.z, this._w - t.w) }
   plus(t)    { return new Tuple(this._x + t.x, this._y + t.y, this._z + t.z, this._w + t.w) }
   negate()   { return new Tuple(-this._x, -this._y, -this._z, -this._w) }
@@ -1012,7 +1017,8 @@ function intersect(s, ra) {
   
   // Vector from shape's center to the ray origin
   // Remember: The shape is centered at the world origin (0, 0, 0)
-  
+  throw new Error(`intersect(s, ra) has been deprecated. Use s.intersect(ra) instead.`)
+
   const r = ra.transform(s.transform.inverse()) // Ray passed to intersect should be transformed by the inversed transformation matrix
   const shape_to_ray = r.origin.minus(point(0, 0, 0))
   const a = r.direction.dot(r.direction)
@@ -1068,6 +1074,8 @@ function normal_at(obj, world_point) {
   // This function takes an object and a point and returns the point's normal (perpendicular) vector.
   // This is an upgraded version of normal_at(), and will replace that function when done.
   
+  throw new Error(`normal_at(obj, world_point) has been deprecated. Use obj.normalAt(world_point) instead.`)
+
   const inv_obj_transform = obj.transform.inverse()
   const object_point = inv_obj_transform.times_tuple(world_point)
   const object_normal = object_point.minus(point(0, 0, 0))
@@ -1320,7 +1328,7 @@ function intersect_world(w, r) {
   
   for (e in w.objects) {
     
-    const f = intersect(w.objects[e], r)
+    const f = w.objects[e].intersect(r)
     
     for (g in f) {
       //log("error", "Intersection: " + f[g].t)
@@ -1345,7 +1353,7 @@ class PrepareComputations {
       this._r = r
       this._p = position(this._r, this._i.t)
       this._e = this._r.direction.negate()
-      this._n = normal_at(this._i.object, this._p)
+      this._n = this._i.object.normalAt(this._p)
       this._inside = this.is_inside()
 
     } else {

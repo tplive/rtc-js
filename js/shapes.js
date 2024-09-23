@@ -12,10 +12,13 @@ class AbstractShape {
   get id() { return this._id }
   get transform() { return this._transform }
   get material() { return this._material }
+  get saved_ray() { return this._saved_ray }
   
   set transform(value) {
     if (value.d != undefined) {
       this._transform = value
+      // Check if this is more expensive:
+      //this._transform_inverse = value.inverse()
     }
   }
   
@@ -24,10 +27,22 @@ class AbstractShape {
       this._material = mat
     }
   }
-  intersect(ray) { return local_intersect(ray.transform(this._transform.inverse())) }
+  
+  intersect(ray) {
+    this._saved_ray = ray.transform(this._transform.inverse())
+    
+    return this._intersect(this._saved_ray)
+  }
+  
+  normalAt(world_point) {
+    
+    this._transform_inverse = this._transform.inverse()
+    return this._normal_at(this._transform_inverse.times_tuple(world_point))
+  }
   
   _intersect(local_ray) { throw new Error("Abstract method.") }
-  
+  _normal_at(local_point) { throw new Error("Abstract method.") }
+    
   equals(obj) { return this._transform.equals(obj.transform) && this._material.equals(obj.material)}
   toString() { throw new Error("Abstract method.") } 
 }
@@ -65,9 +80,16 @@ class TestShape extends AbstractShape {
     const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
     const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
 
-    return [intersection(t1, s), intersection(t2, s)]
+    return [intersection(t1, this), intersection(t2, this)]
   }
   
+  _normal_at(local_normal) { 
+    
+    const world_normal = this._transform_inverse.transpose().times_tuple(local_normal)
+    
+    return world_normal.toVector().normalize()
+  }
+    
   get toString() { return `TestShape(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
 }
 
@@ -79,6 +101,41 @@ class Sphere extends AbstractShape {
   
   constructor() {
     super()
+  }
+  
+  _intersect(local_ray) {
+    // Intersect returns an array of points where a given ray (ra) intersects a given sphere (s)
+    // This is an internal method, should never be called from the outside.
+    // Instead call intersect, which is inherited from AbstractShape.
+    
+    // This is how a *Sphere* does intersection:
+  
+    // Vector from sphere's center to the ray origin
+    // Remember: The sphere is centered at the world origin (0, 0, 0)
+    
+    const sphere_to_ray = local_ray.origin.minus(point(0, 0, 0))
+    const a = local_ray.direction.dot(local_ray.direction)
+    const b = 2 * local_ray.direction.dot(sphere_to_ray)
+    const c = sphere_to_ray.dot(sphere_to_ray) - 1
+
+    const discriminant = b**2 - 4*a*c
+
+    // The discriminant is the key - if it's negative, the ray misses the sphere
+    if (discriminant < 0 ) { return [] }
+
+    // Otherwise, the equation has two solutions, which could be the same, if the
+    // ray intersects at a perfect tangent
+    const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
+    const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
+
+    return [intersection(t1, this), intersection(t2, this)]
+  }
+  
+  _normal_at(local_normal) { 
+    
+    const world_normal = this._transform_inverse.transpose().times_tuple(local_normal)
+    
+    return world_normal.toVector().normalize()
   }
   
   get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
