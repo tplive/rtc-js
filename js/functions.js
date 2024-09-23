@@ -72,6 +72,7 @@ function canvas_to_html_canvas(ctx, can) {
       const col = can.pixel_at(x, y)
       const sc = scale_color(col)
       ctx.fillStyle = `rgb(${sc.red}, ${sc.green}, ${sc.blue})`
+      //log("error", `rgb(${sc.red}, ${sc.green}, ${sc.blue})`)
       ctx.fillRect(x, y, 1, 1)
     }
   }
@@ -91,145 +92,110 @@ profile = function(fn) {
 
 // *** VECTOR FUNCTIONS
 
+class Tuple {
+  constructor(x, y, z, w) {
+    if (isNaN(x) || isNaN(y) || isNaN(z) || isNaN(w) ) { 
+      throw `Tuple cannot be NaN.`
+    } else {
+      this._x = x
+      this._y = y
+      this._z = z
+      this._w = w
+    }
+  }
+  
+  get x() { return this._x }
+  get y() { return this._y }
+  get z() { return this._z }
+  get w() { return this._w }
+  
+  
+  toString() { 
+    if (this._w === 0) { 
+      return `point(x:${this._x}, y:${this._y}, z:${this._z})` 
+    } else if (this._w === 1) {
+      return `vector(x:${this._x}, y:${this._y}, z:${this._z})`
+    } else {
+      return `Tuple is neither point nor vector, w = ${this._w}!`
+    }
+  }
+  equals(t)   { return equal(this._x, t.x) && equal(this._y, t.y) && equal(this._z, t.z) && this._w === t.w }
+  minus(t)   { return new Tuple(this._x - t.x, this._y - t.y, this._z - t.z, this._w - t.w) }
+  plus(t)    { return new Tuple(this._x + t.x, this._y + t.y, this._z + t.z, this._w + t.w) }
+  negate()   { return new Tuple(-this._x, -this._y, -this._z, this._w) }
+  
+  by_scalar(s) {
+    if (this._w === 0) {
+        return new Tuple(this._x * s, this._y * s, this._z * s, this._w)
+      } else {
+        throw(`Only vectors can be multiplied by scalar value.`)
+      }
+  }
+  
+  divided_by(s) {
+    if (this._w === 0) {
+      return new Tuple(this._x / s, this._y / s, this._z / s, this._w)
+    } else {
+      throw(`Only vectors can be multiplied by scalar value.`)
+    }
+  }
+  
+  dot(v) {
+    if (this._w === 0 && v.w === 0) {
+      return (this._x * v.x) + (this._y * v.y) + (this._z * v.z)
+    } else {
+      throw(`Can only calculate dot product of vectors.`)
+    }
+  }
+  
+  cross(v) {
+    if (this._w === 0 && v.w === 0) {
+        return new Tuple(this._y * v.z - this._z * v.y, this._z * v.x - this._x * v.z, this._x * v.y - this._y * v.x, this._w)
+      } else {
+        throw(`Can only calculate cross product of vectors.`)
+      }
+  }
+  
+  magnitude() {
+    if (this._w === 0) {
+      return Math.sqrt(this._x**2 + this._y**2 + this._z**2)
+    } else {
+      throw(`Can only calculate magnitude of vectors.`)
+    }
+  }
+  
+  normalize() {
+    if (this._w === 0) {
+      var m = this.magnitude()
+      return new Tuple(this._x / m, this._y / m, this._z / m, this._w)
+    } else {
+      throw(`Can only normalize vectors.`)
+    }
+  }
+}
+
+function tuple(x, y, z, w) {
+  // Factory function for tuples
+  return new Tuple(x, y, z, w)
+}
+
+function vector(x, y, z) {
+  // Factory function for vectors
+  return new Tuple(x, y, z, 0)
+}
+
+function point(x, y, z) {
+  // Factory function for points
+  return new Tuple(x, y, z, 1)
+}
+
+
 function equal(a, b) {
   // Comparing floating point numbers for equivalence may, due to rounding errors, fail.
   // By subtract a from b and comparing the result to a small constant EPSILON, we
   // can call them equal.
   
   return (Math.abs(a - b) < C.EPSILON.toFixed(C.PRECISION))
-}
-
-function equal_tuples(a, b) {
-  throw (`equal_tuples() is deprecated. Use tuple().equals(t) instead.`)
-  // Compare x, y, z coordinates of a tuple. JS does not distinguish these types of objects
-  // so a tuple == vector == point at this time.
-  return equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z) && equal(a.w, b.w)
-}
-
-function add_tuples(a, b) {
-  throw (`add_tuples() is deprecated. Use tuple().plus(t) instead.`)
-  // Add two tuples together.
-  // A point (w=1) added to a vector (w=0) is a new point.
-  // A vector (w=0) added to another vector (w=0) is the resulting vector.
-  // Adding two points produces w=2 which doesn't make sense.
-  return tuple(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w)
-}
-
-function subtract_tuples(a, b) {
-  throw (`subtract_tuples() is deprecated. Use tuple().minus(t) instead.`)
-  // Subtract values of tuple b from values of tuple a.
-  return tuple(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w)
-}
-
-function negate_tuple(t) {
-  throw (`negate_tuple() is deprecated. Use tuple().negate() instead.`)
-  // Return a tuple with x=-x, y=-y, z=-z coordinates
-  return tuple(t.x * -1, t.y * -1, t.z * -1, t.w * -1)
-}
-
-function multiply_vector(v, s) {
-  throw (`multiply_vector() is deprecated. Use vector().by_scalar(s) instead.`)
-  // Multiply each component of the tuple t by the scalar value s
-  return tuple(v.x * s, v.y * s, v.z * s, v.w * s)
-}
-
-function divide_vector(s, t) {
-  throw (`divide_vector() is deprecated. Use vector().divided_by(s) instead.`)
-  // Multiply each component of the tuple t by the scalar value s
-  return tuple(t.x / s, t.y / s, t.z / s, t.w / s)
-}
-
-function magnitude(v) {
-  throw (`magnitude() is deprecated. Use vector().magnitude() instead.`)
-  // Calculate the magnitude of a vector
-  return Math.sqrt(v.x**2 + v.y**2 + v.z**2 + v.w**2)
-}
-
-function normalize(v) {
-  throw (`normalize() is deprecated. Use vector.normalize() instead.`)
-  // Normalize a vector using its magnitude
-  var m = magnitude(v)
-  return tuple(v.x / m, v.y / m, v.z / m, v.w / m)
-}
-
-function dot(a, b) {
-  throw (`dot() is deprecated. Use vector.dot(v) instead.`)
-  // Compute the dot product of two vectors
-  return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w
-}
-
-function cross(a, b) {
-  throw (`cross() is deprecated. Use vector.cross(v) instead.`)
-  // Compute the cross product of two vectors
-  // Order matters!
-  return vector(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z, a.x * b.y - a.y * b.x)
-}
-
-function tuple(a, b, c, d) {
-  return Object.freeze({ 
-    x:a,
-    y:b,
-    z:c,
-    w:d,
-    equals: function(t) { return equal(a, t.x) && equal(b, t.y) && equal(c, t.z) && equal(d, t.w) },
-    minus: function(t) { return tuple(parseFloat(a - t.x), parseFloat(b - t.y), parseFloat(c - t.z), parseInt(d - t.w)) },
-    plus: function(t) { return tuple(parseFloat(a + t.x), parseFloat(b + t.y), parseFloat(c + t.z), parseInt(d + t.w)) },
-    negate: function() { return tuple(a * -1, b * -1, c * -1, d * -1) },
-    by_scalar: function(s) { 
-      if (d === 0) {
-        return tuple(a * s, b * s, c * s, d * s)
-      } else {
-        throw(`Can only multiply vectors by scalar value.`)
-      }
-    },
-    divided_by: function(s) {
-      if (d === 0) {
-        return tuple(a / s, b / s, c / s, d / s)
-      } else {
-        throw(`Can only divide vectors by scalar value.`)
-      }
-    },
-    dot: function(v) {
-      if (d === 0) {
-        return a * v.x + b * v.y + c * v.z
-      } else {
-        throw(`Can only calculate dot product of vectors.`)
-      }
-    },
-    cross: function(v) {
-      if (d === 0) {
-        return vector(b * v.z - c * v.y, c * v.x - a * v.z, a * v.y - b * v.x)
-      } else {
-        throw(`Can only calculate cross product of vectors.`)
-      }
-    },
-    magnitude: function() {
-    if (d === 0) {
-        return Math.sqrt(a**2 + b**2 + c**2)
-      } else {
-        throw(`Can only calculate magnitude of vectors.`)
-      }
-      
-    },
-    normalize: function() {
-      if (d === 0) {
-        var m = this.magnitude()
-        return vector(a / m, b / m, c / m)
-      } else {
-        throw(`Can only normalize vectors.`)
-      }
-    },
-    toString: function() { return `x:${a} y:${b} z:${c} w:${d}` },
-  })
-    
-}
-
-function vector(a,b,c) {
-  return tuple(a,b,c,0)
-}
-
-function point(a,b,c) {
-  return tuple(a,b,c,1)
 }
 
 // *** COLOR FUNCTIONS
@@ -402,108 +368,107 @@ ${split.join("")}
 
 // *** MATRIX FUNCTIONS
 
-function matrix(rows, cols) {
+class Matrix {
   // A matrix consists of a bitstream represented in rows * columns
   // For efficiency, a typed array of Float32Array is used, and
   // index value is an integer calculation:
   // m4x4.at(r,c) = (4 * r + c)
   
-  const _r = rows
-  const _c = cols
+  constructor(rows, columns) {
+    this._r = parseInt(rows)
+    this._c = parseInt(columns)
+    this._length = this._r * this._c
+    this._n = new Float32Array(this._length).fill(0)
+  }
   
-  const _a = new Float32Array(rows * cols).fill(0)
-  //log("error", "_a: " + this._a)
-
-  return Object.freeze({
-    rows:_r,
-    cols:_c,
-    d:_a,
-    put: function(row, col, val) { _a[_c * row + col] = val },
-    putAll: function(arr) {
-      for (let e=0; e < _a.length;e++) {
-        _a[e] = arr[e]
-      }
-    },
-    get: function(row, col) { return _a[_c * row + col] },
-    submatrix: function(row, col) {
-      if((_r-1)*(_c-1) < 4) { throw `Cannot get submatrix < 2x2`}
-      
-      //__a = new Float32Array((_r-1) * (_c-1)).fill(0)
-      temp = []
-      // Calculate indexes on row and on col
-      const indices = []
-      for (let x=0;x<cols;x++) {
-        indices.push(cols*row+x)
-      }
-      for (let x=0;x<rows;x++) {
-        indices.push(cols*x+col)
-      }
-      //log("error", indices)
-      const skip = new Set(indices)
-      
-      for (let i=0;i<_r*_c;i++) {
-        if (!skip.has(i)) {
-          temp.push(_a[i])
-        }
-      }
-      return Float32Array.of(...temp)
-    },
-    times_tuple: function(t) {
-      // Multiply matrix _a by tuple t.
-      // Returns a tuple.
-      const result = []
-      for (let r = 0; r <= 3; r++) {
-        result[r] = 
-          parseFloat(this.get(r,0) * t.x) + 
-          parseFloat(this.get(r,1) * t.y) + 
-          parseFloat(this.get(r,2) * t.z) + 
-          parseFloat(this.get(r,3) * t.w)
-      }
-      return tuple(result[0], result[1], result[2], result[3])
-    },
-    equals: function(m) {
-      const structural_equality = this.rows === m.rows && this.cols === m.cols 
-      const elements_equal = []
-      if (structural_equality) {
-        for (let i=0;i<this.d.length;i++) {
-          if ( !equal(this.d[i], m.d[i]) ) {
-            //log("error", `These fuckers aren't equal: ${ma.d[i]} and ${mb.d[i]}`)
-            elements_equal.push(false)
-          } else {
-            elements_equal.push(true)
-          }
-        }
-      } else { 
-        // Return if structural_equality is false
-        return false 
-      }
-    //log("error", elements_equal)
-    return !elements_equal.includes(false)
-    },
-  })
-}
-
-function matrix_equal(ma, mb) {
-  throw(`matrix_equal() is deprecated. Use matrix().equals(m) instead.`)
-  // Test equality. A === B if Arows === Brows and Acols === Bcols
-  //log("error", `matrix_equal(): Running`)
+  get rows() { return this._r }
+  get cols() { return this._c }
+  get d() { return this._n } // Called d for legacy reasons
+  get length() { return this._length }
   
-  const structural_equality = ma.rows === mb.rows && ma.cols === mb.cols 
-  const elements_equal = []
-  if (structural_equality) {
-   
-    for (let i=0;i<ma.d.length;i++) {
-    
-      if ( !equal(ma.d[i], mb.d[i]) ) {
-        //log("error", `These fuckers aren't equal: ${ma.d[i]} and ${mb.d[i]}`)
-        elements_equal.push(false)
-      } else {
-        elements_equal.push(true)
-      }
+  get(row, col) { return this._n[this._c * row + col] }
+  
+  put(row, col, val) { this._n[this._c * row + col] = val }
+  
+  putAll(arr) {
+    for (let e=0; e < this._n.length;e++) {
+      this._n[e] = arr[e]
     }
   }
-  //log("error", elements_equal)
-  return !elements_equal.includes(false)
+  
+  submatrix(row, col) {
+    // This probably only works for 4x4 matrices, tbh.
+    if( (this._r - 1) * (this._c - 1) < 4) { throw `Cannot get submatrix < 2x2`}
+      
+    //__a = new Float32Array((_r-1) * (_c-1)).fill(0)
+      
+    // Create a temporary array
+    const temp = []
+    
+    // Calculate indexes on row and on col
+    const indices = []
+    
+    for (let x=0; x < this._c; x++ ) {
+      indices.push(this._c * row + x)
+    }
+    
+    for (let x=0; x < this._r; x++ ) {
+      indices.push(this._c * x + col)
+    }
+    
+    const skip = new Set(indices)
+    
+    for (let i=0; i < this._length; i++ ) {
+      if (!skip.has(i)) {
+        temp.push(this._n[i])
+      }
+    }
+    
+    return Float32Array.of(...temp)  
+  }
+  
+  times_tuple(t) {
+    // Multiply matrix this._n by tuple t.
+    // Returns a tuple.
+    const res = new Float32Array(4)
+    
+    for (let r = 0; r <= 3; r++) {
+      res[r] = 
+        this.get(r,0) * t.x + 
+        this.get(r,1) * t.y + 
+        this.get(r,2) * t.z + 
+        this.get(r,3) * t.w
+    }
+    
+    return new Tuple(res[0], res[1], res[2], res[3] )
+  }
+  
+  equals(m) {
+    const structural_equality = this._r === m.rows && this._c === m.cols 
+    const elements_equal = []
+    
+    if (structural_equality) {
+      for (let i=0; i < this._length; i++) {
+        if ( !equal(this._n[i], m.d[i]) ) {
+          elements_equal.push(false)
+        } else {
+          elements_equal.push(true)
+        }
+      }
+    } else { 
+      // Immediately return if structural_equality is false
+      return false 
+    }
+    
+    // If any elements were different, they will be a false in this array
+    return !elements_equal.includes(false)
+  }
+}
+
+function matrix(rows, cols) {
+  // Factory function for matrix
+  
+  return new Matrix(rows, cols)
 }
 
 function multiply_matrices(a, b) {
@@ -528,23 +493,6 @@ function multiply_matrices(a, b) {
   }
   
   return m
-}
-
-function multiply_matrix_by_tuple(ma, t) {
-  throw(`multiply_matrix_by_tuple() is deprecated. Use matrix().times_tuple(t) instead.`)
-  // Multiply matrix by tuple.
-  // Returns a tuple.
-  
-  const result = []
-  for (let r = 0; r <= 3; r++) {
-    result[r] = 
-     ma.get(r,0) * t.x + 
-     ma.get(r,1) * t.y + 
-     ma.get(r,2) * t.z + 
-     ma.get(r,3) * t.w
-  }
-  
-  return tuple(result[0], result[1], result[2], result[3])
 }
 
 function idmatrix() {
@@ -1085,7 +1033,7 @@ function material() {
   return new Material()
 }
 
-function lighting(material, light, point, eyev, normalv) {
+function lighting(material, light, point, eyev, normalv, in_shadow) {
   // The lighting function computes shading for pixels
   
   // Combine surface color with the light's color/intensity
@@ -1107,7 +1055,7 @@ function lighting(material, light, point, eyev, normalv) {
   const light_dot_normal = lightv.dot(normalv)
   //log("error", "light_dot_normal: " + light_dot_normal)
   
-  if (light_dot_normal < 0) {
+  if (light_dot_normal < 0 || in_shadow ) {
     diffuse = color(0, 0, 0)
     specular = color(0, 0, 0)
   } else {
@@ -1119,7 +1067,7 @@ function lighting(material, light, point, eyev, normalv) {
     // and the eye vector. A negative number means the light reflects away from the eye.
     // According to the book, it should be -lightv. But I saw no specular highlight while that was the case.
     // When I (by chance) changed it to lightv, the highlight is there!
-    const reflectv = reflect(lightv, normalv)
+    const reflectv = reflect(lightv.negate(), normalv)
     //log("error", "reflectv: " + reflectv)
     
     const reflect_dot_eye = reflectv.dot(eyev)
@@ -1265,6 +1213,10 @@ class PrepareComputations {
   get eyev() { return this._e }
   get normalv() { return this._n }
   get inside() { return this._inside }
+  get over_point() { 
+    
+    return this.point.plus(this.normalv.by_scalar(C.EPSILON)) 
+  }
   
   is_inside() {
     if (this._n.dot(this._e) < 0 ) {
@@ -1274,6 +1226,7 @@ class PrepareComputations {
       return false
     }
   }
+    
   toString() { return `PrepareComputations(intersection, ray): t=${this.t} object.id=${this.object.id} point=${this.point} eyev=${this.eyev} normalv=${this.normalv} inside=${this.inside}` }
 }
 
@@ -1285,7 +1238,10 @@ function prepare_computations(i, r) {
 
 function shade_hit(w, c) {
   // Call lighting() function with the intersected object's material and the prepared computations
-  return lighting(c.object.material, w.lights[0], c.point, c.eyev, c.normalv)
+  
+  const shadowed = is_shadowed(w, c.over_point)
+  
+  return lighting(c.object.material, w.lights[0], c.point, c.eyev, c.normalv, shadowed)
 }
 
 function color_at(w, r) {
@@ -1422,4 +1378,31 @@ function render(cam, w) {
   }
   
   return image
+}
+
+function render_pixel(cam, w, x, y) {
+  // This function will render a single pixel and return the color
+  // For use with externally controlled pixel-space, such as web worker.
+
+  const ray = (ray_for_pixel(cam, x, y))
+  const col = color_at(w, ray)
+
+  return col
+}
+
+function is_shadowed(w, p) {
+  // Compute shadow by casting a shadow ray from a point of intersection back
+  // toward the light. If something intersects this ray, the point is considered
+  // to be in shadow, and thus only ambient light should apply.
+  
+  const v = w.lights[0].position.minus(p)
+  const distance = v.magnitude()
+  const direction = v.normalize()
+  
+  const r = ray(p, direction)
+  const xs = intersect_world(w, r)
+  
+  const h = hit(xs)
+  
+  return (h != undefined && h.t < distance)
 }

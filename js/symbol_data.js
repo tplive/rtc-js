@@ -2287,6 +2287,22 @@ const symbols = [
   symbol: "💯",
   keywords: ["one","percent","full","all","perfect","score"]
 },
+{
+  decimal: 128747,
+  hex: 0x1F6EB,
+  category: "Transport",
+  name: "Airplane",
+  symbol: "🛫",
+  keywords: ["plane","takeoff","sky","skies","blue","aero"]
+},
+{
+  decimal: 128748,
+  hex: 0x1F6EC,
+  category: "Transport",
+  name: "Airplane",
+  symbol: "🛬",
+  keywords: ["plane","landing","sky","skies","blue","aero"]
+},
 
 
 

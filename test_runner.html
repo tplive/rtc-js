@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <title>Test Runner</title>
 </head>
 
 <style>
@@ -79,14 +80,17 @@ function runTest(domId, callback) {
   // Append span to list item
   li.appendChild(li_text)
   
+  // Measure time for each test
+  const start = performance.now()
   // Run test
   var result = callback()
+  const elapsed = performance.now() - start
   
   const li_result = document.createElement("span")
   li.appendChild(li_result)
   var text = (result) ? "Test Passed! &#127774;":"Test Failed! &#128165;"
   var color = (result) ? "green":"red"
-  li_result.innerHTML = text
+  li_result.innerHTML = text + ` (in ${elapsed.toFixed(2)} ms.)`
   li_result.style.color = color
 
 }
@@ -182,6 +186,8 @@ runTest("scene_list", test_view_transform_function)
 runTest("scene_list", test_camera_function)
 runTest("scene_list", test_ray_for_pixel_function)
 runTest("scene_list", test_render_function)
+//runTest("scene_list", test_is_shadowed_function)
+
 
 
 const end = performance.now()

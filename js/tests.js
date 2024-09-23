@@ -69,9 +69,10 @@ function test_subtract_tuples_function() {
 
 function test_negate_tuple_function() {
   // Test that negate_tuple() returns a tuple with x=-x, y=-y, z=-z coordinates
-  
+  // And w should remain the same, even if it's out of whack.
   var n = tuple(1, -2, 3, -4).negate()
-  return (n.x == -1, n.y == 2, n.z == -3, n.w == 4 )
+  
+  return n.x == -1, n.y == 2, n.z == -3, n.w == -4
 }
 
 function test_multiply_vector_function() {
@@ -284,7 +285,13 @@ function test_canvas_function() {
   can.data[11+1] = 123
   can.data[11+2] = 234
   //log("error", "at i=11: " + can.data[11])
-  return (can.width === w && can.height === h && can.data[11] === 255 && can.data[11+1] === 123 && can.data[11+2] === 234 && can.data[1] == 0 && valzero)
+  return can.width === w 
+      && can.height === h 
+      && can.data[11] === 255 
+      && can.data[11+1] === 123 
+      && can.data[11+2] === 234 
+      && can.data[1] == 0 
+      && valzero
 }
 
 function test_write_pixel_function() {
@@ -335,7 +342,7 @@ function test_ppm_pixel_data() {
   const w = 10
   const h = 10
   const can = canvas(w, h)
-  const c1 = color(1.0, 0.55432, 0.4)
+  const c1 = color(Math.random(), Math.random(), Math.random())
   
   const scaled_color = scale_color(c1)
   
@@ -351,7 +358,8 @@ function test_ppm_pixel_data() {
   //log("error", ppm)
     
   ppm = ppm.split("\n")
-    
+  
+  
   let width_exceeded, starts_ws, ends_ws = false
   let last_is_newline = true
   
@@ -1317,7 +1325,10 @@ function test_hit_function() {
   const xs4 = intersections(i7, i8, i9, i10)
   const h4 = hit(xs4)
   
-  return h1 === i1 && h2 === i4 && !h3 && h4 === i10 // h3: there are no intersections, returns "undefined", which equals "false"
+  return h1 === i1 
+      && h2 === i4 
+      && !h3 // h3: there are no intersections, returns "undefined", which equals "false"
+      && h4 === i10 
 }
 
 function test_transform_function() {
@@ -1538,44 +1549,55 @@ function test_lighting_function() {
   
   const m = material()
   const position = point(0, 0, 0)
+  const in_shadow = true
   
   // Lighting with the eye between the light and the surface
   const eyev1    = vector(0, 0, -1)
   const normalv1 = vector(0, 0, -1)
   const light1   = point_light(point(0, 0, -10), color(1, 1, 1))
-  const r1       = lighting(m, light1, position, eyev1, normalv1)
+  const r1       = lighting(m, light1, position, eyev1, normalv1, !in_shadow)
   
   // Lighting with the eye between light and surface, eye offset 45°
   const eyev2    = vector(0, Math.sqrt(2)/2, -Math.sqrt(2)/2)
   const normalv2 = vector(0, 0, -1)
   const light2   = point_light(point(0, 0, -10), color(1, 1, 1))
-  const r2       = lighting(m, light2, position, eyev2, normalv2)
+  const r2       = lighting(m, light2, position, eyev2, normalv2, !in_shadow)
   
   // Lighting with eye opposite surface, light offset 45°
   const eyev3    = vector(0, 0, -1)
   const normalv3 = vector(0, 0, -1)
   const light3   = point_light(point(0, 10, -10), color(1, 1, 1))
-  const r3       = lighting(m, light3, position, eyev3, normalv3)
+  const r3       = lighting(m, light3, position, eyev3, normalv3, !in_shadow)
   
   // Lighting with eye in the path of the reflection vector
   const eyev4    = vector(0, -Math.sqrt(2)/2, -Math.sqrt(2)/2)
   const normalv4 = vector(0, 0, -1)
   const light4   = point_light(point(0, 10, -10), color(1, 1, 1))
-  const r4       = lighting(m, light4, position, eyev4, normalv4)
+  const r4       = lighting(m, light4, position, eyev4, normalv4, !in_shadow)
     
   // Lighting with the light behind the surface
   const eyev5    = vector(0, 0, -1)
   const normalv5 = vector(0, 0, -1)
   const light5   = point_light(point(0, 0, 10), color(1, 1, 1))
-  const r5       = lighting(m, light5, position, eyev5, normalv5)
+  const r5       = lighting(m, light5, position, eyev5, normalv5, !in_shadow)
+  
+  // Lighting with the surface in shadow, added 12.06.24
+  const eyev6      = vector(0, 0, -1)
+  const normalv6   = vector(0, 0, -1)
+  const light6     = point_light(point(0, 0, -10), color(1, 1, 1))
+  const r6         = lighting(m, light6, position, eyev6, normalv6, in_shadow)
+  
   
   // When lighting function negates lightv, specular dot disappears. When we don't negate, it works, but then this
   // test fails. Documenting this here for now, and allowing test to fail.
+  // 11.06.24: Solved when discovering a bug in the hit() function.
+  
   return r1.equals(color(1.9, 1.9, 1.9)) // Should be 1.9, 1.9, 1.9, is 1.0, 1.0, 1.0
       && r2.equals(color(1.0, 1.0, 1.0))
       && r3.equals(color(0.7364, 0.7364, 0.7364))
       && r4.equals(color(1.6364, 1.6364, 1.6364)) // Should be 1.6364, 1.6364, 1.6364, is red: 0.73639, 0.73639, 0.73639
       && r5.equals(color(0.1, 0.1, 0.1))
+      && r6.equals(color(0.1, 0.1, 0.1)) // In shadow, only ambient light affects
 }
 
 // *** SCENE TESTS
@@ -1633,21 +1655,31 @@ function test_intersect_world_function() {
 function test_prepare_computations_function() {
   // Test precomputing the state of an intersection
   
-  const r = ray(point(0, 0, -5), vector(0, 0, 1))
-  const s = new Sphere()
-  const i = intersection(4, s)
+  const r1 = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s1 = new Sphere()
+  const i1 = intersection(4, s1)
   
-  const comps = prepare_computations(i, r)
+  const comps1 = prepare_computations(i1, r1)
   //log("error", " comps.t: " + comps.t)
   //log("error", " comps.eyev: " + comps.eyev)
   //log("error", " comps: " + comps.toString())
+  const res1 = comps1.t === i1.t
+            && comps1.object.equals(i1.object)
+            && comps1.point.equals(point(0, 0, -1))
+            && comps1.eyev.equals(vector(0, 0, -1))
+            && comps1.normalv.equals(vector(0, 0, -1))
   
-  
-  return comps.t === i.t
-      && comps.object.equals(i.object)
-      && comps.point.equals(point(0, 0, -1))
-      && comps.eyev.equals(vector(0, 0, -1))
-      && comps.normalv.equals(vector(0, 0, -1))
+  // Testing over_point calculation
+  // The hit should offset the point
+  const r2 = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s2 = sphere()
+  s2.transform = translation(0, 0, 1)
+  const i2 = intersection(5, s2)
+  const comps2 = prepare_computations(i2, r2)
+  const res2 = comps2.over_point.z < (-C.EPSILON/2) 
+            && comps2.point.z > comps2.over_point.z
+            
+  return res1 && res2
 }
 
 function test_hit_inside_object() {
@@ -1701,9 +1733,24 @@ function test_shade_hit_function() {
   // According to the books errata, others have also gotten other values here. 
   // Someone made it come together by loosening the EPSILON value. But not by 10x!! :D
   // I can't figure it out, and so I move on...
+  // 11.06.24: This was fixed when I sorted out the sorting order in hit()
   const res2 = c2.equals(color(0.90498, 0.90498, 0.90498))
   
-  return res1 && res2
+  // shade_hit() is given an intersection in shadow
+  const w3 = world()
+  w3.addLight(point_light(point(0, 0, -10), color(1, 1, 1)))
+  const s3 = sphere()
+  w3.addObject(s3)
+  const s4 = sphere()
+  s4.transform = translation(0, 0, 10)
+  w3.addObject(s4)
+  const r3 = ray(point(0, 0, 5), vector(0, 0, 1))
+  const i3 = intersection(4, s4)
+  const comps3 = prepare_computations(i3, r3)
+  const c3 = shade_hit(w3, comps3)
+  const res3 = c3.equals(color(0.1, 0.1, 0.1))
+  
+  return res1 && res2 && res3
 }
 
 function test_color_at_function() {
@@ -1719,8 +1766,20 @@ function test_color_at_function() {
   const r2 = ray(point(0, 0, -5), vector(0, 0, 1))
   const c2 = color_at(w, r2)
   
+  // The color with an intersection behind the ray
+  w.objects[0].material.ambient = 1.0
+  const outer = w.objects[0]
+  w.objects[1].material.ambient = 1.0
+  const inner = w.objects[1]
+  
+  const r3 = ray(point(0, 0, 0.75), vector(0, 0, -1))
+  const c3 = color_at(w, r3)
+  //log("error", c3)
+  //log("error", inner.material.color)
+  
   return c1.equals(color(0, 0, 0)) 
       && c2.equals(color(0.38066, 0.47583, 0.2855))
+      && c3.equals(inner.material.color)
 }
 
 function test_view_transform_function() {
@@ -1827,6 +1886,7 @@ function test_render_function() {
   
   // *** TELEMETRY
   //tuple = profile(tuple)
+  //matrix = profile(matrix)
 
   // Rendering a world with a camera
   const w = default_world()
@@ -1840,4 +1900,34 @@ function test_render_function() {
   //log("error", image.pixel_at(5, 5))
   
   return image.pixel_at(5,5).equals(color(0.38066, 0.47583, 0.2855))
+}
+
+function test_is_shadowed_function() {
+  // Test shadow_at function. Shadows are computed by casting a ray 
+  // from each point of intersection toward the light source. If
+  // something intersects that shadow ray, the point is considered
+  // to be in shadow, and thus only ambient light applies.
+  
+  const w = default_world()
+  
+  // There is no shadow when nothing is colinear with point and light
+  const p1 = point(0, 10, 0)
+  const res1 = is_shadowed(w, p1)
+  
+  // Shadow when an object is between the point and the light
+  const p2 = point(10, -10, 10)
+  const res2 = is_shadowed(w, p2)
+  
+  // There is no shadow when an object is behind the light
+  const p3 = point(-20, 20, -20)
+  const res3 = is_shadowed(w, p3)
+  
+  // There is no shadow when an object is behind the point
+  const p4 = point(-2, 2, -2)
+  res4 = is_shadowed(w, p4)
+  
+  return !res1 // should be false
+      && res2  // should be true
+      && !res3 // should be false
+      && !res4 // should be false
 }

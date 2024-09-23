@@ -1,5 +1,22 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width">
+
+  <script>
+    MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      }
+    }
+  </script>
+  
+  
+  <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  
 
 <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
 <style>
@@ -93,16 +110,10 @@ window.onerror = function(errorMsg, url, lineNumber){
 
     <div class="matrix">
       <div class="explanation">
-        <p><b>translation(x, y, z)</b></p>
-        <table class="tbl-explanation">
-          <tr><td>1</td><td>0</td><td>0</td><td><b>x</b></td></tr>
-          <tr><td>0</td><td>1</td><td>0</td><td><b>y</b></td></tr>
-          <tr><td>0</td><td>0</td><td>1</td><td><b>z</b></td></tr>
-          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
-        </table>
+        <p><b>$translation(x, y, z)$</b> $ = \begin{pmatrix} 1 & 0 & 0 & x \\ 0 & 1 & 0 & y \\ 0 & 0 & 1 & z \\ 0 & 0 & 0 & 1 \end{pmatrix}$</p>
       </div>
       <div class="calculation">
-        <p>translation(<input size="2" type="text" ng-model="trx">, <input size="2" type="text" ng-model="try">, <input size="2" type="text" ng-model="trz">)</p>
+        <p>$translation($<input size="2" type="text" ng-model="trx">, <input size="2" type="text" ng-model="try">, <input size="2" type="text" ng-model="trz">$)$</p>
         <table class = "tbl-calculation">
           <tr><td>{{tra()[0]}}</td><td>{{tra()[1]}}</td><td>{{tra()[2]}}</td><td>{{tra()[3]}}</td></tr>
           <tr><td>{{tra()[4]}}</td><td>{{tra()[5]}}</td><td>{{tra()[6]}}</td><td>{{tra()[7]}}</td></tr>
@@ -115,16 +126,10 @@ window.onerror = function(errorMsg, url, lineNumber){
 
     <div class="matrix">
       <div class="explanation">
-        <p><b>scaling(x, y, z)</b></p>
-        <table class="tbl-explanation">
-          <tr><td><b>x</b></td><td>0</td><td>0</td><td>0</td></tr>
-          <tr><td>0</td><td><b>y</b></td><td>0</td><td>0</td></tr>
-          <tr><td>0</td><td>0</td><td><b>z</b></td><td>0</td></tr>
-          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
-        </table>
+        <p><b>$scaling(x, y, z)$</b> $ = \begin{pmatrix} x & 0 & 0 & 0 \\ 0 & y & 0 & 0 \\ 0 & 0 & z & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}$</p>
       </div>
       <div class="calculation">
-        <p>scaling(<input size="2" type="text" ng-model="scx">, <input size="2" type="text" ng-model="scy">, <input size="2" type="text" ng-model="scz">)</p>
+        <p>$scaling($<input size="2" type="text" ng-model="scx">, <input size="2" type="text" ng-model="scy">, <input size="2" type="text" ng-model="scz">$)$</p>
         <table class = "tbl-calculation">
           <tr><td>{{sca()[0]}}</td><td>{{sca()[1]}}</td><td>{{sca()[2]}}</td><td>{{sca()[3]}}</td></tr>
           <tr><td>{{sca()[4]}}</td><td>{{sca()[5]}}</td><td>{{sca()[6]}}</td><td>{{sca()[7]}}</td></tr>
@@ -137,16 +142,10 @@ window.onerror = function(errorMsg, url, lineNumber){
 
     <div class="matrix">
       <div class="explanation">
-        <p><b>rotation_x(rad)</b></p>
-        <table class="tbl-explanation">
-          <tr><td>1</td><td>0</td><td>0</td><td>0</td></tr>
-          <tr><td>0</td><td><b>cos(rad)</b></td><td><b>-sin(rad)</b></td><td>0</td></tr>
-          <tr><td>0</td><td><b>sin(rad)</b></td><td><b>cos(rad)</b></td><td>0</td></tr>
-          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
-        </table>
+        <p><b>$rotation\_x(rad)$</b> $ = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & cos(rad) & -sin(rad) & 0 \\ 0 & sin(rad) & cos(rad) & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}$</p>
       </div>
       <div class="calculation">
-        <p>rotation_x(<input size="2" type="text" ng-model="rotx">)</p>
+        <p>$rotation\_x($<input size="2" type="text" ng-model="rotx">$)$</p>
         <table class = "tbl-calculation">
           <tr><td>{{rotxc()[0]}}</td><td>{{rotxc()[1]}}</td><td>{{rotxc()[2]}}</td><td>{{rotxc()[3]}}</td></tr>
           <tr><td>{{rotxc()[4]}}</td><td>{{rotxc()[5]}}</td><td>{{rotxc()[6]}}</td><td>{{rotxc()[7]}}</td></tr>
@@ -158,16 +157,11 @@ window.onerror = function(errorMsg, url, lineNumber){
 
     <div class="matrix">
       <div class="explanation">
-        <p><b>rotation_y(rad)</b></p>
-        <table class="tbl-explanation">
-          <tr><td><b>cos(rad)</b></td><td>0</td><td><b>sin(rad)</b></td><td>0</td></tr>
-          <tr><td>0</td><td>1</td><td>0</td><td>0</td></tr>
-          <tr><td><b>-sin(rad)</b></td><td>0</td><td><b>cos(rad)</b></td><td>0</td></tr>
-          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
-        </table>
+        <p><b>$rotation\_y(rad)$</b> $ = \begin{pmatrix} cos(rad) & 0 & sin(rad) & 0 \\ 0 & 1 & 0 & 0 \\ -sin(rad) & 0 & cos(rad) & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}$</p>
+
       </div>
       <div class="calculation">
-        <p>rotation_y(<input size="2" type="text" ng-model="roty">)</p>
+        <p>$rotation\_y($<input size="2" type="text" ng-model="roty">$)$</p>
         <table class = "tbl-calculation">
           <tr><td>{{rotyc()[0]}}</td><td>{{rotyc()[1]}}</td><td>{{rotyc()[2]}}</td><td>{{rotyc()[3]}}</td></tr>
           <tr><td>{{rotyc()[4]}}</td><td>{{rotyc()[5]}}</td><td>{{rotyc()[6]}}</td><td>{{rotyc()[7]}}</td></tr>
@@ -179,16 +173,10 @@ window.onerror = function(errorMsg, url, lineNumber){
 
     <div class="matrix">
       <div class="explanation">
-        <p><b>rotation_z(rad)</b></p>
-        <table class="tbl-explanation">
-          <tr><td><b>cos(rad)</b></td><td><b>-sin(rad)</b></td><td>0</td><td>0</td></tr>
-          <tr><td><b>sin(rad)</b></td><td><b>cos(rad)</b></td><td>0</td><td>0</td></tr>
-          <tr><td>0</td><td>0</td><td>1</td><td>0</td></tr>
-          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
-        </table>
+        <p><b>$rotation\_z(rad)$</b> $ = \begin{pmatrix} cos(rad) & -sin(rad) & 0 & 0 \\ sin(rad) & cos(rad) & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}$</p>
       </div>
       <div class="calculation">
-        <p>rotation_z(<input size="2" type="text" ng-model="rotz">)</p>
+        <p>$rotation\_z$(<input size="2" type="text" ng-model="rotz">$)$</p>
         <table class = "tbl-calculation">
           <tr><td>{{rotzc()[0]}}</td><td>{{rotzc()[1]}}</td><td>{{rotzc()[2]}}</td><td>{{rotzc()[3]}}</td></tr>
           <tr><td>{{rotzc()[4]}}</td><td>{{rotzc()[5]}}</td><td>{{rotzc()[6]}}</td><td>{{rotzc()[7]}}</td></tr>
@@ -200,16 +188,10 @@ window.onerror = function(errorMsg, url, lineNumber){
 
     <div class="matrix">
       <div class="explanation">
-        <p><b>shearing(x<sub>y</sub>, x<sub>z</sub>, y<sub>x</sub>, y<sub>z</sub>, z<sub>x</sub>, z<sub>y</sub>)</b></p>
-        <table class="tbl-explanation">
-          <tr><td>1</td><td><b>x<sub>y</sub></b></td><td><b>x<sub>z</sub></b></td><td>0</td></tr>
-          <tr><td><b>y<sub>x</sub></b></td><td>1</td><td><b>y<sub>z</sub></b></td><td>0</td></tr>
-          <tr><td><b>z<sub>x</sub></b></td><td><b>z<sub>y</sub></b></td><td>1</td><td>0</td></tr>
-          <tr><td>0</td><td>0</td><td>0</td><td>1</td></tr>
-        </table>
+        <p><b>$shearing(x_y, x_z, y_x, y_z, z_x, z_y)$</b> $ = \begin{pmatrix} 1 & x_y & x_z & 0 \\ y_x & 1 & y_z & 0 \\ z_x & z_y & 1 & 0 \\ 0 & 0 & 0 & 1 \end{pmatrix}$</p>
       </div>
       <div class="calculation">
-        <p>shearing(<input size="2" type="text" ng-model="xy">, <input size="2" type="text" ng-model="xz">, <input size="2" type="text" ng-model="yx">, <input size="2" type="text" ng-model="yz">, <input size="2" type="text" ng-model="zx">, <input size="2" type="text" ng-model="zy">)</p>
+        <p>$shearing($<input size="1" type="text" ng-model="xy">, <input size="1" type="text" ng-model="xz">, <input size="1" type="text" ng-model="yx">, <input size="1" type="text" ng-model="yz">, <input size="1" type="text" ng-model="zx">, <input size="1" type="text" ng-model="zy">$)$</p>
         <table class = "tbl-calculation">
           <tr><td>{{shec()[0]}}</td><td>{{shec()[1]}}</td><td>{{shec()[2]}}</td><td>{{shec()[3]}}</td></tr>
           <tr><td>{{shec()[4]}}</td><td>{{shec()[5]}}</td><td>{{shec()[6]}}</td><td>{{shec()[7]}}</td></tr>
@@ -234,9 +216,16 @@ window.onerror = function(errorMsg, url, lineNumber){
 <p id="perf"></p>
 <pre id="error"></pre>
 
+
+
 <script>
+// *** TRANSFORMATION MATRIX CALCULATOR
+
+// Using functions.js, we can visualise how matrix calculations work.
 
 // Performance counter
+
+
 
 // Performance measurement
 const end = performance.now()

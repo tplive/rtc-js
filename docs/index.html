@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <meta name="viewport" content="width=device-width">
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+
   <script>
         MathJax = {
             tex: {
-                inlineMath: [["$", "$"]]
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
             }
         }
   </script>
-  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>
+  
+  <!--<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js"></script>-->
+  <script type="text/javascript" id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <!--<script type="text/javascript" src="../js/mathjax-tex-chtml.js"></script>-->
 <style>
 body {
   margin-left: 5rem;
   margin-right: 3rem;
   font-family: sans-serif;
 }
+
 code {
-  background-color: rgb(200,225,225);
+      background-color: rgb(200, 225, 225);
   font-weight: bold;
 }
 
@@ -54,10 +59,10 @@ pre {
 footer {
   margin: 3rem;
 }
-
 </style>
-<title>Dokumentasjon</title>
+  <title>Dokumentasjon - The Raytracer Challenge</title>
 </head>
+
 <body>
 
 <h1>&#128302; The Ray Tracer Challenge &#128302;</h1>
@@ -66,33 +71,57 @@ footer {
 <p>Dette er en øvelse i minimalisme. Og tålmodighet. Og nøyaktighet. Jeg er vant til å ha full tilgang til Internett, til nedlasting av programvare; utallige artikler og videoer om alle tenkelige emner, rik programvare med tusenvis av hjelpemidler som gjør mye av jobben for meg. Jeg skal utdype disse begrensningene og hva jeg gjør for å komme rundt dem.</p>
 
 <h2>&#128170; Utfordringen</h2>
-<p>Utfordringen kommer i form av en bok, "The Ray Tracer Challenge" av Jamis Buck, utgitt 2019 på The Pragmatic Programmers. Denne boken tar leseren gjennom alle stegene for å lage en "3D Renderer", en programvare som lager bilder av 3D-modeller, ved beregne hvordan lys reflekteres og brytes når det treffer de ulike 3D objektene som utgjør modellen. Dette skal man lage selv – boken har ingen ferdig kode, kun "pseudokode" som beskriver omtrentlig hva de ulike funksjonene skal gjøre, og så er det opp til leseren å implementere dette i sitt valgte programmeringsspråk. I tillegg er fremgangsmåten TDD (Test-Driven Development), som jeg skal redegjøre for lenger ned i dette dokumentet.</p>
+  <p>Utfordringen kommer i form av en bok, "The Ray Tracer Challenge" av Jamis Buck, utgitt 2019 på The Pragmatic
+    Programmers. Denne boken tar leseren gjennom alle stegene for å lage en "3D Renderer", en programvare som lager
+    bilder av 3D-modeller, ved beregne hvordan lys reflekteres og brytes når det treffer de ulike 3D objektene som
+    utgjør modellen. Dette skal man lage selv - boken har ingen ferdig kode, kun "pseudokode" som beskriver omtrentlig
+    hva de ulike funksjonene skal gjøre, og så er det opp til leseren å implementere dette i sitt valgte
+    programmeringsspråk. I tillegg er fremgangsmåten TDD (Test-Driven Development), som jeg skal redegjøre for lenger
+    ned i dette dokumentet.</p>
 
 <h2>&#128644; Miljøet</h2>
 
-<p>Gitt begrensningene har jeg kun funnet èn mulig tilnærming til denne utfordringen, og det er med HTML, CSS og Javascript (JS) i nettleser. Ingen webserver, ingen API, ingenting annet enn lokale filer som kjører i Google Chrome. </p>
+  <p>Gitt begrensningene har jeg kun funnet èn mulig tilnærming til denne utfordringen, og det er med HTML, CSS og
+    Javascript (JS) i nettleser. Ingen webserver, ingen API, ingenting annet enn lokale filer som kjører i Google
+    Chrome. </p>
 
-<p>Jeg har tilgang til nettsiden w3schools.com hvor de har en begrenset kode-editor som jeg vil bruke til å teste noe av koden.</p>
+  <p>Jeg har tilgang til nettsiden w3schools.com hvor de har en begrenset kode-editor som jeg vil bruke til å teste noe
+    av koden.</p>
 
-<p>I tillegg til referansene hos w3schools.com har jeg tilgang til stackoverflow.com som gir svar på det meste jeg kan tenkes å lure på.</p>
+  <p>I tillegg til referansene hos w3schools.com har jeg tilgang til stackoverflow.com som gir svar på det meste jeg kan
+    tenkes å lure på.</p>
 
-<p>DFS er et ekstra nedlåst Citrix-miljø. Det er ingen tilgang til å installere egen programvare, så jeg kan ikke bruke noen biblioteker. Det er ingen tilgang til Chrome’s Developer Mode eller konsoll-logg, så jeg får ikke se en eneste feilmelding. Det er heller ingen kommandolinje eller versjonskontroll (git), så jeg må huske å ta manuelle daterte kopier med jevne mellomrom. "Kode-editoren" er notepad, med noe bedre funksjonalitet i w3schools nettbaserte editor, men der kan jeg ikke referere eksterne filer, så alt må legges inn i samme vindu.</p>
+  <p>DFS er et ekstra nedlåst Citrix-miljø. Det er ingen tilgang til å installere egen programvare, så jeg kan ikke
+    bruke noen biblioteker. Det er ingen tilgang til Chrome's Developer Mode eller konsoll-logg, så jeg får ikke se en
+    eneste feilmelding. Det er heller ingen kommandolinje eller versjonskontroll (git), så jeg må huske å ta manuelle
+    daterte kopier med jevne mellomrom. "Kode-editoren" er notepad, med noe bedre funksjonalitet i w3schools nettbaserte
+    editor, men der kan jeg ikke referere eksterne filer, så alt må legges inn i samme vindu.</p>
 
-<p>Filstrukturen som etter hvert har dukket opp er en rot-katalog (<code>/html</code>) som inneholder alle html-filer, og underkataloger for js-filer (<code>/js</code>) og etter hvert for css (<code>/css</code>). I tillegg ligger dette dokumentet under en dokumentasjonskatalog (<code>/docs</code>), der jeg også vil lagre skjermbilder etc. Strukturen blir til mens vi går.</p>
+  <p>Filstrukturen som etter hvert har dukket opp er en rot-katalog (<code>/html</code>) som inneholder alle html-filer,
+    og underkataloger for js-filer (<code>/js</code>) og etter hvert for css (<code>/css</code>). I tillegg ligger dette
+    dokumentet under en dokumentasjonskatalog (<code>/docs</code>), der jeg også vil lagre skjermbilder etc. Strukturen
+    blir til mens vi går.</p>
 
-<p>Backup tas ved å kopiere hele <code>/html</code> strukturen til et eget område (<code>/Backup/ÅÅÅÅMMDD/</code>) for hver dag. Dette er på ingen måte sammenlignbart med versjonskontroll, men der det beste jeg kan komme på.</p>
+  <p>Backup tas ved å kopiere hele <code>/html</code> strukturen til et eget område (<code>/Backup/ÅÅÅÅMMDD/</code>) for
+    hver dag. Dette er på ingen måte sammenlignbart med versjonskontroll, men der det beste jeg kan komme på.</p>
 
 <h2>&#128163; Test-drevet utvikling</h2>
 <p>Boken baserer seg som nevnt på TDD, som jeg lenge har hatt lyst til å praktisere. Metoden er som følger:
 <ol>
-  <li>For hver ny funksjon man skal lage, lager man først en test som verifiserer at funksjonen gjør det den skal. </li>
+    <li>For hver ny funksjon man skal lage, lager man først en test som verifiserer at funksjonen gjør det den skal.
+    </li>
   <li>Så kjører man testen, som forventet vil feile, siden man ikke enda har implementert funksjonen som testes.</li>
   <li>Så skriver man funksjonen og kjører testen til den verifiseres korrekt.</li> 
 </ol>
-Et "litt ikke-trivielt" eksempel: Jeg trenger en funksjon som, gitt to sider av en trekant, representert ved tallene a og b, returnerer lengden på hypotenusen, altså <var><span>&#8730;</span><span  style="border-top: 1px solid black">a<sup>2</sup> + b<sup>2</sup></span></var>.
+  Et "litt ikke-trivielt" eksempel: Jeg trenger en funksjon som, gitt to sider av en trekant, representert ved tallene a
+  og b, returnerer lengden på hypotenusen, altså $c = \sqrt{a^2 + b^2}$.
 </p>
 
-<p>Først lager jeg en test som kaller opp denne ikke-eksisterende funksjonen (<code>hypotenuse()</code>), gir den to kjente tall og sjekker hva funksjonen svarer, mot det forventede resultatet som jeg har sjekket på kalkulatoren min. <var><span>&#8730;</span><span style="border-top: 1px solid black">5<sup>2</sup> + 3<sup>2</sup></span> = 5,830951895</var>. Jeg skriver testen så den returnerer <var>true</var> eller <var>false</var> avhengig av resultatet:</p>
+  <p>Først lager jeg en test som kaller opp denne ikke-eksisterende funksjonen (<code>hypotenuse()</code>), gir den to
+    kjente tall og sjekker hva funksjonen svarer, mot det forventede resultatet som jeg har sjekket på kalkulatoren min.
+    $\sqrt{5^2 + 3^2}$. Jeg skriver testen så den returnerer <var>true</var> eller <var>false</var> avhengig av
+    resultatet:
+  </p>
 
 <pre>
 function test_hypotenuse_function() {
@@ -102,14 +131,16 @@ function test_hypotenuse_function() {
 }
 </pre>
 
-<p>Siden funksjonen <code>hypotenuse()</code> ikke finnes enda, vil ikke testen kjøre. Så lager jeg funksjonen, men uten å gjøre den ferdig:</p>
+  <p>Siden funksjonen <code>hypotenuse()</code> ikke finnes enda, vil ikke testen kjøre. Så lager jeg funksjonen, men
+    uten å gjøre den ferdig:</p>
 
 <pre>function hypotenuse(a, b) {
   return 0
 }
 </pre>
 
-<p>Jeg kjører testen på nytt, og den feiler som forventet igjen, siden funksjonen bare returnerer <code>0</code>. Jeg implementerer funksjonen ferdig:</p>
+  <p>Jeg kjører testen på nytt, og den feiler som forventet igjen, siden funksjonen bare returnerer <code>0</code>. Jeg
+    implementerer funksjonen ferdig:</p>
 
 <pre>function hypotenuse(a, b) {
   return Math.sqrt(a**2 + b**2)
@@ -118,144 +149,252 @@ function test_hypotenuse_function() {
 
 <p>Og kjører testen igjen. Denne gang skal den vel gi suksess? Eller?</p>
 
-<p>Det er her elegansen i test-drevet utvikling kommer til syne: På grunn av forskjell i "flyt-talls-presisjonen" mellom JS og min kalkulator vil testen fortsatt feile. JS gir svaret <var>5.830951894845301</var>. </p>
+  <p>Det er her elegansen i test-drevet utvikling kommer til syne: På grunn av forskjell i "flyt-talls-presisjonen"
+    mellom JS og min kalkulator vil testen fortsatt feile. JS gir svaret $5.830951894845301$. </p>
 
-<p>En test som feiler betyr at "noe" er galt, og vi må se nærmere på årsaken. Hvis jeg nå endrer testen så den istedet sammenligner resultatet av funksjonen mot det mer nøyaktige <var><span>&#8730;</span><span  style="border-top: 1px solid black">34</span></var>, så passerer testen som den skal.</p>
+  <p>En test som feiler betyr at "noe" er galt, og vi må se nærmere på årsaken. Hvis jeg nå endrer testen så den istedet
+    sammenligner resultatet av funksjonen mot det mer nøyaktige $\sqrt{34}$, så passerer testen som den skal.</p>
 
-<p>Dette kan ved første øyekast virke tungrodd og masse ekstra kode for å teste EN kodelinje; hva er vitsen med å sammenligne <code>1 == 1</code>??? Når kompleksiteten øker og man begynner å kjøre tester på større operasjoner, vil testene kunne avdekke slike ting som avrunding etc, feil som ellers kunne gått ubemerket hen i lang tid og dukket opp i form av diffuse uforståelige feil helt andre steder i koden.</p>
+  <p>Dette kan ved første øyekast virke tungrodd og masse ekstra kode for å teste EN kodelinje; hva er vitsen med å
+    sammenligne <code>1 == 1</code>??? Når kompleksiteten øker og man begynner å kjøre tester på større operasjoner, vil
+    testene kunne avdekke slike ting som avrunding etc, feil som ellers kunne gått ubemerket hen i lang tid og dukket
+    opp i form av diffuse uforståelige feil helt andre steder i koden.</p>
 
-<p>Når jeg senere gjør endringer i eksisterende kode (feks refaktorerer eller legger til / trekker fra funksjonalitet) som får tester til å feile som tidligere har fungert fint, blir feilene oppdaget tidlig og kan fikses mens man har endringen friskt i minne. Verdien av test-drevet utvikling øker eksponensielt med antall utviklere som jobber i og endrer kodebasen. Grundige tester fungerer som et sikkerhetsnett og gir utviklerne trygghet for at de kan prøve og feile og eksperimentere på et helt annet nivå. Omfavn &#128150;TDD&#129392;!</p>
+  <p>Når jeg senere gjør endringer i eksisterende kode (feks refaktorerer eller legger til / trekker fra funksjonalitet)
+    som får tester til å feile som tidligere har fungert fint, blir feilene oppdaget tidlig og kan fikses mens man har
+    endringen friskt i minne. Verdien av test-drevet utvikling øker eksponensielt med antall utviklere som jobber i og
+    endrer kodebasen. Grundige tester fungerer som et sikkerhetsnett og gir utviklerne trygghet for at de kan prøve og
+    feile og eksperimentere på et helt annet nivå. Omfavn &#128150;TDD&#129392;!</p>
 
-<p>13.04.2024: Finner <a href="https://stackoverflow.com/questions/14481381/how-to-catch-all-javascript-warnings-and-errors-to-an-output-div#33321914">en funksjon som kan vise feilkoder i HTML her</a>… &#128512;</p>
+  <p>13.04.2024: Finner <a
+      href="https://stackoverflow.com/questions/14481381/how-to-catch-all-javascript-warnings-and-errors-to-an-output-div#33321914">en
+      funksjon som kan vise feilkoder i HTML her</a>… &#128512;</p>
 
 <h2>&#128221; Prosjektet</h2>
-<p>Jeg starter i begynnelsen av April 2024 med dette prosjektet. Jeg leser noen kapitler og tester litt miljøet jeg kan programmere i. Det er ikke vits å starte på noe dersom jeg for eksempel ikke kan kjøre JS i eksterne filer, eller ikke kan bruke HTML canvas elementet. Heldigvis ser det ikke ut til at det ikke er restriksjoner her.</p>
+  <p>Jeg starter i begynnelsen av April 2024 med dette prosjektet. Jeg leser noen kapitler og tester litt miljøet jeg
+    kan programmere i. Det er ikke vits å starte på noe dersom jeg for eksempel ikke kan kjøre JS i eksterne filer,
+    eller ikke kan bruke HTML canvas elementet. Heldigvis ser det ikke ut til at det ikke er restriksjoner her.</p>
 
-<p>"Rammeverket" for testing blir sakte til mens jeg går. Jeg starter med manipulering av "hardkodede" HTML-elementer, men kommer fort på bedre tanker og lar hver test kjøre som en egen funksjon <code>runTest()</code> som både kjører testen og viser navnet på test-funksjonen og resultatet av testen i rød eller grønn tekst. Foreløpig holder dette.</p>
+  <p>"Rammeverket" for testing blir sakte til mens jeg går. Jeg starter med manipulering av "hardkodede" HTML-elementer,
+    men kommer fort på bedre tanker og lar hver test kjøre som en egen funksjon <code>runTest()</code> som både kjører
+    testen og viser navnet på test-funksjonen og resultatet av testen i rød eller grønn tekst. Foreløpig holder dette.
+  </p>
 
-<p><code>test_runner.html</code> laster JS-skriptene <code>js/functions.js</code> og <code>js/tests.js</code> som inneholder hhv funksjonene som skal testes og testene som benyttes. Det gir mening å skille disse i separate filer, for testene trenger jeg ikke å laste med mindre de skal kjøres. Og en antagelse fra meg: antall linjer kode i <code>tests.js</code> vs <code>functions.js</code> tenderer mot 2:1.</p>
+  <p><code>test_runner.html</code> laster JS-skriptene <code>js/functions.js</code> og <code>js/tests.js</code> som
+    inneholder hhv funksjonene som skal testes og testene som benyttes. Det gir mening å skille disse i separate filer,
+    for testene trenger jeg ikke å laste med mindre de skal kjøres. Og en antagelse fra meg: antall linjer kode i
+    <code>tests.js</code> vs <code>functions.js</code> tenderer mot 2:1.
+  </p>
 
 <p>&#129395; Let's get this party started! &#129395;</p>
 
 <h3>&#128640; Kapittel 1, Tuples, Points and Vectors</h3>
-<p>Det første kapitlet handler om de mest grunnleggende byggesteinene i dette systemet. En <code>tuple</code> er en datatype med x, y og z koordinater, samt en verdi w som forteller om dette er en vektor (w=0) eller et punkt (w=1). I første implementasjon er en vektor bare en tuple med w=0 og et punkt er bare en tuple med w=1. Det er ingen restriksjoner mellom de ulike datatypene. Dette kan det bli nødvendig å endre senere, men inntil videre er distinksjonen kun for egen klarhet.</p>
+  <p>Det første kapitlet handler om de mest grunnleggende byggesteinene i dette systemet. En <code>tuple</code> er en
+    datatype med x, y og z koordinater, samt en verdi w som forteller om dette er en vektor (w=0) eller et punkt (w=1).
+    I første implementasjon er en vektor bare en tuple med w=0 og et punkt er bare en tuple med w=1. Det er ingen
+    restriksjoner mellom de ulike datatypene. Dette kan det bli nødvendig å endre senere, men inntil videre er
+    distinksjonen kun for egen klarhet.</p>
 
-<p>Jeg lager en funksjon <code>equal(a, b)</code> for å sammenligne to flyttall med "slingringsmonn", siden man ellers vil få problemer grunnet avrunding. Dette er et generelt problem i programmering, siden flyttall ikke kan gjengis helt nøyaktig. Denne brukes også i funksjonen <code>equal_tuples()</code> som sammenligner om to tupler er like. </p>
+  <p>Jeg lager en funksjon <code>equal(a, b)</code> for å sammenligne to flyttall med "slingringsmonn", siden man ellers
+    vil få problemer grunnet avrunding. Dette er et generelt problem i programmering, siden flyttall ikke kan gjengis
+    helt nøyaktig. Denne brukes også i funksjonen <code>equal_tuples()</code> som sammenligner om to tupler er like.
+  </p>
 
-<p>Videre oppretter jeg en konstant <code>PRECISION = 5</code> som brukes til å angi presisjonen i avrundingsoperasjoner med <code>.toFixed(PRECISION)</code> der det blir nødvendig i koden, og til å angi konstanten <code>EPSILON = 1.0*10**(-PRECISION)</code> som er sammenligningsverdien som brukes i <code>equal()</code>-funksjonen. Dersom <var>a - b &gt; EPSILON</var> er tallene ansett som like. Når <var>PRECISION = 5</var> er <var>EPSILON = 1*10<sup>-5</sup></var>. Dette må jeg sannsynligvis justere senere, dersom det skaper problemer.</p>
+  <p>Videre oppretter jeg en konstant <code>PRECISION = 5</code> som brukes til å angi presisjonen i
+    avrundingsoperasjoner med <code>.toFixed(PRECISION)</code> der det blir nødvendig i koden, og til å angi konstanten
+    <code>EPSILON = 1.0*10**(-PRECISION)</code> som er sammenligningsverdien som brukes i
+    <code>equal()</code>-funksjonen. Dersom <var>a - b &gt; EPSILON</var> er tallene ansett som like. Når <var>PRECISION
+      = 5</var> er <var>EPSILON = 1*10<sup>-5</sup></var>. Dette må jeg sannsynligvis justere senere, dersom det skaper
+    problemer.
+  </p>
 
-<p>Funksjoner for å legge samme og trekke vektorer fra hverandre er neste. Her kommer w-verdien til sin rett, for hvis man legger sammen et punkt (w=1) og en vektor (w=0) får man et nytt punkt (w=1). Og dersom man legger sammen to punkt får man w=2, som ikke er verken punkt eller vektor. Dersom man legger samme to vektorer får man fortsatt w=0, som er en ny vektor. Helt riktig! &#128513;</p>
+  <p>Funksjoner for å legge samme og trekke vektorer fra hverandre er neste. Her kommer w-verdien til sin rett, for hvis
+    man legger sammen et punkt (w=1) og en vektor (w=0) får man et nytt punkt (w=1). Og dersom man legger sammen to
+    punkt får man w=2, som ikke er verken punkt eller vektor. Dersom man legger samme to vektorer får man fortsatt w=0,
+    som er en ny vektor. Helt riktig! &#128513;</p>
 
-<p>13.04.2024: Jeg jobber med å legge sammen og trekke fra tupler, og så sammenligne resultatene etterpå. Dette må fungere bra, ellers blir det trøbbel down the line. Men det er ikke så enkelt! &#128517;</p>
+  <p>13.04.2024: Jeg jobber med å legge sammen og trekke fra tupler, og så sammenligne resultatene etterpå. Dette må
+    fungere bra, ellers blir det trøbbel down the line. Men det er ikke så enkelt! &#128517;</p>
 
-<blockquote>På et tidspunkt virker det som at <code>tests.js</code> ikke lenger blir importert – funksjonen <code>test_tuple_function()</code> er ikke definert. Men i Tryit editor fungerer det (tilsynelatende). Her blir det en del feilsøking før jeg lærer to viktige ting: 
-a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bindestrek (–) i navnet.</blockquote>
+  <blockquote>På et tidspunkt virker det som at <code>tests.js</code> ikke lenger blir importert - funksjonen
+    <code>test_tuple_function()</code> er ikke definert. Men i Tryit editor fungerer det (tilsynelatende). Her blir det
+    en del feilsøking før jeg lærer to viktige ting:
+    a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bindestrek (-) i navnet.
+  </blockquote>
 
-<p>Jeg fortsetter å implementere tuple-funksjoner og –tester til jeg er gjennom kapittel 1. På slutten av kapitlet er det en liten øvelse for å teste ting, der man skal lage en virtuell "kanon", og skyte prosjektiler. Prosjektilet har en posisjon og en hastighetsvektor. Miljøet har gravitasjon (vektor) og vind (vektor) som skal regnes med.</p>
+  <p>Jeg fortsetter å implementere tuple-funksjoner og -tester til jeg er gjennom kapittel 1. På slutten av kapitlet er
+    det en liten øvelse for å teste ting, der man skal lage en virtuell "kanon", og skyte prosjektiler. Prosjektilet har
+    en posisjon og en hastighetsvektor. Miljøet har gravitasjon (vektor) og vind (vektor) som skal regnes med.</p>
 
-<p>Her går jeg for første gang på en Out Of Memory krasj, på grunn av en evig loop. Jeg får funksjonen til å regne posisjoner helt fint, og lagrer forsøket i <a href="../projectile_chapter1.html"><code>./projectile_chapter1.html</code></a>.</p>
+  <p>Her går jeg for første gang på en Out Of Memory krasj, på grunn av en evig loop. Jeg får funksjonen til å regne
+    posisjoner helt fint, og lagrer forsøket i <a
+      href="../projectile_chapter1.html"><code>./projectile_chapter1.html</code></a>.</p>
 
 <h3>&#128640; Kapittel 2, Drawing on a Canvas</h3>
-<p>Her starter vi med litt farge-teori, og noterer at fargenes r,g,b verdier til forveksling ligner på tuples! &#129321; Jeg ser at boka vil at vi skal lage PPM filer, som er et tekstbasert grafikk-format. De anbefaler at man bruker GIMP til å se disse på Windows, og jeg får sjekket at GIMP er installert på maskinen. Yey!</p>
+  <p>Her starter vi med litt farge-teori, og noterer at fargenes r,g,b verdier til forveksling ligner på tuples!
+    &#129321; Jeg ser at boka vil at vi skal lage PPM filer, som er et tekstbasert grafikk-format. De anbefaler at man
+    bruker GIMP til å se disse på Windows, og jeg får sjekket at GIMP er installert på maskinen. Yey!</p>
 
-<p>Jeg starter kodingen med å implementere (test av , og) <code>color(r, g, b)</code> datatypen, og funksjoner for å legge sammen og multiplisere farge med skalarverdi og to farger med hverandre.</p>
+  <p>Jeg starter kodingen med å implementere (test av , og) <code>color(r, g, b)</code> datatypen, og funksjoner for å
+    legge sammen og multiplisere farge med skalarverdi og to farger med hverandre.</p>
 
-<del><p>Deretter en metode som lager et spesifisert canvas-objekt og tester at det blir laget korrekt, og deretter skrive en fargeverdi til en spesifisert pixel og lese den ut.</p>
+  <del>
+    <p>Deretter en metode som lager et spesifisert canvas-objekt og tester at det blir laget korrekt, og deretter skrive
+      en fargeverdi til en spesifisert pixel og lese den ut.</p>
 
-<p>Jeg undersøker hvilke metoder vi har tilgjengelig; kan jeg for eksempel lese ut <var>width</var> og <var>height</var> fra det canvas-elementet jeg nettopp har laget?  Finner ikke ut av det, og nøyer meg med å teste at det finnes et element med spesifisert id. (Senere ser jeg at canvas-elementet HAR disse verdiene, men jeg prøvde å finne dem på tilhørende context-objekt.</p>
+    <p>Jeg undersøker hvilke metoder vi har tilgjengelig; kan jeg for eksempel lese ut <var>width</var> og
+      <var>height</var> fra det canvas-elementet jeg nettopp har laget? Finner ikke ut av det, og nøyer meg med å teste
+      at det finnes et element med spesifisert id. (Senere ser jeg at canvas-elementet HAR disse verdiene, men jeg
+      prøvde å finne dem på tilhørende context-objekt.
+    </p>
 
-<p>For å skrive til canvas, henter man ut konteksten med <code>canvas.getContext(2d)</code> og skriver til den. (Ja, det skal være 2d, for raytraceren skal bare kalkulere fargeverdier på pixler.)</p>
+    <p>For å skrive til canvas, henter man ut konteksten med <code>canvas.getContext(2d)</code> og skriver til den. (Ja,
+      det skal være 2d, for raytraceren skal bare kalkulere fargeverdier på pixler.)</p>
 
 <blockquote>Kan jeg så lese ut fargeverdien til en gitt pixel? Ja, med <code>getImageData()</code>. </blockquote>
 
-<p><code>fillrect(x, y, w, h)</code> skriver et rektangel på posisjon <code>(x, y)</code> og størrelse <code>(w, h)</code>.</p>
+    <p><code>fillrect(x, y, w, h)</code> skriver et rektangel på posisjon <code>(x, y)</code> og størrelse
+      <code>(w, h)</code>.
+    </p>
 <p>Dette fungerer. Canvasen ser slik ut:</p>
-<p><img style="border: 1px solid black;" src="canvas_element.png"/></p>
+    <p><img style="border: 1px solid black;" src="canvas_element.png" /></p>
 </del>
 
-<p>Dette canvas opplegget ble bare tull. Jeg finner ut at det slett ikke er nødvendig med noen HTML-canvas. I boka er canvas bare en abstraksjon for et lerret som har bredde og høyde, og en fargeverdi for hver pixel. Jeg krangler mye før jeg skjønner hva som må til: Et canvas har w * h og et array med verdier for hver pixel. That's it. &#128513;</p>
+  <p>Dette canvas opplegget ble bare tull. Jeg finner ut at det slett ikke er nødvendig med noen HTML-canvas. I boka er
+    canvas bare en abstraksjon for et lerret som har bredde og høyde, og en fargeverdi for hver pixel. Jeg krangler mye
+    før jeg skjønner hva som må til: Et canvas har w * h og et array med verdier for hver pixel. That's it. &#128513;
+  </p>
 
-<p>Indexverdien for et x,y koordinat på canvas med størrelse (w * h) og antall bytes pr farge-komponent b er gitt ved: <var>(w * y + x) * b</var>. Nå brukes 3 byte pr farge, men dersom jeg senere skal benytte transparens (alpha), kan det utvides.</p>
+  <p>Indexverdien for et x,y koordinat på canvas med størrelse (w * h) og antall bytes pr farge-komponent b er gitt ved:
+    $(w * y + x) * b$. Nå brukes 3 byte pr farge, men dersom jeg senere skal benytte transparens (alpha), kan
+    det utvides.
+  </p>
 
-<p>Det blir litt jobb før koden gjør som den skal. Ser stor nytte av test-dreven metode, og jeg lærer jeg masse JS.</p>
+  <p>Det blir litt jobb før koden gjør som den skal. Ser stor nytte av test-dreven metode, og jeg lærer jeg masse JS.
+  </p>
 
-<p>I stedet for å lage en egen funksjon <code>write_pixel(can, x, y, color)</code> legger jeg den til som en metode på canvas-objektet. Refererer til canvas-objektets data med <code>this</code>, feks. <code>this.w</code> for bredden.</p>
+  <p>I stedet for å lage en egen funksjon <code>write_pixel(can, x, y, color)</code> legger jeg den til som en metode på
+    canvas-objektet. Refererer til canvas-objektets data med <code>this</code>, feks. <code>this.w</code> for bredden.
+  </p>
 
-<p>Boka sier at x og y forventes å har 0-basert index. Greit.</p>
+  <p>Boka sier at x og y forventes å ha 0-basert index. Greit.</p>
 
-<p>Så skal data over til et filformat, her benyttes tekstbasert PPM-fil. Jeg skriver tester for å lage header og formattere pixeldata. Mye jobb, men det må gjøres ordentlig.. &#129308;&#129307; Resultatet er en fint formattert PPM-fil.</p>
+  <p>Så skal data over til et filformat, her benyttes tekstbasert PPM-fil. Jeg skriver tester for å lage header og
+    formattere pixeldata. Mye jobb, men det må gjøres ordentlig.. &#129308;&#129307; Resultatet er en fint formattert
+    PPM-fil.</p>
 
-<p>Neste steg er å gjøre det samme eksperimentet som i slutten av kapittel 1, men faktisk plotte på canvas og vise. Jeg har tenkt en stund på at det vil være lurt å bruke HTML canvas til dette, siden jeg kan (?) plotte pixel for pixel på skjerm mens det rendrer... tror jeg? &#129320;</p>
+  <p>Neste steg er å gjøre det samme eksperimentet som i slutten av kapittel 1, men faktisk plotte på canvas og vise.
+    Jeg har tenkt en stund på at det vil være lurt å bruke HTML canvas til dette, siden jeg kan (?) plotte pixel for
+    pixel på skjerm mens det rendrer... tror jeg? &#129320;</p>
 
 <p>Dette er et av de aller første synlige resultatene...</p>
 
-<p><img src="./projectile_plot1.png"/></p>
+  <p><img src="./projectile_plot1.png" /></p>
 
 <p>Jeg forsøker å hente data fra html_canvas til mitt canvas-objekt:</p>
-<p><img src="imagedata_fail.png"/></p>
-<p>...ehh? Joda, imagedata har jo alpha-verdien med, så da blir det sånn! Men så begynner jeg å tenke litt. Jeg skriver en og en pixel til imagedata, så hvorfor kan jeg ikke gjøre det samme med canvas-data? Det blir to strukturer i minnet, men det må gå greit. Inntil videre i hvert fall.. &#128517;</p>
+  <p><img src="imagedata_fail.png" /></p>
+  <p>...ehh? Joda, imagedata har jo alpha-verdien med, så da blir det sånn! Men så begynner jeg å tenke litt. Jeg
+    skriver en og en pixel til imagedata, så hvorfor kan jeg ikke gjøre det samme med canvas-data? Det blir to
+    strukturer i minnet, men det må gå greit. Inntil videre i hvert fall.. &#128517;</p>
 <p>Men, med litt tweaking ser det da etter hvert omtrent ut som i boka:</p>
-<p><img src="projectile_plot2.png"/></p>
+  <p><img src="projectile_plot2.png" /></p>
 
-<p>Og med litt "applied magic" så har jeg en link som lar meg lagre PPM fila med å klikke på en link. Nice. &#128170; Løsningen er her: <a href="../projectile_chapter2.html"><code>projectile_chapter2.html</code></a></p>
+  <p>Og med litt "applied magic" så har jeg en link som lar meg lagre PPM fila med å klikke på en link. Nice. &#128170;
+    Løsningen er her: <a href="../projectile_chapter2.html"><code>projectile_chapter2.html</code></a></p>
 
 
 <h3>&#128055; Kapittel 3, Matrices</h3>
 
-<p>Matriser. Hva er en matrise i denne sammenhengen? Det er et objekt med tall, lagt ut i rader og kolonner på en slik måte at de kan håndteres som en enhet. For eksempel en matrise med 3x5 tall:</p>
+  <p>Matriser. Hva er en matrise i denne sammenhengen? Det er et objekt med tall, lagt ut i rader og kolonner på en slik
+    måte at de kan håndteres som en enhet. For eksempel en matrise med 3x5 tall:</p>
 <pre>
 | 3 4 3 8 2 |
 | 2 1 2 1 2 |
 | 7 0 9 9 9 |
 </pre>
-<p>I denne utfordringen skal vi primært håndtere matriser på 4x4, men for sikkerhets skyld må koden håndtere andre formater. Dette er relativt enkel håndtering, jeg lager matrisene med <code>matrix(4, 4)</code> som så lager et array på 4 rader, hver med et array på 4 tall inni. Da kan vi aksessere hvert enkelt element slik:</p>
+  <p>I denne utfordringen skal vi primært håndtere matriser på 4x4, men for sikkerhets skyld må koden håndtere andre
+    formater. Dette er relativt enkel håndtering, jeg lager matrisene med <code>matrix(4, 4)</code> som så lager et
+    array på 4 rader, hver med et array på 4 tall inni. Da kan vi aksessere hvert enkelt element slik:</p>
 <pre>
 const m = matrix(4, 4)
 m[2][3] = 1.3424
 const m23 = m[2][3]
 </pre>
-<p>(Note to self: Jeg tror array med subarray er ganske optimalt oppsett her, men det finner vi ikke ut før vi begynner å rendre...)</p>
+  <p>(Note to self: Jeg tror array med subarray er ganske optimalt oppsett her, men det finner vi ikke ut før vi
+    begynner å rendre...)</p>
 
-<p>Så følger det en spesifikasjon for å sammenligne matriser, her velger jeg å først sjekke at de er like store <var>(4x4=16)</var>, og at de har samme dimensjoner (<var>3x5 &#8800; 5x3</var>) før vi bryter løs på å sammenligne element for element. Dette for å avdekke åpenbare forskjeller først, og spare "masse tungregning" i tilfelle de er strukturelt ulike matriser. Jeg benytter <code>equal(a, b)</code> som utviklet tidligere, for å ta høyde for flyttall som er "nært" <var>(&#916; &lt; &plusmn; EPSILON)</var> men likevel forskjellig.</p>
+  <p>Så følger det en spesifikasjon for å sammenligne matriser, her velger jeg å først sjekke at de er like store
+    <var>(4x4=16)</var>, og at de har samme dimensjoner (<var>3x5 &#8800; 5x3</var>) før vi bryter løs på å sammenligne
+    element for element. Dette for å avdekke åpenbare forskjeller først, og spare "masse tungregning" i tilfelle de er
+    strukturelt ulike matriser. Jeg benytter <code>equal(a, b)</code> som utviklet tidligere, for å ta høyde for
+    flyttall som er "nært" <var>(&#916; &lt; &plusmn; EPSILON)</var> men likevel forskjellig.
+  </p>
 
-<p>Multiplisering av matriser. Puh. Her er det så klart ikke bare A*B, det er skalarproduktet. Prikkproduktet. Dot product. Som for tupler. Definisjon iht boka:</p>
-<blockquote>"Matrix multiplication computes the dot product of every row-column combination in the matrix.</blockquote>
+  <p>Multiplisering av matriser. Puh. Her er det så klart ikke bare A*B, det er skalarproduktet. Prikkproduktet. Dot
+    product. Som for tupler. Definisjon iht boka:</p>
+  <blockquote>"Matrix multiplication computes the dot product of every row-column combination in the matrix.
+  </blockquote>
 
-<p>Heldigvis ser det ut for at jeg kan bruke noe av den samme koden som for sammenligning av matrisene. Støter på et pussig problem. Jeg har to matriser, laget med <code>matrix(4, 4)</code>. Når jeg multipliserer dem, blir resultatet i hver celle korrekt, men resultat-matrisen blir en gjentakelse av den siste matrisen, omtrent sånn:</p>
+  <p>Heldigvis ser det ut for at jeg kan bruke noe av den samme koden som for sammenligning av matrisene. Støter på et
+    pussig problem. Jeg har to matriser, laget med <code>matrix(4, 4)</code>. Når jeg multipliserer dem, blir resultatet
+    i hver celle korrekt, men resultat-matrisen blir en gjentakelse av den siste matrisen, omtrent sånn:</p>
 <pre>[[12,34,45,56],[12,34,45,56],[12,34,45,56],[12,34,45,56]]</pre>
 <p>Hvis jeg endrer èn av verdiene, endres den i alle radene, slik:</p>
 <pre>
 ma = [[12,34,45,56],[12,34,45,56],[12,34,45,56],[12,34,45,56]]
 ma[0][2] = 99
 [[12,34,99,56],[12,34,99,56],[12,34,99,56],[12,34,99,56]]</pre>
-<p>Ser ut som hver eneste rad peker til samme posisjoner i minnet. Jeg vet ikke hvordan jeg lager et array med rader som peker til unike minneposisjoner, og jeg er redd dette kan komme tilbake og bite meg senere... Men for now dokumenterer jeg det her, og oppretter arrayet helt manuelt, slik:</p>
+  <p>Ser ut som hver eneste rad peker til samme posisjoner i minnet. Jeg vet ikke hvordan jeg lager et array med rader
+    som peker til unike minneposisjoner, og jeg er redd dette kan komme tilbake og bite meg senere... Men for now
+    dokumenterer jeg det her, og oppretter arrayet helt manuelt, slik:</p>
 <pre>const m = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]</pre>
 <p>Neste dag (22.april 2024): Joda, det kom og beit meg... &#128514;</p>
-<p>For å bøte på problemet, fikser jeg matrix() så den looper og lager array element for element. Blir nok bra det også. Hvem f..n vil egentlig ha array som peker hit og dit og her og der!? JS assa.. &#128527;</p>
-<p>Det gjør det så at jeg <del>enkelt</del> enklere får til <code>determinant()</code> og <code>submatrix()</code>-funksjonene, og disse verktøyene trengs for å jobbe seg videre mot inverteringsfunksjonen som tydeligvis blir mye mer komplisert for 3x3 og 4x4 matriser.</p>
+  <p>For å bøte på problemet, fikser jeg matrix() så den looper og lager array element for element. Blir nok bra det
+    også. Hvem f..n vil egentlig ha array som peker hit og dit og her og der!? JS assa.. &#128527;</p>
+  <p>Det gjør det så at jeg <del>enkelt</del> enklere får til <code>determinant()</code> og
+    <code>submatrix()</code>-funksjonene, og disse verktøyene trengs for å jobbe seg videre mot inverteringsfunksjonen
+    som tydeligvis blir mye mer komplisert for 3x3 og 4x4 matriser.
+  </p>
 
-<p>23. april 2024: Array-føljetongen ruller videre. Jeg har igjen kommet borti problemer med referanser i arrays. Finner ut at man kan "fullklone" (aka "deep clone") et array med <code>structuredClone(array)</code> og det må jeg huske å gjøre når jeg gjør matrise-operasjoner som fjerner rad eller kolonne "in-place", dvs endrer på et array, og så senere bruker det samme arrayet på en annen operasjon som antar at det har opprinnelig "fasong". I de tilfellene må jeg returnere en full kopi av arrayet, og ikke det opprinnelige.</p>
+  <p>23. april 2024: Array-føljetongen ruller videre. Jeg har igjen kommet borti problemer med referanser i arrays.
+    Finner ut at man kan "fullklone" (aka "deep clone") et array med <code>structuredClone(array)</code> og det må jeg
+    huske å gjøre når jeg gjør matrise-operasjoner som fjerner rad eller kolonne "in-place", dvs endrer på et array, og
+    så senere bruker det samme arrayet på en annen operasjon som antar at det har opprinnelig "fasong". I de tilfellene
+    må jeg returnere en full kopi av arrayet, og ikke det opprinnelige.</p>
 
-<p> For øvrig har jeg "pyntet litt" både her i dokumentasjonen og i test_runner, så nå syns jeg det ser litt proffere ut: &#128513;
+  <p> For øvrig har jeg "pyntet litt" både her i dokumentasjonen og i test_runner, så nå syns jeg det ser litt proffere
+    ut: &#128513;
   <ul>
-    <li>Lagt til emojis på alle overskrifter, fresher opp litt og gir mening.  &#128513;</li>
-    <li>Lagt til emojis på hver test, så det står <span style="color: green;">Test Passed! &#127774;</span> og <span style="color: red;">Test Failed! &#128165;</span></li>
-    <li>Lagt til en perf-test på Test runner, som timer hvor lang tid det tar å kjøre testene. Ligger pr nå på 4-5 ms, så koden er ikke så tung... enda... &#128517;</li>
-    <li>Forbedret perf-testen så den lagrer resultat i <code>localStorage()</code> i browseren, og gir en bedre snitt-beregning, over tid.</li>
+    <li>Lagt til emojis på alle overskrifter, fresher opp litt og gir mening. &#128513;</li>
+    <li>Lagt til emojis på hver test, så det står <span style="color: green;">Test Passed! &#127774;</span> og <span
+        style="color: red;">Test Failed! &#128165;</span></li>
+    <li>Lagt til en perf-test på Test runner, som timer hvor lang tid det tar å kjøre testene. Ligger pr nå på 4-5 ms,
+      så koden er ikke så tung... enda... &#128517;</li>
+    <li>Forbedret perf-testen så den lagrer resultat i <code>localStorage()</code> i browseren, og gir en bedre
+      snitt-beregning, over tid.</li>
     <li>Lagt til margins for å forbedre lesbarheten til dokumentasjonen. Samme for test_runner.</li>
     <li>Lagt inn bilde av coveret på boka.</li>
     <li>Lagt til <code>font-family: sans-serif;</code> på body.</li>
   </ul>
 </p>
 
-<p>25. april 2024. Det har gått et par dager med til testing og tweaking av funksjonene for håndtering av matriser. Masse prøving og feiling. Men, jeg har lært hvor jeg bør bruke <code>structuredClone()</code> til å klone arrays - det gjør vi i funksjoner, ikke i tester, og bare når vi trenger det.</p>
+  <p>25. april 2024. Det har gått et par dager med til testing og tweaking av funksjonene for håndtering av matriser.
+    Masse prøving og feiling. Men, jeg har lært hvor jeg bør bruke <code>structuredClone()</code> til å klone arrays -
+    det gjør vi i funksjoner, ikke i tester, og bare når vi trenger det.</p>
 
-<p> Har også lært litt om for-løkker. For-løkke med <code>for (let r in m)</code> bruker vi fordi de er enklere og vi unngår OBOB-feil når vi skal iterere over alle elementer i arrayet. Vi bruker den IKKE når vi skal kalkulere noe fra indeks-verdiene - de er nemlig <code>typeof string</code> viser det seg! &#128580;</p>
+  <p> Har også lært litt om for-løkker. For-løkke med <code>for (let r in m)</code> bruker vi fordi de er enklere og vi
+    unngår OBOB-feil når vi skal iterere over alle elementer i arrayet. Vi bruker den IKKE når vi skal kalkulere noe fra
+    indeks-verdiene - de er nemlig <code>typeof string</code> viser det seg! &#128580;</p>
 
 <h4>Putting it together</h4>
-<p>I slutten av hvert kapittel skal vi "put it together". I kapittel 3 er det bare noen spørsmål for eksperimentering. Jeg vil kort besvare dem her.</p>
-<p><i>1. What happens when you invert the identity matrix?</i> Svar: <code>inverse(id_matrix) === id_matrix</code>. Totally called it, btw.. &#128527;</p>
-<p><i>2. What do you get when you multiply a matrix by its inverse?</i> Svar: Jeg testet det med <code>multiply_matrices(ma, inverse(ma))</code> og fikk noe som ved første øyekast så kryptisk ut, men så oppdaget jeg at verdiene på [0,0], [0,1], [1,0] og [1,1] er ~ 1! Noe av <code>id_matrix</code>?</p>
+  <p>I slutten av hvert kapittel skal vi "put it together". I kapittel 3 er det bare noen spørsmål for eksperimentering.
+    Jeg vil kort besvare dem her.</p>
+  <p><i>1. What happens when you invert the identity matrix?</i> Svar: <code>inverse(id_matrix) === id_matrix</code>.
+    Totally called it, btw.. &#128527;</p>
+  <p><i>2. What do you get when you multiply a matrix by its inverse?</i> Svar: Jeg testet det med
+    <code>multiply_matrices(ma, inverse(ma))</code> og fikk noe som ved første øyekast så kryptisk ut, men så oppdaget
+    jeg at verdiene på [0,0], [0,1], [1,0] og [1,1] er ~ 1! Noe av <code>id_matrix</code>?
+  </p>
 <pre>
 1,-5.551115123125783e-17,-5.551115123125783e-17,-1.1102230246251565e-16
 -1.1102230246251565e-16,1,2.220446049250313e-16,-2.220446049250313e-16
@@ -263,44 +402,72 @@ ma[0][2] = 99
 8.326672684688674e-17,0,-5.551115123125783e-17,1.0000000000000002
 </pre>
 
-<p><i>3. Is there any difference between the inverse of the transpose of a matrix, and the transpose of the inverse?</i>Svar: Jeg gjetter nei. Og verifiserer det:</p>
+  <p><i>3. Is there any difference between the inverse of the transpose of a matrix, and the transpose of the
+      inverse?</i>Svar: Jeg gjetter nei. Og verifiserer det:</p>
 <pre>
 const ma = [[3,-9,7,3],[3,-8,2,-9],[-4,4,4,1],[-6,5,-1,1]]
 const trans_inverse = inverse(transpose_matrix(structuredClone(ma)))
 const inverse_trans = transpose_matrix(inverse(structuredClone(ma)))
 log("error", matrix_equal(trans_inverse, inverse_trans)) // true
 </pre>
-<p><i>4. Remember how multiplying the identity matrix by a tuple gives you the tuple, unchanged? Now, try changing any single element of the identity matrix to a different number, and then multiplying it by a tuple. What happens to the tuple?</i> Svar: Hvis ett enkelt element i id matrix endres, blir det tatt med i matrisekalkuleringen. Endringer på rad 0 påvirker x-koordinatet. Endringer på rad 1 påvirker y-koordinatet osv. </p>
+  <p><i>4. Remember how multiplying the identity matrix by a tuple gives you the tuple, unchanged? Now, try changing any
+      single element of the identity matrix to a different number, and then multiplying it by a tuple. What happens to
+      the tuple?</i> Svar: Hvis ett enkelt element i id matrix endres, blir det tatt med i matrisekalkuleringen.
+    Endringer på rad 0 påvirker x-koordinatet. Endringer på rad 1 påvirker y-koordinatet osv. </p>
 
 <h3>&#128177; Kapittel 4, Matrix Transformations</h3>
 
 <p>Dette kapitlet tar for seg operasjoner for å 
 <ul>
-<li>Translere (fra engelsk; translate, ikke i betydningen "oversette". Vettu hva - heretter kaller jeg det <strong>flytte</strong>. Saksøk meg. &#128516;) punkter og vektorer</li>
+    <li>Translere (fra engelsk; translate, ikke i betydningen "oversette". Vettu hva - heretter kaller jeg det
+      <strong>flytte</strong>. Saksøk meg. &#128516;) punkter og vektorer
+    </li>
 <li>Skalere, altså vokse og krympe punkter og vektorer</li>
 <li>Rotere punkter rundt x, y og z aksene</li>
 <li>Forskyve (shear, skew) punkter så rette linjer blir skrå</li>
 </ul>
 </p>
-<p>Implementeringen er relativt enkel, det er dog noe magi i matrisehåndteringene som jeg ikke skjønner noe av så klart. Hvorfor blir det sånn og sånn når man setter inn tall dit og der i matrisen, og så multipliserer matrise med et punkt?? Aner ikke. Men det trenger jeg heller ikke, instruksjonene er greie nok de, og jeg får både koden for til å virke og testene til å verifisere resultatet. Her er det stort potensiale for å refaktorere kode senere - men man skal jo som kjent ikke bedrive "prematur optimalisering" (<a href="https://en.wikipedia.org/wiki/Program_optimization">det er iflg Donald Knuth "the root of all evil"</a>), så da lar vi det være... &#128513;</p>
+  <p>Implementeringen er relativt enkel, det er dog noe magi i matrisehåndteringene som jeg ikke skjønner noe av så
+    klart. Hvorfor blir det sånn og sånn når man setter inn tall dit og der i matrisen, og så multipliserer matrise med
+    et punkt?? Aner ikke. Men det trenger jeg heller ikke, instruksjonene er greie nok de, og jeg får både koden for til
+    å virke og testene til å verifisere resultatet. Her er det stort potensiale for å refaktorere kode senere - men man
+    skal jo som kjent ikke bedrive "prematur optimalisering" (<a
+      href="https://en.wikipedia.org/wiki/Program_optimization">det er iflg Donald Knuth "the root of all evil"</a>), så
+    da lar vi det være... &#128513;</p>
 <p>En ekstra utfordring er å finne en måte å "chaine" disse operasjonene etter hverandre, noe sånt som:</p>
 
 <pre>
 const t = new transform()
 const chained = t.rotate_x(Math.PI / 4).rotate_y(Math.PI / 2).rotate_z(Math.PI / 3).scale(5, 5, 5).translate(10, 5, 7)
 </pre>
-<p>Jeg finner noen som har <a href="https://stackoverflow.com/questions/1099628/how-does-basic-object-function-chaining-work-in-javascript">gjort noe lignende i JS</a> før, men klarer ikke helt å naile det for min funksjon. Så jeg bestemmer meg for å la det ligge, og lar testen stå igjen som FAILED til jeg eventuelt senere finner ut av det. Det er egentlig mange operasjoner jeg gjerne skulle kombinert sånn, så det kan vel bli senere..</p>
+  <p>Jeg finner noen som har <a
+      href="https://stackoverflow.com/questions/1099628/how-does-basic-object-function-chaining-work-in-javascript">gjort
+      noe lignende i JS</a> før, men klarer ikke helt å naile det for min funksjon. Så jeg bestemmer meg for å la det
+    ligge, og lar testen stå igjen som FAILED til jeg eventuelt senere finner ut av det. Det er egentlig mange
+    operasjoner jeg gjerne skulle kombinert sånn, så det kan vel bli senere..</p>
 
 <p>I stedet skriver jeg en test for å legge til operasjonene èn etter èn, og den fungerer.</p>
 
 <h4>Putting it together</h4>
-<p>Dette blir en interessant challenge. Her skal jeg tegne opp en analog urskive på skjerm, med et punkt for hver time på klokka, 1 - 12, ved hjelp av en rotasjonsmatrise! Må beregne hvilke akser jeg roterer rundt, og så beregne hvor på skjermen punktene skal stå, for 0,0 skal være midt på canvas'en.</p>
-<p>Jeg knoter en del med å forstå hvordan dette fungerer. Jeg har jo sett for meg rotasjon av et punkt som om at det er selve punktet som roterer, og det gir jo ingen mening. En vektor kan rotere, så klart, men ikke punktet. Når jeg bare husker at punktets eksistens kun gir mening i et koordinatsystem, blir det enklere å forstå.</p>
-<p>JS sitt Math-bibliotek benytter radianer som standard, og det gjør de også i boka. Så for den del trenger jeg ikke konverere til/fra grader, men det betyr at jeg må begynne å tenke på sirkelen delt inn i 2&pi; radianer. Slik ser enhetssirkelen ut, for referanse:</p>
-<p><a href="https://calcworkshop.com/radian-measure/degrees-to-radians/"><img height="600" alt="Lånt fra calcworkshop.com" src="unit-circle-radians-degrees.png"/></a></p>
-<p>Det blir da litt utfordrende å å skjønne hvordan jeg skal få koordinatene til å falle på plass, men "plutselig" har jeg noe som ser ut som det skal! &#128517;</p>
-<p>Jeg skal forsøke å forklare koden. Vi starter med å sette opp noen konstanter, for størrelse <var>(size = 300)</var> og et tall for radius på urskiven <var>radius = (6/8 * size / 2)</var>.  Så defineres canvas og farge. Jeg har kommentert ut denne koden, for PPM filen blir ikke rett uansett. Så defineres html_canvas, og det er jo her urskiven skal tegnes.</p>
-<p>Jeg lager et tomt array for å legge posisjoner for hver piksel som skal tegnes for tallene 1-12. Så looper vi over tallene fra 1-12, og gjør følgende kalkulasjoner:
+  <p>Dette blir en interessant challenge. Her skal jeg tegne opp en analog urskive på skjerm, med et punkt for hver time
+    på klokka, 1 - 12, ved hjelp av en rotasjonsmatrise! Må beregne hvilke akser jeg roterer rundt, og så beregne hvor
+    på skjermen punktene skal stå, for 0,0 skal være midt på canvas'en.</p>
+  <p>Jeg knoter en del med å forstå hvordan dette fungerer. Jeg har jo sett for meg rotasjon av et punkt som om at det
+    er selve punktet som roterer, og det gir jo ingen mening. En vektor kan rotere, så klart, men ikke punktet. Når jeg
+    bare husker at punktets eksistens kun gir mening i et koordinatsystem, blir det enklere å forstå.</p>
+  <p>JS sitt Math-bibliotek benytter radianer som standard, og det gjør de også i boka. Så for den del trenger jeg ikke
+    konverere til/fra grader, men det betyr at jeg må begynne å tenke på sirkelen delt inn i 2&pi; radianer. Slik ser
+    enhetssirkelen ut, for referanse:</p>
+  <p><a href="https://calcworkshop.com/radian-measure/degrees-to-radians/"><img height="600"
+        alt="Lånt fra calcworkshop.com" src="unit-circle-radians-degrees.png" /></a></p>
+  <p>Det blir da litt utfordrende å å skjønne hvordan jeg skal få koordinatene til å falle på plass, men "plutselig" har
+    jeg noe som ser ut som det skal! &#128517;</p>
+  <p>Jeg skal forsøke å forklare koden. Vi starter med å sette opp noen konstanter, for størrelse <var>(size =
+      300)</var> og et tall for radius på urskiven $radius = {6 \over 8} * {size \over 2}$. Så defineres canvas og farge.
+    Jeg har kommentert ut denne koden, for PPM filen blir ikke rett uansett. Så defineres html_canvas, og det er jo her
+    urskiven skal tegnes.</p>
+  <p>Jeg lager et tomt array for å legge posisjoner for hver piksel som skal tegnes for tallene 1-12. Så looper vi over
+    tallene fra 1-12, og gjør følgende kalkulasjoner:
 <pre>
 for (let i=0; i < 12; i++) {
 
@@ -318,22 +485,41 @@ for (let i=0; i < 12; i++) {
 }
 </pre>
 <ol>
-<li>Sett x og y på punkt <var>p = 0,0</var>. Vi kan ignorere z-koordinatet, siden det er aksen vi roterer rundt.</li>
+    <li>Sett x og y på punkt <var>p = 0,0</var>. Vi kan ignorere z-koordinatet, siden det er aksen vi roterer rundt.
+    </li>
 <li>Sett translation til <var>radius</var> langs x-aksen.</li>
 <li>Oppdater punktet p ved å multiplisere translation-matrisen med punktet.</li>
-<li>Kalkuler rotasjonen langs z-aksen. <var>2 * &pi; / 12</var> er størrelsen på hver sektor. Ganger den med tallet for inneværende time (1-12) for å få rotasjonen.</li>
+    <li>Kalkuler rotasjonen langs z-aksen. <var>2 * &pi; / 12</var> er størrelsen på hver sektor. Ganger den med tallet
+      for inneværende time (1-12) for å få rotasjonen.</li>
 <li>Oppdater punktet p ved å multiplisere rotasjons-matrisen med punktet.</li>
-<li>Oppdater punktet p ved å gange x og y verdiene med halve størrelsen av skjermen. Så når size=300, er size/2=150. Dette blir midt på skjermen. Kan sikkert også gjøres med en ny translation-matrise, men det er "billgere" å bare gange opp x og y.</li>
+    <li>Oppdater punktet p ved å gange x og y verdiene med halve størrelsen av skjermen. Så når size=300, er size/2=150.
+      Dette blir midt på skjermen. Kan sikkert også gjøres med en ny translation-matrise, men det er "billgere" å bare
+      gange opp x og y.</li>
 <li>Legg til punktet i arrayet med punkter.
 </ol>
-For å tegne på canvas, er det en ny loop som går gjennom arrayet og dytter punktene til rett plass på canvas. Det er nok her det skjærer seg i PPM-fil konverteringen, jeg mistenker at den liker piksel-verdier som ser sånn ut: <var>X, Y: 93.74999999999994, 52.57214207425068</var> ganske dårlig... så det får jeg jobbe litt med senere.
-Jeg legger til litt perf-testing og pynter med litt CSS og vòila! Resultatet ser du her: <a href="../clockface_chapter4.html"><code>clockface_chapter4.html</code></a></p>
-<p>Jeg oppdager også at lagring til PPM-fil alldeles ikke fungerer som det skal. Men jeg er litt irritert på de greiene der, PPM er et idiotisk format uansett, 300x300 px blir jo over 500kB! Må da gå an å gjøre en bedre jobb enn som så... </p>
-<p>Jeg ser også at rendring av urskiven tar sånn circa 150 ms i snitt, ved 300x300 piksler. Det er 12 * 2 transformasjoner, og 12 write_pixel kall og 12 fillRect. Når jeg kommenterer ut håndtering av PPM, kjører vi på 1 ms. Bare sånn for senere referanse.</p>
+  For å tegne på canvas, er det en ny loop som går gjennom arrayet og dytter punktene til rett plass på canvas. Det er
+  nok her det skjærer seg i PPM-fil konverteringen, jeg mistenker at den liker piksel-verdier som ser sånn ut: <var>X,
+    Y: 93.74999999999994, 52.57214207425068</var> ganske dårlig... så det får jeg jobbe litt med senere.
+  Jeg legger til litt perf-testing og pynter med litt CSS og vòila! Resultatet ser du her: <a
+    href="../clockface_chapter4.html"><code>clockface_chapter4.html</code></a></p>
+  <p>Jeg oppdager også at lagring til PPM-fil alldeles ikke fungerer som det skal. Men jeg er litt irritert på de
+    greiene der, PPM er et idiotisk format uansett, 300x300 px blir jo over 500kB! Må da gå an å gjøre en bedre jobb enn
+    som så... </p>
+  <p>Jeg ser også at rendring av urskiven tar sånn circa 150 ms i snitt, ved 300x300 piksler. Det er 12 * 2
+    transformasjoner, og 12 write_pixel kall og 12 fillRect. Når jeg kommenterer ut håndtering av PPM, kjører vi på 1
+    ms. Bare sånn for senere referanse.</p>
 
 <h3>&#129526;Chapter 5, Ray-Sphere Intersections</h3>
-<p>1. mai 2024: I dag har jeg implementert tester for å lage <code>sphere()</code> objekter med en id som er unik for hvert objekt, og jeg har laget <code>intersect()</code> funksjonen som sjekker om en <code>ray()</code> treffer en <code>sphere()</code> eller ikke. Kjente igjen andregradsligning og abc-formelen der &#129299;, selv om jeg ikke har satt meg inn i hva denne funksjonen egentlig gjør.</p>
-<p>Det er litt forvirrende forklart i boka - det ser ut som jeg skal beholde alle intersections i en global liste? Det ansporer meg til en liten refaktorering - jeg er ukomfortabel med å ha så mye global konfigurasjon strødd rundt overalt. Så jeg tar på meg å implementere noe som ligner på et "Configuration"-objekt. Her i form av en selv-eksekverende funksjon, som kjører ved oppstart og holder på ting som konstanter, globale lister og tellere. Funksjonen ser i første iterasjon slik ut:</p>
+  <p>1. mai 2024: I dag har jeg implementert tester for å lage <code>sphere()</code> objekter med en id som er unik for
+    hvert objekt, og jeg har laget <code>intersect()</code> funksjonen som sjekker om en <code>ray()</code> treffer en
+    <code>sphere()</code> eller ikke. Kjente igjen andregradsligning og abc-formelen der &#129299;, selv om jeg ikke har
+    satt meg inn i hva denne funksjonen egentlig gjør.
+  </p>
+  <p>Det er litt forvirrende forklart i boka - det ser ut som jeg skal beholde alle intersections i en global liste? Det
+    ansporer meg til en liten refaktorering - jeg er ukomfortabel med å ha så mye global konfigurasjon strødd rundt
+    overalt. Så jeg tar på meg å implementere noe som ligner på et "Configuration"-objekt. Her i form av en
+    selv-eksekverende funksjon, som kjører ved oppstart og holder på ting som konstanter, globale lister og tellere.
+    Funksjonen ser i første iterasjon slik ut:</p>
 <pre id="config-object">
 const C = function() {
   // The configuration object holds all "global" objects, arrays and configuration values in one place.
@@ -352,26 +538,61 @@ const C = function() {
 }();
 </pre>
 
-<p>Jeg endrer koden sånn at <code>PRECISION</code> og <code>EPSILON</code> refereres som <code>C.PRECISION</code> og <code>C.EPSILON</code>, og sånn at telleren som gir unik id til objektene blir <code>C.unique_id()</code>. Dette er mer ryddig enn å strø om seg i koden med globale arrays og konstanter hist og her.</p>
-<p>Men etter hvert mister jeg trua på at forfatteren mener at intersections skal være en global liste, så jeg skriver om funksjonen og genererer en liste med intersections i hver test, som så sjekkes av <code>hit()</code> funksjonen for hvilken intersection som er gjeldende. Det er alltid den intersection med laveste positive verdi som er gjeldende. De med negativ verdi er "bak kamera" og de med høyere positiv verdi skjules av den første. This will all make sense at some point. &#128514;</p>
+  <p>Jeg endrer koden sånn at <code>PRECISION</code> og <code>EPSILON</code> refereres som <code>C.PRECISION</code> og
+    <code>C.EPSILON</code>, og sånn at telleren som gir unik id til objektene blir <code>C.unique_id()</code>. Dette er
+    mer ryddig enn å strø om seg i koden med globale arrays og konstanter hist og her.
+  </p>
+  <p>Men etter hvert mister jeg trua på at forfatteren mener at intersections skal være en global liste, så jeg skriver
+    om funksjonen og genererer en liste med intersections i hver test, som så sjekkes av <code>hit()</code> funksjonen
+    for hvilken intersection som er gjeldende. Det er alltid den intersection med laveste positive verdi som er
+    gjeldende. De med negativ verdi er "bak kamera" og de med høyere positiv verdi skjules av den første. This will all
+    make sense at some point. &#128514;</p>
 
-<p>Jeg ser her at jeg veldig gjerne skulle hatt "klarheten" som jeg syns klasser gir meg; at jeg kan definere en <code>class</code> med en <code>constructor</code> og <code>fields</code> og <code>getters</code> og <code>setters</code>. Kall meg gammeldags. Go on. Men klasser blir det! Skriver om <code>Sphere()</code> til en klasse, og syns det går strålende å intersecte! (pun intended).</p>
-<p>Jeg vil etter hvert også refaktorere så disse pinglete JS objektene med metoder blir ordentlige klasser som kan bygges ut etter behov.</p>
+  <p>Jeg ser her at jeg veldig gjerne skulle hatt "klarheten" som jeg syns klasser gir meg; at jeg kan definere en
+    <code>class</code> med en <code>constructor</code> og <code>fields</code> og <code>getters</code> og
+    <code>setters</code>. Kall meg gammeldags. Go on. Men klasser blir det! Skriver om <code>Sphere()</code> til en
+    klasse, og syns det går strålende å intersecte! (pun intended).
+  </p>
+  <p>Jeg vil etter hvert også refaktorere så disse pinglete JS objektene med metoder blir ordentlige klasser som kan
+    bygges ut etter behov.</p>
 
 <h4>Putting it together</h4>
-<p>"Write a program that casts rays at a sphere and draws the picture to a canvas". Ja det hørtes ikke enkelt ut, men på "magisk vis" kommer det da etter litt knoting et bilde på skjerm:</p>
-<p><img src="./chapter5_raycast.png"/></p>
+  <p>"Write a program that casts rays at a sphere and draws the picture to a canvas". Ja det hørtes ikke enkelt ut, men
+    på "magisk vis" kommer det da etter litt knoting et bilde på skjerm:</p>
+  <p><img src="./chapter5_raycast.png" /></p>
 <p>Prøv selv, her: <a href="../raycast_chapter5.html"><code>./raycast_chapter5.html</code></a></p>
-<p>For første gang merker jeg at raytracing er vanvittig CPU-intensivt. Bildet over tok ca 2m37s (141 944 ms) å generere! Jeg testet andre oppløsninger og tiden det tar er lineær med antall pixler på ca 1.4 - 1.5 ms/p. Men dette er jo ikke holdbart. Jeg må kunne kjøre dette i bakgrunnen. TODO.</p> 
+  <p>For første gang merker jeg at raytracing er vanvittig CPU-intensivt. Bildet over tok ca 2m37s (141 944 ms) å
+    generere! Jeg testet andre oppløsninger og tiden det tar er lineær med antall pixler på ca 1.4 - 1.5 ms/p. Men dette
+    er jo ikke holdbart. Jeg må kunne kjøre dette i bakgrunnen. TODO.</p>
 
-<p> Jeg ser nå at <code>transformations()</code> funksjonen ikke gjør det den skal. Som den er laget nå returnerer den en tuple, mens det jeg vil, er at den skal returnere en matrise som jeg så kan "apply" på en shape. Som dette: <code>shape.transform = transformations(scale(5, 5, 5), rotation_y(1, 2, 3))</code>. Jeg jobber mer med det og får det til, bortsett fra at når jeg legger til en rotasjon, så blir den NaN i alle felt. TODO.</p>
+  <p> Jeg ser nå at <code>transformations()</code> funksjonen ikke gjør det den skal. Som den er laget nå returnerer den
+    en tuple, mens det jeg vil, er at den skal returnere en matrise som jeg så kan "apply" på en shape. Som dette:
+    <code>shape.transform = transformations(scale(5, 5, 5), rotation_y(1, 2, 3))</code>. Jeg jobber mer med det og får
+    det til, bortsett fra at når jeg legger til en rotasjon, så blir den NaN i alle felt. TODO.
+  </p>
 
 <h3>&#9203; Bakgrunnsdigresjonen</h3>
-<p>Angående bakgrunnskjøring... Det finnes en standardisert måte å kjøre JS i bakgrunnen på som kalles <a href="https://www.w3schools.com/js/js_api_web_workers.asp">Web Workers</a>. Implementasjonen er svært enkel, og vil løse problemene jeg har med at nettleseren henger under kjøring. Det "eneste" hinderet er at den ikke støtter å kjøre under <code>file:///</code> protokollen, jeg må ha en lokal HTTP server. Og det finnes jo ikke på DFS, dermed stopper dette opp.</p>
+  <p>Angående bakgrunnskjøring... Det finnes en standardisert måte å kjøre JS i bakgrunnen på som kalles <a
+      href="https://www.w3schools.com/js/js_api_web_workers.asp">Web Workers</a>. Implementasjonen er svært enkel, og
+    vil løse problemene jeg har med at nettleseren henger under kjøring. Det "eneste" hinderet er at den ikke støtter å
+    kjøre under <code>file:///</code> protokollen, jeg må ha en lokal HTTP server. Og det finnes jo ikke på DFS, dermed
+    stopper dette opp.</p>
 
-<p>En HTTP server følger med når man installerer av Python og Golang. Python sin versjon startes slik: <code>./python -m http.server 8000</code> og server dermed filene fra der du står <code>./</code> på <code>localhost:8000</code>. Dette er sikkerhetsmessig ubetenkelig, men som nevnt ikke tilgjengelig på DFS.</p> 
-<p>Jeg får lov å jobbe videre på dette på skole-pcen, men a) den er uten nett og b) bare tilgjengelig på dagtid... Foreløpig framdrift lagres her: <code>./web_worker_raycast_chapter5.html</code> og <code>./web_worker_raycast_chapter5.js</code></p>
-<p>Framdrift pr 8. mai 2024: Jeg har fått i gang web worker. Jeg kan kjøre rendering som bakgrunnsprosess, og den rapporterer tilbake hvert pixel som så tegnes i canvas i browseren. Meget stilig, og akkurat som jeg ønsket meg! Dette skjer selvsagt ikke uten plunder og heft. Det er sånn med web workers at de kjører i en separat, ekstern JS fil, og sånn må det visst være, trolig at sikkerhetsmessige årsaker. En JS-fil kan ikke uten videre inkludere funksjoner fra en annen JS-fil. Det ble det skikk på i ES6, den store JS-overhalingen fra 2015. Der kan man bruke import / eksport av funksjoner, men det krever en del omstrukturering for meg. Blant annet må hver enkelt funksjon som skal kunne eksporteres prefikses med "export": </p>
+  <p>En HTTP server følger med når man installerer av Python og Golang. Python sin versjon startes slik:
+    <code>./python -m http.server 8000</code> og server dermed filene fra der du står <code>./</code> på
+    <code>localhost:8000</code>. Dette er sikkerhetsmessig ubetenkelig, men som nevnt ikke tilgjengelig på DFS.
+  </p>
+  <p>Jeg får lov å jobbe videre på dette på skole-pcen, men a) den er uten nett og b) bare tilgjengelig på dagtid...
+    Foreløpig framdrift lagres her: <code>./web_worker_raycast_chapter5.html</code> og
+    <code>./web_worker_raycast_chapter5.js</code>
+  </p>
+  <p>Framdrift pr 8. mai 2024: Jeg har fått i gang web worker. Jeg kan kjøre rendering som bakgrunnsprosess, og den
+    rapporterer tilbake hvert pixel som så tegnes i canvas i browseren. Meget stilig, og akkurat som jeg ønsket meg!
+    Dette skjer selvsagt ikke uten plunder og heft. Det er sånn med web workers at de kjører i en separat, ekstern JS
+    fil, og sånn må det visst være, trolig at sikkerhetsmessige årsaker. En JS-fil kan ikke uten videre inkludere
+    funksjoner fra en annen JS-fil. Det ble det skikk på i ES6, den store JS-overhalingen fra 2015. Der kan man bruke
+    import / eksport av funksjoner, men det krever en del omstrukturering for meg. Blant annet må hver enkelt funksjon
+    som skal kunne eksporteres prefikses med "export": </p>
 <pre>
 export function doStuff() {
 ...
@@ -383,32 +604,62 @@ export function doStuff() {
 import { doStuff } from "./js/functions.js"
 </pre>
 
-<p>Vel og bra, men dette kan jeg jo ikke gjøre i W3schools sin editor. Ei heller kan jeg sette "export" foran alle funksjoner, og likevel bruke dem som "ikke-eksporterte" funksjoner. Og hva gjør jeg fra det tidligere nevnte "web-worker.js" skriptet, som ikke er en HTML-fil og ikke har en script-tag som kan settes til type=module? Fortsatt uavklart.</p>
+  <p>Vel og bra, men dette kan jeg jo ikke gjøre i W3schools sin editor. Ei heller kan jeg sette "export" foran alle
+    funksjoner, og likevel bruke dem som "ikke-eksporterte" funksjoner. Og hva gjør jeg fra det tidligere nevnte
+    "web-worker.js" skriptet, som ikke er en HTML-fil og ikke har en script-tag som kan settes til type=module? Fortsatt
+    uavklart.</p>
 
-<p>Men det jeg kan gjøre, er jo å jobbe videre på DFS, uten bakgrunnsrendering, med ny funksjonalitet. Det er da ikke sånn at jeg mangler utfordringer...&#128565; Så jeg tenker vi sier at vi kommer tilbake til dette på et senere tidspunkt, feks når jeg har mer normal tilgang til PC og Internett.</p>
+  <p>Men det jeg kan gjøre, er jo å jobbe videre på DFS, uten bakgrunnsrendering, med ny funksjonalitet. Det er da ikke
+    sånn at jeg mangler utfordringer...&#128565; Så jeg tenker vi sier at vi kommer tilbake til dette på et senere
+    tidspunkt, feks når jeg har mer normal tilgang til PC og Internett.</p>
 
 <h3>Optimaliseringsdigresjonen</h3>
-<p>Jeg får litt dilla på å prøve å optimalisere koden... Så da sporer vi av igjen, men dette skal vise seg å bli en meget god digresjon.</p>
-<p>Jeg leser litt om Typed Arrays i JS, som ikke er Arrays i det hele tatt, men optimaliserte bitstrømmer som kun vil ta èn eneste dataype, og dermed også kun er 1-dimensjonale. Jeg finner referansen <a href="https://www.w3schools.com/Jsref/jsref_obj_typed_array.asp">JS Typed Array</a> som beskriver hva det er. Jeg ser fort at Uint8ClampedArray og Float32Array skal gi meg det jeg trenger, hhv for pixel-data og for flyttall.</p>
-<p>Men, for å komme dit, må jeg ha noe tilsvarende de kjekke Array-funksjonene jeg bruker mye av, og så må jo alt indekseres på nye måter. Før kunne jeg finne en verdi i en matrise på formen <code>arr[x][y]</code> men nå må jeg regne ut x og y ut i fra indeksverdien, men det har jeg gjort før, så det skal jo være enkelt! Jeg sliter med å skjønne at når man sier "row, col" er det egentlig "y, x" og når man sier "x, y" så mener man "x, y". Tenke seg til... &#128514;</p>
+  <p>Jeg får litt dilla på å prøve å optimalisere koden... Så da sporer vi av igjen, men dette skal vise seg å bli en
+    meget god digresjon.</p>
+  <p>Jeg leser litt om Typed Arrays i JS, som ikke er Arrays i det hele tatt, men optimaliserte bitstrømmer som kun vil
+    ta èn eneste dataype, og dermed også kun er 1-dimensjonale. Jeg finner referansen <a
+      href="https://www.w3schools.com/Jsref/jsref_obj_typed_array.asp">JS Typed Array</a> som beskriver hva det er. Jeg
+    ser fort at Uint8ClampedArray og Float32Array skal gi meg det jeg trenger, hhv for pixel-data og for flyttall.</p>
+  <p>Men, for å komme dit, må jeg ha noe tilsvarende de kjekke Array-funksjonene jeg bruker mye av, og så må jo alt
+    indekseres på nye måter. Før kunne jeg finne en verdi i en matrise på formen <code>arr[x][y]</code> men nå må jeg
+    regne ut x og y ut i fra indeksverdien, men det har jeg gjort før, så det skal jo være enkelt! Jeg sliter med å
+    skjønne at når man sier "row, col" er det egentlig "y, x" og når man sier "x, y" så mener man "x, y". Tenke seg
+    til... &#128514;</p>
 <p>Jeg jobber med refaktorering av matriser i to dager, men resultatet er helt vanvittig!</p>
-<p><img src="chapter5_raycast_before_optimization.png" alt="Før"/><img src="chapter5_raycast_after_optimization.png" alt="Etter"/></p>
+  <p><img src="chapter5_raycast_before_optimization.png" alt="Før" /><img src="chapter5_raycast_after_optimization.png"
+      alt="Etter" /></p>
 <p>Fra 149 sekunder til 13 sekunder, på nøyaktig samme bilde! Totally worth it! &#128640;</p>
-<p>I prosessen har jeg flyttet <code>submatrix()</code> funksjonen så den er en metode på <code>matrix()</code>. Det kan jeg med fordel også gjøre med <code>minor()</code>, <code>determinant()</code> og <code>cofactor()</code>, og sikkert flere. Det blir en senere jobb.</p>
-<p>Jeg skriver om all matrise-håndtering slik at vi faktisk lager <code>matrix()</code> objekter og ikke jukser med manuelle arrays. <code>matrix()</code> får en constructor og metoder for <code>put(row, col, value)</code>, <code>putAll([])</code>, <code>get(row, col)</code> og som nevnt <code>submatrix(row, col)</code>.</p>
+  <p>I prosessen har jeg flyttet <code>submatrix()</code> funksjonen så den er en metode på <code>matrix()</code>. Det
+    kan jeg med fordel også gjøre med <code>minor()</code>, <code>determinant()</code> og <code>cofactor()</code>, og
+    sikkert flere. Det blir en senere jobb.</p>
+  <p>Jeg skriver om all matrise-håndtering slik at vi faktisk lager <code>matrix()</code> objekter og ikke jukser med
+    manuelle arrays. <code>matrix()</code> får en constructor og metoder for <code>put(row, col, value)</code>,
+    <code>putAll([])</code>, <code>get(row, col)</code> og som nevnt <code>submatrix(row, col)</code>.
+  </p>
 <p></p>
 <p></p>
 
 
 <h3>&#127767; Chapter 6, Light and Shading</h3>
-<p>Dette er et spennende kapittel! Nå skal vi omsider begynne å lage litt 3D-effekter, og det starter med at vi må beregne noen flere vektorer. Jeg ser at jeg gjerne vil refaktorere litt mer, for <code>ray()</code> har en ekstern <code>transform()</code> funksjon, mens <code>Sphere()</code> har en egen metode for dette.</p>
+  <p>Dette er et spennende kapittel! Nå skal vi omsider begynne å lage litt 3D-effekter, og det starter med at vi må
+    beregne noen flere vektorer. Jeg ser at jeg gjerne vil refaktorere litt mer, for <code>ray()</code> har en ekstern
+    <code>transform()</code> funksjon, mens <code>Sphere()</code> har en egen metode for dette.
+  </p>
 
 <h4>&#128295; Time to refactor!</h4>
-<p>Det er på tide å rydde. Vi må kunne gjøre ting som <code>ray().transform = scaling(5,5,5)</code> og <code>sphere().transform = rotation_z(Math.PI/5)</code>. Ikke sant? &#128514;</p>
+  <p>Det er på tide å rydde. Vi må kunne gjøre ting som <code>ray().transform = scaling(5,5,5)</code> og
+    <code>sphere().transform = rotation_z(Math.PI/5)</code>. Ikke sant? &#128514;
+  </p>
 
-<p>Videre har vi <code>equal_tuples()</code>, <code>add_tuples()</code>, <code>subtract_tuples()</code>, <code>negate_tuple()</code>, <code>multiply_vectors()</code>, <code>divide_vectors()</code>, <code>dot()</code>, <code>cross()</code>, <code>magnitude()</code> og <code>normalize()</code>. Alle disse er funksjoner som hører til <code>tuple()</code>! Jeg mener koden blir ryddigere hvis jeg gjør dem om til metoder på <code>tuple()</code>. Da kan man chaine metodene, uten at jeg trenger å gjøre noe spesielt!</p>
+  <p>Videre har vi <code>equal_tuples()</code>, <code>add_tuples()</code>, <code>subtract_tuples()</code>,
+    <code>negate_tuple()</code>, <code>multiply_vectors()</code>, <code>divide_vectors()</code>, <code>dot()</code>,
+    <code>cross()</code>, <code>magnitude()</code> og <code>normalize()</code>. Alle disse er funksjoner som hører til
+    <code>tuple()</code>! Jeg mener koden blir ryddigere hvis jeg gjør dem om til metoder på <code>tuple()</code>. Da
+    kan man chaine metodene, uten at jeg trenger å gjøre noe spesielt!
+  </p>
 
-<p>Så må jeg skrive om alle kallene sånn at det blir konsistent og fint. Gjør det videre sånn at de gamle funksjonene får ligge i koden litt til, men de kaster bare exceptions hvis man prøver å bruke dem. Sånn blir det:</p>
+  <p>Så må jeg skrive om alle kallene sånn at det blir konsistent og fint. Gjør det videre sånn at de gamle funksjonene
+    får ligge i koden litt til, men de kaster bare exceptions hvis man prøver å bruke dem. Sånn blir det:</p>
 <pre>
   const t = point(1, 2, 3).plus(vector(3, 2, 1).normalize()
 </pre>
@@ -419,9 +670,19 @@ import { doStuff } from "./js/functions.js"
   Uncaught add_tuples() is deprecated. Use tuple().plus(t) instead.
 </pre>
 <p>Vakkert.</p>
-<p>Dette tar lenger tid enn jeg trodde. FOR en &#128163;! I tillegg har jeg eksamensforberedelser mot 24. mai, så her blir det en lengre pause. Det må være greit, TID har vi da nok av...</p>
-<p>Jeg henger meg fortsatt opp i problemene med transformations() funksjonen, og kan ikke forstå hvorfor det blir en Batman-funksjon... Hva i huleste er en Batman-funksjon sier du? Jo, det er en funksjon som returnerer <code>[NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN]</code>... Get it? Anyways, det viser seg at det bare er jeg som må være mer påpasselig med at det bare er tall som blir brukt som parametre, får <strong>ingen</strong> hjelp fra JS her. Det viser seg at <code>Math.pi / 2</code> ikke er det samme som <code>Math.PI / 2</code>. Videre viser det seg at <code>NaN</code> som står for "Not a Number", faktisk ER et <code>number</code> i JS. Blir så svett av sånt... Men, det finnes en test som heter <code>isNaN()</code> og DEN kan fortelle meg om en verdi IKKE er <code>NaN</code> om ikke annet.. Forvirret? Jeg også.. </p>
-<p>Så da blir det en liten test på disse transformation-funksjonene som sørger for å stoppe opp hvis jeg prøver å gi dem noe som ikke er tall, feks slik:</p>
+  <p>Dette tar lenger tid enn jeg trodde. FOR en &#128163;! I tillegg har jeg eksamensforberedelser mot 24. mai, så her
+    blir det en lengre pause. Det må være greit, TID har vi da nok av...</p>
+  <p>Jeg henger meg fortsatt opp i problemene med transformations() funksjonen, og kan ikke forstå hvorfor det blir en
+    Batman-funksjon... Hva i huleste er en Batman-funksjon sier du? Jo, det er en funksjon som returnerer
+    <code>[NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN]</code>... Get it? Anyways, det viser seg at det bare er jeg som må
+    være mer påpasselig med at det bare er tall som blir brukt som parametre, får <strong>ingen</strong> hjelp fra JS
+    her. Det viser seg at <code>Math.pi / 2</code> ikke er det samme som <code>Math.PI / 2</code>. Videre viser det seg
+    at <code>NaN</code> som står for "Not a Number", faktisk ER et <code>number</code> i JS. Blir så svett av sånt...
+    Men, det finnes en test som heter <code>isNaN()</code> og DEN kan fortelle meg om en verdi IKKE er <code>NaN</code>
+    om ikke annet.. Forvirret? Jeg også..
+  </p>
+  <p>Så da blir det en liten test på disse transformation-funksjonene som sørger for å stoppe opp hvis jeg prøver å gi
+    dem noe som ikke er tall, feks slik:</p>
 <pre>
 function rotation_z(rad) {
   // Takes an angle in radians and returns a rotation matrix for the z-axis
@@ -444,7 +705,8 @@ function rotation_z(rad) {
 </pre>
 
 <p>Med det ute av veien, kan jeg gå tilbake til Chapter 6 og beregne normaler...</p>
-<p>Nå skal vi beregne refleksjon av vektorer. Det skjer ved å beregne en innkommende vektor mot en normal. Her blir løsningen ganske elegant, når jeg snubler over den:</p>
+  <p>Nå skal vi beregne refleksjon av vektorer. Det skjer ved å beregne en innkommende vektor mot en normal. Her blir
+    løsningen ganske elegant, når jeg snubler over den:</p>
 <pre>
 function reflect(v_in, normal) {
   // Reflecting a vector around an incoming in vector and a normal
@@ -455,50 +717,97 @@ function reflect(v_in, normal) {
 </pre>
 <p>Som den observante leser sikkert ser ved selvsyn, er det nå fullt mulig å kjede sammen operasjoner. Lekkert. </p>
 
-<p>Funksjonen gjør det den skal, og jeg kan gå videre med implementering av den første lyseffekten - <i>Phong reflection model</i>. Denne refleksjonsmodellen simulerer tre typer lys, og dets interaksjoner:</p>
+  <p>Funksjonen gjør det den skal, og jeg kan gå videre med implementering av den første lyseffekten - <i>Phong
+      reflection model</i>. Denne refleksjonsmodellen simulerer tre typer lys, og dets interaksjoner:</p>
 <p>
   <ul>
-    <li><i>Ambient reflection</i> - bakgrunnsbelysning, eller lys reflektert fra andre objekter. Dette lyset er konstant, og farger alle punkter likt.</li>
+    <li><i>Ambient reflection</i> - bakgrunnsbelysning, eller lys reflektert fra andre objekter. Dette lyset er
+      konstant, og farger alle punkter likt.</li>
     <li><i>Diffuse reflection</i> - lys reflektert fra en matt overflate.</li>
-    <li><i>Specular reflection</i> - refleksjon av lyskilden, resulterer i en <i>specular highlight</i> og styres av en <i>shininess</i>-parameter. Her må vi altså introdusere en lyskilde.</li>
+    <li><i>Specular reflection</i> - refleksjon av lyskilden, resulterer i en <i>specular highlight</i> og styres av en
+      <i>shininess</i>-parameter. Her må vi altså introdusere en lyskilde.
+    </li>
   </ul>
 </p>
 <h3>&#9203; Bakgrunnsdigresjonen del II</h3>
-<p>27. mai 2024: Nå som matte-eksamen er i boks (håper jeg &#128517;) går det radig unna! I dag har jeg hatt full dag med PC, så jeg har fått jobbet videre med bakgrunnsprosesseringen og har fått ryddet i koden og unngår en masse kodeduplisering. For å få lov å bruke <code>import { function, function2 } from "js/library.js"</code> må skriptet man importerer til være en modul. Og funksjonen man skal hente inn må være eksporterbar, dvs at den er definert med <code>export function() {...}</code>.</p>
+  <p>27. mai 2024: Nå som matte-eksamen er i boks (håper jeg &#128517;) går det radig unna! I dag har jeg hatt full dag
+    med PC, så jeg har fått jobbet videre med bakgrunnsprosesseringen og har fått ryddet i koden og unngår en masse
+    kodeduplisering. For å få lov å bruke <code>import { function, function2 } from "js/library.js"</code> må skriptet
+    man importerer til være en modul. Og funksjonen man skal hente inn må være eksporterbar, dvs at den er definert med
+    <code>export function() {...}</code>.
+  </p>
 
-<p> For at en script-tag skal være en modul bruker man <code>&lt;script type="module"&gt;</code>... når det gjelder en script-tag i en HTML-fil ja. Men i en <code>.js</code> fil er ikke det lov. For å importere noe der, fant jeg at <code>self.importScript(js/functions.js)</code> fungerte, men denne metoden er visstnok "på vei ut". Samma det.</p>
+  <p> For at en script-tag skal være en modul bruker man <code>&lt;script type="module"&gt;</code>... når det gjelder en
+    script-tag i en HTML-fil ja. Men i en <code>.js</code> fil er ikke det lov. For å importere noe der, fant jeg at
+    <code>self.importScript(js/functions.js)</code> fungerte, men denne metoden er visstnok "på vei ut". Samma det.
+  </p>
 
 <h3>&#127767; Chapter 6, Light and Shading</h3>
-<p>Vi prøver igjen. Og nå går det meget godt. Jeg har stor progresjon på koden, og er i løpet av noen timer klar for å "put it together" - men først skal jeg forklare litt hva jeg har gjort i kapittel 6.</p>
+  <p>Vi prøver igjen. Og nå går det meget godt. Jeg har stor progresjon på koden, og er i løpet av noen timer klar for å
+    "put it together" - men først skal jeg forklare litt hva jeg har gjort i kapittel 6.</p>
 
-<p>For å kalkulere hvordan lyset treffer, trenger vi flere vektorer. Hvis <var>P</var> er planet vi skal treffe, kan vi definere fire forskjellige vektorer, slik:</p>
+  <p>For å kalkulere hvordan lyset treffer, trenger vi flere vektorer. Hvis <var>P</var> er planet vi skal treffe, kan
+    vi definere fire forskjellige vektorer, slik:</p>
 
 <ul>
-  <li><var>E</var> er vektor for øyet, peker fra <var>P</var> mot opprinnelsen (origin) for strålen. <var>E</var> er en vektor som peker motsatt av strålen.</li>
-  <li><var>L</var> er lysvektoren, peker fra <var>P</var> mot lyskilden. For å finne <var>L</var>, trekker vi fra <var>P</var> fra lyskildens posisjon, noe som gir vektoren som peker mot lyset.</li>
-  <li><var>N</var> er planets normalvektor, ortogonal (eng. perpendicular) med planet. Kan skrives <var>N &perp; P</var>.</li>
+    <li><var>E</var> er vektor for øyet, peker fra <var>P</var> mot opprinnelsen (origin) for strålen. <var>E</var> er
+      en vektor som peker motsatt av strålen.</li>
+    <li><var>L</var> er lysvektoren, peker fra <var>P</var> mot lyskilden. For å finne <var>L</var>, trekker vi fra
+      <var>P</var> fra lyskildens posisjon, noe som gir vektoren som peker mot lyset.
+    </li>
+    <li><var>N</var> er planets normalvektor, ortogonal (eng. perpendicular) med planet. Kan skrives $ N \perp P$ .</li>
   <li><var>R</var> er refleksjonsvektoren, og peker i den retning lyset vil reflekteres.</li>
 </ul>
-<p>Overflatenormaler brukes mye. Det er vektorer som peker 90&deg; rett ut fra overflaten. En kule har normaler som peker i alle retninger. Kan sammenlignes med piggene på en kråkebolle? Eller solstråler?</p>
-<p>Siden vi (foreløpig) bare beskjeftiger oss med kuler, er det normaler for kule som skal kalkuleres. Det er også viktig at normalene er normalisert, det vil si å konvertere til enhetsvektor. Metoden <code>.normalize()</code> brukes her - den beregner <code>magnitude()</code> (vektorlengde, gitt ved <var>m = <span>&#8730;</span><span  style="border-top: 1px solid black">x<sup>2</sup> + y<sup>2</sup> + z<sup>2</sup></span></var>) og deler hver vektorkomponent på lengden, for å få en vektor som står i forhold til enhetsvektor. <var>v<sub>n</sub> = [v<sub>x</sub> / m, v<sub>y</sub> / m, v<sub>z</sub> / m]</var>. Merkes det at jeg liker å briefe med mine nyvunne matte-kunnskaper? &#128513; </p>
+  <p>Overflatenormaler brukes mye. Det er vektorer som peker $90&deg;$ rett ut fra overflaten. En kule har normaler som
+    peker i alle retninger. Kan sammenlignes med piggene på en kråkebolle? Eller solstråler?</p>
+  <p>Siden vi (foreløpig) bare beskjeftiger oss med kuler, er det normaler for kule som skal kalkuleres. Det er også
+    viktig at normalene er normalisert, det vil si å konvertere til enhetsvektor. Metoden <code>.normalize()</code>
+    brukes her - den beregner <code>magnitude()</code> (vektorlengde, gitt ved $m = {\sqrt{x^2 + y^2 + z^2}}$) og deler hver
+    vektorkomponent på lengden, for å få en vektor som står i forhold til enhetsvektor. $v_n = [{v_x \over m}, {v_y \over m}, {v_z \over m}]$. Merkes det at jeg liker å flekse mine nyvunne matte-kunnskaper? &#128513; </p>
 
-<p>Så lenge vi snakker om en kule som alltid befinner seg i origo, er alt såre vel, og vi får en svært enkel <code>normal_at(sphere, point)</code> funksjon. Den tar posisjonen p og trekker fra origo og normaliserer den. Ferdig. Men siden det vil være ønskelig å kaste transformations (skalering, flytting, forskyving og rotasjon) på objektene, må vi ta hensyn til det når vi skal kalkulere normalen. Og hvordan fungerer så det? Her må jeg ærlig innrømme at jeg falt av lasset på hvordan det skjer, men jeg fikk nå uansett koden til fungere... Jeg har sagt det før og sier det igjen: Omfavn &#128150;TDD&#129392;!</p>
+  <p>Så lenge vi snakker om en kule som alltid befinner seg i origo, er alt såre vel, og vi får en svært enkel
+    <code>normal_at(sphere, point)</code> funksjon. Den tar posisjonen p og trekker fra origo og normaliserer den.
+    Ferdig. Men siden det vil være ønskelig å kaste transformations (skalering, flytting, forskyving og rotasjon) på
+    objektene, må vi ta hensyn til det når vi skal kalkulere normalen. Og hvordan fungerer så det? Her må jeg ærlig
+    innrømme at jeg falt av lasset på hvordan det skjer, men jeg fikk nå uansett koden til fungere... Jeg har sagt det
+    før og sier det igjen: Omfavn &#128150;TDD&#129392;!
+  </p>
 
-<p>Alle disse normalene er nødvendige for å kunne beregne lyset etter Phong-modellen, som nevnt tidligere. For at de ulike objektene i scenen skal kunne ha ulike egenskaper (overflater etc.) introduseres her <code>material()</code>. Jeg implementerer det som klasse og legger også til material som egenskap på <code>Sphere()</code> klassen. Material har flere egenskaper. Ambient er romlys og er helt flatt, dvs at det legges til likt på alle punkter på objektet. Diffuse beregnes ut fra lyskilden, og er nettopp det - spredt. Specular er refleksjonen av selve lyskilden, den hvite prikken man kan se i øyet til tegneseriefigurer. Jo blankere overflate, jo mer intens er denne prikken, og denne verdien gis av verdien for Shininess.</p>
+  <p>Alle disse normalene er nødvendige for å kunne beregne lyset etter Phong-modellen, som nevnt tidligere. For at de
+    ulike objektene i scenen skal kunne ha ulike egenskaper (overflater etc.) introduseres her <code>material()</code>.
+    Jeg implementerer det som klasse og legger også til material som egenskap på <code>Sphere()</code> klassen. Material
+    har flere egenskaper. Ambient er romlys og er helt flatt, dvs at det legges til likt på alle punkter på objektet.
+    Diffuse beregnes ut fra lyskilden, og er nettopp det - spredt. Specular er refleksjonen av selve lyskilden, den
+    hvite prikken man kan se i øyet til tegneseriefigurer. Jo blankere overflate, jo mer intens er denne prikken, og
+    denne verdien gis av verdien for Shininess.</p>
 
-<p>For at vi skal ha noe lys å beregne, må vi ha en lyskilde, og den første typen lys som introduseres er et <code>point_light()</code>. Dette er bare et punkt i rommet (gitt en posisjon) som kaster lysstråler i alle retninger, gitt ved en lysintensitet; hvitt lys er <code>color(1.0, 1.0, 1.0)</code>. </p>
+  <p>For at vi skal ha noe lys å beregne, må vi ha en lyskilde, og den første typen lys som introduseres er et
+    <code>point_light()</code>. Dette er bare et punkt i rommet (gitt en posisjon) som kaster lysstråler i alle
+    retninger, gitt ved en lysintensitet; hvitt lys er <code>color(1.0, 1.0, 1.0)</code>.
+  </p>
 
-<p><code>lighting()</code> funksjonen setter dette sammen. Funksjonen beregner fargen på hver enkelt pixel i scenen, ved hjelp av egenskapene til et <code>material()</code>, en lyskilde <code>light()</code>, øyevektoren E og normalvektoren til objektet.</p>
+  <p><code>lighting()</code> funksjonen setter dette sammen. Funksjonen beregner fargen på hver enkelt pixel i scenen,
+    ved hjelp av egenskapene til et <code>material()</code>, en lyskilde <code>light()</code>, øyevektoren E og
+    normalvektoren til objektet.</p>
 
-<p>Det krever atskillige iterasjoner før jeg får dette til. Jeg tror jeg oppdager en bug i koden også, i hvertfall for meg. Boka sier at vinkelen v mellom lysvektor og normalen skal beregnes ved å invertere lysvektoren, men hos meg blir det ingen Specular-prikk da. Jeg kommer litt tilfeldig fram til at det fungerer meget bedre hvis jeg lar være å invertere. Så får vi se om ikke det kommer til å bite meg senere...</p>
+  <p>Det krever atskillige iterasjoner før jeg får dette til. Jeg tror jeg oppdager en bug i koden også, i hvertfall for
+    meg. Boka sier at vinkelen v mellom lysvektor og normalen skal beregnes ved å invertere lysvektoren, men hos meg
+    blir det ingen Specular-prikk da. Jeg kommer litt tilfeldig fram til at det fungerer meget bedre hvis jeg lar være å
+    invertere. Så får vi se om ikke det kommer til å bite meg senere...</p>
 
 <h4>Putting it together</h4>
-<p>Selv om alle testene kjørte grønne og fine, ble det nødvendig med en hel del mer testing og prøving og ikke minst feiling før det kom på plass. Men oppgaven her er å ta koden fra slutten av kapittel 5, og så modifisere den sånn at vi får lagt på lyseffektene på kula. Og resultatet av det kan vi se her:</p>
-<p><img src="./chapter6_shading_performance.png"/></p>
+  <p>Selv om alle testene kjørte grønne og fine, ble det nødvendig med en hel del mer testing og prøving og ikke minst
+    feiling før det kom på plass. Men oppgaven her er å ta koden fra slutten av kapittel 5, og så modifisere den sånn at
+    vi får lagt på lyseffektene på kula. Og resultatet av det kan vi se her:</p>
+  <p><img src="./chapter6_shading_performance.png" /></p>
 
 <p>Prøv selv, her: <a href="../shading_chapter6.html"><code>./raycast_chapter6.html</code></a></p>
 
-<p>Så da er vi ferdige med kapittel 6 da? Neida. Så snart jeg legger på en transformation på den vakre kula, så tryner det med feilmeldingen om at <code>inverse()</code> har fått en matrise den ikke kan "inverse", fordi determinanten er 0. Så jeg går tilbake i boka, og finner der at forfatteren bare nevner at koden skal feile hvis dette skjer, uten noe videre. Jeg finner ikke så mye bedre forklaring enn som så. Men jeg får nå i hvert fall ut matrisen som feiler, her vakkert formattert:</p>
+  <p>Så da er vi ferdige med kapittel 6 da? Neida. Så snart jeg legger på en transformation på den vakre kula, så tryner
+    det med feilmeldingen om at <code>inverse()</code> har fått en matrise den ikke kan "inverse", fordi determinanten
+    er 0. Så jeg går tilbake i boka, og finner der at forfatteren bare nevner at koden skal feile hvis dette skjer, uten
+    noe videre. Jeg finner ikke så mye bedre forklaring enn som så. Men jeg får nå i hvert fall ut matrisen som feiler,
+    her vakkert formattert:</p>
 <pre>Determinant for matrix 
 1 | -1.3817732334136963 | -0.6023373603820801 | -0.9841105937957764
 1 | -1.3817732334136963 | -0.6023373603820801 | -0.9841105937957764
@@ -506,7 +815,13 @@ function reflect(v_in, normal) {
 0 |  0                  |  0                  |  1
 is 0</pre>
 
-<p>Det er samme matrise som går igjen for hver eneste pixel, og her kan det jo se ut som det er kalkulert verdier bare på en 3x3 submatrise. Hvorfor blir determinanten 0 her? Hvis vi ser litt tilbake, er determinanten en noe infløkt kalkulasjon som jeg egentlig ikke forstår så mye av, selv om jeg fikk testene til å passere. Men determinanten for en 2x2 matrise <var>[a, b, c, d] = ad - bc</var>, så det er jo overkommelig. Determinanten for større matriser er mer involverte, men det er her <code>submatrix(matrix, row, col)</code> funksjonen kommer inn, og med den også <code>minor(matrix, row, col)</code>. Som jeg jo strevde en del med, tbh.. &#128517;</p>
+  <p>Det er samme matrise som går igjen for hver eneste pixel, og her kan det jo se ut som det er kalkulert verdier bare
+    på en 3x3 submatrise. Hvorfor blir determinanten 0 her? Hvis vi ser litt tilbake, er determinanten en noe infløkt
+    kalkulasjon som jeg egentlig ikke forstår så mye av, selv om jeg fikk testene til å passere. Men determinanten for
+    en 2x2 matrise <var>[a, b, c, d] = ad - bc</var>, så det er jo overkommelig. Determinanten for større matriser er
+    mer involverte, men det er her <code>submatrix(matrix, row, col)</code> funksjonen kommer inn, og med den også
+    <code>minor(matrix, row, col)</code>. Som jeg jo strevde en del med, tbh.. &#128517;
+  </p>
 
 <p>Prøver meg forsiktig fram med noen transformations.</p>
 
@@ -541,7 +856,9 @@ is 0</pre>
  0                  | 0                  |  0                  | 1
 </pre>
 
-<p>...faktisk ser det ut som at alle transforms fungerer, så lenge jeg ikke bruker transformations()-funksjonen som chainer dem. Trodde jeg hadde fikset den, så feil kan man ta. For øvrig ser jeg at ingen av transforms'ene endrer på nederste raden av matrisen, noe som kan forklare hvorfor alltid er 0, 0, 0, 1...</p>
+  <p>...faktisk ser det ut som at alle transforms fungerer, så lenge jeg ikke bruker transformations()-funksjonen som
+    chainer dem. Trodde jeg hadde fikset den, så feil kan man ta. For øvrig ser jeg at ingen av transforms'ene endrer på
+    nederste raden av matrisen, noe som kan forklare hvorfor alltid er 0, 0, 0, 1...</p>
 <pre>
 <b>-1.720435619354248</b>  | <b>15.19954776763916</b>   |  <b>-0.9927922487258911</b> |  <b>3.763894557952881</b>
  <b>3.1661508083343506</b> |  <b>1.8791327476501465</b> |   <b>5.96608304977417</b>   |  <b>1.2510000467300415</b>
@@ -549,7 +866,9 @@ is 0</pre>
  0                  |  0                  |   0                  |  1
 </pre>
 
-<p>Så hvorfor blir det feil når jeg bruker transforms???? Svaret er: det blir ikke det. Når jeg nå legger på alle disse transformene på en gang, virker det likevel.. &#128565; Jeg må konkludere med at jeg bare kom borti en tilfeldig kombinasjon som gav determinant = 0. Snakker om flaks.</p>
+  <p>Så hvorfor blir det feil når jeg bruker transforms???? Svaret er: det blir ikke det. Når jeg nå legger på alle
+    disse transformene på en gang, virker det likevel.. &#128565; Jeg må konkludere med at jeg bare kom borti en
+    tilfeldig kombinasjon som gav determinant = 0. Snakker om flaks.</p>
 <pre>shape.transform = transformations(translation(3.763894576, 1.251, -4.7890), 
                                        shearing(1.456732, -3.79834, 2.63826, 1.456732, -3.79834, 2.63826), 
                                        rotation_x(1.123678, 1.768867, 1.78997), 
@@ -563,12 +882,21 @@ is 0</pre>
 <p>Jaja. Er ikke alt man skal forstå. Jeg lar det ligge, og går videre til neste kapittel.</p>
 
 <h3>&#9978; Chapter 7, Making a Scene</h3>
-<blockquote><i>Think about this for a second. You've written a program from scratch, with tests, that draws a three-dimensional object by simulating the behavior of light. That's <strong>awesome.</strong></i></blockquote>
+  <blockquote><i>Think about this for a second. You've written a program from scratch, with tests, that draws a
+      three-dimensional object by simulating the behavior of light. That's <strong>awesome.</strong></i></blockquote>
 
-<p>Hittil har vår verden vært ett enkelt object, en kule, plassert i verdens midtpunkt origo 0, 0, 0. Nå skal vi ta for oss det å bygge opp en verden som består av flere objekter og lys, og dandere dem rundt omkring etter eget forgodtbefinnende. Så skal vi finne ut hvordan lyset treffer disse objektene, og lage et bilde av det. <i>Bjynne å småkkå føggel!</i> &#129321;</p>
+  <p>Hittil har vår verden vært ett enkelt object, en kule, plassert i verdens midtpunkt origo 0, 0, 0. Nå skal vi ta
+    for oss det å bygge opp en verden som består av flere objekter og lys, og dandere dem rundt omkring etter eget
+    forgodtbefinnende. Så skal vi finne ut hvordan lyset treffer disse objektene, og lage et bilde av det. <i>Bjynne å
+      småkkå føggel!</i> &#129321;</p>
 
-<p>Jeg lager en "default world" som består av et lys og to kuler, den ene er inni den andre, med halvparten så stor radius. Deretter beregner jeg intersecions på alle objektene, og lagrer disse i en liste. Med to kuler, inni hverandre, vil en stråle treffe hver kule to ganger. Foreløpig benyttes bare det første (nærmeste) treffet, for objektene er ikke transparente, men på sikt blir alle treff tatt i bruk, og derfor må de sorteres.</p>
-<p>Jeg får ikke riktig sorterings-rekkefølge med <code>.sort()</code> metoden, men det viser seg at den kan benytte en tilpasset sorteringsfunksjon, så jeg finner en på Stack Overflow (<a href="https://stackoverflow.com/a/18307292">her</a>), og tilpasser den til mitt bruk:</p>
+  <p>Jeg lager en "default world" som består av et lys og to kuler, den ene er inni den andre, med halvparten så stor
+    radius. Deretter beregner jeg intersecions på alle objektene, og lagrer disse i en liste. Med to kuler, inni
+    hverandre, vil en stråle treffe hver kule to ganger. Foreløpig benyttes bare det første (nærmeste) treffet, for
+    objektene er ikke transparente, men på sikt blir alle treff tatt i bruk, og derfor må de sorteres.</p>
+  <p>Jeg får ikke riktig sorterings-rekkefølge med <code>.sort()</code> metoden, men det viser seg at den kan benytte en
+    tilpasset sorteringsfunksjon, så jeg finner en på Stack Overflow (<a
+      href="https://stackoverflow.com/a/18307292">her</a>), og tilpasser den til mitt bruk:</p>
 <pre>
 // Sort the array of intersections by their t-values
 return _intersections.sort( function(a, b) {
@@ -577,47 +905,91 @@ return _intersections.sort( function(a, b) {
 </pre>
 
 <h3>&#9203; Transformasjonsmatrisekalkulatordigresjonen</h3>
-<p>1. juni 2024: Ja, jeg fikk litt blod på mølla og laget en matrise-kalkulator som viser sammenhengene mellom de ulike transformasjonene og resultatet etter at de er multiplisert sammen. Samtidig lærte jeg litt AngularJS, så dobbel win i min bok! Den gir litt mer innsikt i hvordan de ulike verdiene påvirker hverandre. <a href="../transformation_matrix_calculator.html">Til kalkulatoren!</a></p>
+  <p>1. juni 2024: Ja, jeg fikk litt blod på mølla og laget en matrise-kalkulator som viser sammenhengene mellom de
+    ulike transformasjonene og resultatet etter at de er multiplisert sammen. Samtidig lærte jeg litt AngularJS, så
+    dobbel win i min bok! Den gir litt mer innsikt i hvordan de ulike verdiene påvirker hverandre. <a
+      href="../transformation_matrix_calculator.html">Til kalkulatoren!</a></p>
 
 <h3>&#9203; Symbolsøkdigresjonen</h3>
-<p>Det har irritert meg en stund at det skal være så vanskelig å finne HTML-koder til de søte små emojiene jeg strør om meg med her i dokumentasjonen. Jeg har lett i evigheter på w3schools, som har en imponerende liste, men svært dårlige søkemuligheter. Visuelt søk tar tid. Så siden jeg nå hadde Transformasjonsmatrisekalkulatoren friskt i minnet, skrev jeg den like godt om til en "søkemotor" for disse emojiene, og siden det er mange andre symboler også, ble navnet til <a href="../symbol_search.html">Symbol Search</a>.</p>
+  <p>Det har irritert meg en stund at det skal være så vanskelig å finne HTML-koder til de søte små emojiene jeg strør
+    om meg med her i dokumentasjonen. Jeg har lett i evigheter på w3schools, som har en imponerende liste, men svært
+    dårlige søkemuligheter. Visuelt søk tar tid. Så siden jeg nå hadde Transformasjonsmatrisekalkulatoren friskt i
+    minnet, skrev jeg den like godt om til en "søkemotor" for disse emojiene, og siden det er mange andre symboler også,
+    ble navnet til <a href="../symbol_search.html">Symbol Search</a>.</p>
 
-<p>10. juni: Tilbake til kapittel 7. Det gikk med en drøy uke til digresjonene, men jeg har lært utrolig mye. Totally worth it! &#129321; Jeg bestemmer meg for å la de feilende testene feile, for de skyldes at jeg har misset "noe" i lyssettingen, altså returnerer de det de skal, men feil fargeverdier. Ikke helt feil heller, så det er vanskelig å vite hvordan det slår ut. Jeg skal komme tilbake til dem senere.</p>
+  <p>10. juni: Tilbake til kapittel 7. Det gikk med en drøy uke til digresjonene, men jeg har lært utrolig mye. Totally
+    worth it! &#129321; Jeg bestemmer meg for å la de feilende testene feile, for de skyldes at jeg har misset "noe" i
+    lyssettingen, altså returnerer de det de skal, men feil fargeverdier. Ikke helt feil heller, så det er vanskelig å
+    vite hvordan det slår ut. Jeg skal komme tilbake til dem senere.</p>
 
-<p>Jeg har nå implementert funksjoner som lar oss sette opp et virtuelt kamera - på samme måte som andre punkter og objekter kan view'et defineres med en transformasjons-matrise, gjennom funksjonen <code>view_transform(from, to, up)</code>, med parametre som bestemmer hvor vi ser fra, hvor vi ser mot og hva som er opp. Vi utnytter det faktum at en refleksjon bare er en skalering med negativ verdi, og får en funksjon som plasserer kameraet pekende i riktig retning mot dit vi ønsker. Med diverse matrisekalkuleringer (se koden) får vi en matrise som plasserer kamera riktig.</p>
+  <p>Jeg har nå implementert funksjoner som lar oss sette opp et virtuelt kamera - på samme måte som andre punkter og
+    objekter kan view'et defineres med en transformasjons-matrise, gjennom funksjonen
+    <code>view_transform(from, to, up)</code>, med parametre som bestemmer hvor vi ser fra, hvor vi ser mot og hva som
+    er opp. Vi utnytter det faktum at en refleksjon bare er en skalering med negativ verdi, og får en funksjon som
+    plasserer kameraet pekende i riktig retning mot dit vi ønsker. Med diverse matrisekalkuleringer (se koden) får vi en
+    matrise som plasserer kamera riktig.
+  </p>
 
-<p>Når vi så har funnet ut hvor vi skal se fra og til, og orientert oss, lager vi et kamera, gitt med <code>camera(hsize, vsize, field_of_view)</code> funksjonen. Kameraet skal mappe den 3-dimensjonale scenen til et 2-dimensjonalt canvas. For å gjøre det litt enkelt for oss selv, plasserer vi canvas nøyaktig 1 enhet fra kameraet, og hva kameraet "ser", bestemmes ut fra en vinkel <var>field-of-view</var> (selvsagt oppgitt i radianer &#128527;) som utgjør synsfeltet.</p>
+  <p>Når vi så har funnet ut hvor vi skal se fra og til, og orientert oss, lager vi et kamera, gitt med
+    <code>camera(hsize, vsize, field_of_view)</code> funksjonen. Kameraet skal mappe den 3-dimensjonale scenen til et
+    2-dimensjonalt canvas. For å gjøre det litt enkelt for oss selv, plasserer vi canvas nøyaktig 1 enhet fra kameraet,
+    og hva kameraet "ser", bestemmes ut fra en vinkel <var>field-of-view</var> (selvsagt oppgitt i radianer &#128527;)
+    som utgjør synsfeltet.
+  </p>
 
-<p>Matematikken her er relativt enkel. Vi vet at canvas er 1 enhet unna, og vi vet vinkelen på synsfeltet. Ved å dele synsfeltet i to får vi en rettvinklet trekant mellom øyet og canvas. Den bredden kan vi så beregne. Husk at <var>tangens til en vinkel er motstående katet delt på hosliggende katet</var>. Vi skal finne motstående katet <var>a</var> gitt vinkelen <var>fov</var> og hosliggende katet som er lik 1. Snur vi formelen får vi at <var>a = tan(fov / 2)</var>. Forholdet mellom høyde og bredde er gitt av <var>aspect_ratio = hsize / vsize</var>. </p>
+  <p>Matematikken her er relativt enkel. Vi vet at canvas er 1 enhet unna, og vi vet vinkelen på synsfeltet. Ved å dele
+    synsfeltet i to får vi en rettvinklet trekant mellom øyet og canvas. Den bredden kan vi så beregne. Husk at
+    <var>tangens til en vinkel er motstående katet delt på hosliggende katet</var>. Vi skal finne motstående katet
+    <var>a</var> gitt vinkelen <var>fov</var> og hosliggende katet som er lik 1. Snur vi formelen får vi at <var>$a =
+      tan{fov \over 2}$</var>. Forholdet mellom høyde og bredde er gitt av <var>$aspectratio = {hsize \over vsize}$</var>.
+  </p>
 
-<p>Så er det en funksjon som kan beregne en stråle for hver pixel i bildet, gitt kameraet. Denne heter <code>ray_for_pixel(camera, px, py)</code> og returnerer en <code>ray(origin, direction)</code> for hver x og y-koordinat i bildet.</p>
+  <p>Så er det en funksjon som kan beregne en stråle for hver pixel i bildet, gitt kameraet. Denne heter
+    <code>ray_for_pixel(camera, px, py)</code> og returnerer en <code>ray(origin, direction)</code> for hver x og
+    y-koordinat i bildet.
+  </p>
 
-<p>Funksjonen <code>render(camera, world)</code> er neste, denne gjør det samme som jeg har gjort manuelt i tidligere kapitler's "Putt it Together", altså rendre et ferdig bilde, pixel for pixel ved hjelp av nettopp <code>ray(origin, direction)</code>. Siden det er noe feil med lyssettingen min er jeg spent på resultatet.</p>
+  <p>Funksjonen <code>render(camera, world)</code> er neste, denne gjør det samme som jeg har gjort manuelt i tidligere
+    kapitler's "Putting it Together", altså rendre et ferdig bilde, pixel for pixel ved hjelp av nettopp
+    <code>ray(origin, direction)</code>. Siden det er noe feil med lyssettingen min er jeg spent på resultatet.
+  </p>
 
 <h4>Putting it together</h4>
-<p>Jeg legger inn alt som det står beskrevet i boka, og tenker at dersom jeg får til det først, kan jeg eksperimentere mer etterpå. Det første jeg får ut er så vakkert at jeg nesten vil gråte... eller... jeg vil i hvert fall gråte...:</p>
-<p><img src="./chapter7_scene_first_attempt.png"/></p>
-<p>Jeg er inne på noe, og samtidig så fullstendig ute. Jeg må bryte det ned og se om jeg får til ett og ett objekt. Det *kan* bare være transformasjonene som legges på i feil rekkefølge...?</p>
-<p>Jeg finner ut av det. En bug i <code>hit()</code> funksjonen gjør at intersections sorteres feil og alt blir bare rot og tull. En annen bug i <code>Canvas()</code> klassen gjør at en pixel bare kan ha heltallsverdier og det passer dårlig når fargeverdiene er flyttall fra 0 til 1. Andre forsøk ser vesentlig mer ut som det jeg ønsket å oppnå:</p>
-<p><img src="./chapter7_scene_second_attempt.png"/></p>
-<p>Etter at jeg fikset <code>hit()</code> funksjonen ser det ut for at <code>color_at()</code> og <code>render()</code> også fungerer! Bonus! &#129321; (bare <code>lighting()</code> igjen da.. )</p>
+  <p>Jeg legger inn alt som det står beskrevet i boka, og tenker at dersom jeg får til det først, kan jeg eksperimentere
+    mer etterpå. Det første jeg får ut er så vakkert at jeg nesten vil gråte... eller... jeg vil i hvert fall gråte...:
+  </p>
+  <p><img src="./chapter7_scene_first_attempt.png" /></p>
+  <p>Jeg er inne på noe, og samtidig så fullstendig ute. Jeg må bryte det ned og se om jeg får til ett og ett objekt.
+    Det *kan* bare være transformasjonene som legges på i feil rekkefølge...?</p>
+  <p>Jeg finner ut av det. En bug i <code>hit()</code> funksjonen gjør at intersections sorteres feil og alt blir bare
+    rot og tull. En annen bug i <code>Canvas()</code> klassen gjør at en pixel bare kan ha heltallsverdier og det passer
+    dårlig når fargeverdiene er flyttall fra 0 til 1. Andre forsøk ser vesentlig mer ut som det jeg ønsket å oppnå:</p>
+  <p><img src="./chapter7_scene_second_attempt.png" /></p>
+  <p>Etter at jeg fikset <code>hit()</code> funksjonen ser det ut for at <code>color_at()</code> og
+    <code>render()</code> også fungerer! Bonus! &#129321; (bare <code>lighting()</code> igjen da.. 11. juni: <code>lighting()</code> fungerer også nå, måtte bare huske å invertere vektoren!)
+  </p>
 
 <h3>&#9203; Telemetri-digresjonen</h3>
-<p>Jeg begynner å undres på hvor ofte hver funksjon faktisk brukes, og tenker at det må finnes en enkel måte å telle dette på. Et kjapt søk leder meg til <a href="https://stackoverflow.com/a/31741066/83148">denne tråden</a> og med wrapper-funksjonen <code>profile()</code> inkludert i <code>functions.js</code> kan jeg ganske enkelt "wrappe" hver funksjon jeg vil telle, feks <code>tuple = profile(tuple)</code> som så holder styr på tellere for hver funksjon. Så nå lurer nok du også (?) på hvor mange tupler vi bruker? For å rendre kapittel 7 bildet i oppløsning 100x50 pixler, kalles <code>tuple()</code> intet mindre enn <var>219 478</var> ganger! Ikke rart ting tar tid! &#128565;</p>
+  <p>Jeg begynner å undres på hvor ofte hver funksjon faktisk brukes, og tenker at det må finnes en enkel måte å telle
+    dette på. Et kjapt søk leder meg til <a href="https://stackoverflow.com/a/31741066/83148">denne tråden</a> og med
+    wrapper-funksjonen <code>profile()</code> inkludert i <code>functions.js</code> kan jeg ganske enkelt "wrappe" hver
+    funksjon jeg vil telle, feks <code>tuple = profile(tuple)</code> som så holder styr på tellere for hver funksjon. Får et ganske ufattelig resultat... Dette bildet (med skygger, riktignok, se kapittel 8) i 600x400 pixler: <ul><li><code>matrix()</code> funksjonen kalles $311 280 059$ ganger!</li><li><code>tuple()</code> kalles $17 460 401$ ganger! </li></ul>...ikke rart ting tar tid! &#128565;</p>
 
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
+<p><img src="./chapter7_scene_fourth_attempt.png" /></p>
+  
+  <h3>&#127770; Chapter 8, Shadows</h3>
+  
+  <p>Dette er et mistenkelig kort kapittel, bare 8 sider. Men grunnen er at det meste av koden for å beregne skygge er allerede skrevet! Flaks at <code>lighting()</code> funksjonen begynte å fungere nylig, for nå skal den modifiseres, så den har med en boolean som er true hvis punktet er i skygge. Dersom det er i skygge, skal ikke diffuse og specular lys-komponentene tas med i beregningen, kun ambient.</p>
 
-<p>Testing math: $x = {-b \pm \sqrt{b^2-4ac} \over 2a}$</p>
-<p>Det over er et ledd i min søken etter "enkel" matte på web. <a href="https://stackoverflow.com/questions/67001012/problems-with-configuration-of-mathjax-3-demo-interactive-tex-input-and-html-out">Eksemplet her</a> fungerer utenfor denne dokumentasjonen, og jeg skal nok komme til bunns i det! </p>
+  <p>Så hvordan beregner man om et punkt er i lys eller skygge? Jo, ved å kaste en stråle (shadow ray) tilbake mot lyset, fra en intersection. Dersom shadowray intersecter noe objekt, er punktet i skyggen av det objektet. Enkelt og greit. Funksjonen <code>is_shadowed(world, point)</code> tar seg av dette. 
+  <p>Her kan man få en effekt som kalles "akne" på bildet. Akne oppstår på grunn av avrunding av flyttall - noen ganger vil et punkt beregnes like under overflaten til et objekt, og ser da ut som det er i skygge. For å unngå dette, må vi kalkulere treffpunktet *like over* overflaten, og bruke det til å beregne hvorvidt punktet er i skygge. Her kommer igjen vår venn <code>EPSILON</code> $(&epsilon;)$ til sin rett. Vi legger til dette punktet over som <code>.point_over</code> på <code>prepare_computations()</code>, og beregner det ved å plusse sammen skalarproduktet av normalvektoren og EPSILON med punktet: $point\_over = p + (v_n * &epsilon;)$.</p>
+  <p>Når vi har den, kan vi modifisere <code>shade_hit(world, comps)</code> ved å kalle <code>is_shadowed(world, comps.over_point)</code> og legge til resultatet til slutt i parameterne som sendes til <code>lighting()</code>.</p>
+  <h4>Putting it together</h4>
+  <p>Her tar jeg bare samme koden som fra kapittel 7 og kjører den på nytt, og voilà! så fungerer det faktisk på første forsøk! Jeg tester litt mer, blant annet telemetri (se forrige digresjon) og sier meg fornøyd med det. Det jeg ikke er så fornøyd med, er 311M matriser. Det må refaktoreres og optimaliseres her! Jeg ser også at kjøretiden til testene har mangedoblet seg, og det skyldes at testen av render() funksjonen alene tar rundt 100 ms.</p>
+  <p>Jeg var klar over fra starten at Javascript og browser ikke var noe optimalt valg, men det var nå det jeg hadde tilgjengelig, og jeg er imponert over hvor mye jeg faktisk har fått til med dette setupet!</p>
 
-<p></p>
+<h3>&#128747; Chapter 9, Planes</h3>
+  <p>Jada, jeg vet. Det er ikke fly, det er plan. Men jeg holder på å gå tom for emojier. &#128517;</p>
 <p></p>
 <p></p>
 
@@ -639,30 +1011,39 @@ return _intersections.sort( function(a, b) {
   
   <li>Refaktorere minor(), determinant() og cofactor() som metoder på matrix() funksjonen.
   <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>
-  <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og utgangshastighet.</li>
+    <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og
+      utgangshastighet.</li>
   <li>Kan jeg hente koden til en funksjon inn i dokumentasjonen direkte med JS? Istedet for å klippe og lime?</li>
-  <li>Refaktorere demokoden for Kapittel 1-6 så de kan bruke siste versjon av <code>functions.js</code> og slett så de daterte versjonene.</li>
-  <li>Skrive om JS funksjoner som returnerer Object.freeze({}) til ordentlige klasser og metoder. Bruk factory-metoder for å slippe å lage objekter med <code>new</code>
+    <li>Refaktorere demokoden for Kapittel 1-6 så de kan bruke siste versjon av <code>functions.js</code> og slett så de
+      daterte versjonene.</li>
+    <li>Skrive om JS funksjoner som returnerer Object.freeze({}) til ordentlige klasser og metoder. Bruk factory-metoder
+      for å slippe å lage objekter med <code>new</code>
   <ul>
     <li>Refaktorere matrix til class</li>
     <li>Done! <del>Refaktorere canvas til class</del></li>
   </ul>
-  <li>Done! <del>Lage en Tranformation-matrix kalkulator. Alle transforms på en HTML side, legg inn tall for hver, vis kalkulasjonene, vis hver enkelt matrise og resultatet.</del></li>
-    <li>Done! <del>Men krever at man kjører på webserver, noe jeg bare stundom har tilgjengelig, og derfor lagrer jeg koden i egne filer med suffix _worker. Kjøre raytracing som <a href="https://www.w3schools.com/js/js_api_web_workers.asp">bakgrunnsprosess</a>.</del></li>
+    <li>Done! <del>Lage en Tranformation-matrix kalkulator. Alle transforms på en HTML side, legg inn tall for hver, vis
+        kalkulasjonene, vis hver enkelt matrise og resultatet.</del></li>
+    <li>Done! <del>Men krever at man kjører på webserver, noe jeg bare stundom har tilgjengelig, og derfor lagrer jeg
+        koden i egne filer med suffix _worker. Kjøre raytracing som <a
+          href="https://www.w3schools.com/js/js_api_web_workers.asp">bakgrunnsprosess</a>.</del></li>
     <li>Done. <del>Fikse det som er galt med transformations() når jeg legger på en rotation.</del></li>
   <li>Done. <del>Bytte navn på funksjonen scale() til scaling().</del></li>
-  <li>Done! <del>Bytte til <a href="https://stackoverflow.com/a/22004858/83148">typed arrays</a> i alle array-funksjoner. Vurdere også 1D arrays istedet for 2D.</del></li>
-  <li>Done! <del>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny transform funksjon side 68.)</del></li>
+    <li>Done! <del>Bytte til <a href="https://stackoverflow.com/a/22004858/83148">typed arrays</a> i alle
+        array-funksjoner. Vurdere også 1D arrays istedet for 2D.</del></li>
+    <li>Done! <del>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny
+        transform funksjon side 68.)</del></li>
   <li>Done! <del>Siste "Putting it together" oppgaven fra kapittel 3</del></li>
-  <li>Done! Ja, det stemte.. &#128514; <del>Fikse PPM lagring til fil. Mistenker at piksel-verdier må avrundes til heltall.</del></li>
+    <li>Done! Ja, det stemte.. &#128514; <del>Fikse PPM lagring til fil. Mistenker at piksel-verdier må avrundes til
+        heltall.</del></li>
 </ul>
 </p>
 
 
-<footer><center>Copyright (c) 2024 Thomas &#129395;</center>
+  <footer>
+    <center>Copyright (c) 2024 Thomas &#129395;</center>
 
 </footer>
 </body>
+
 </html>
-
-
