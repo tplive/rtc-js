@@ -45,6 +45,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#127763; Testing Shading functions</h2>
 <ul id="shading_list"></ul>
 
+<h2>&#9978; Testing Scene functions</h2>
+<ul id="scene_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -164,6 +167,10 @@ runTest("shading_list", test_material_function)
 runTest("shading_list", test_sphere_has_material)
 runTest("shading_list", test_lighting_function)
 
+runTest("scene_list", test_world_function)
+runTest("scene_list", test_create_default_world_function)
+runTest("scene_list", test_intersect_world_function)
+runTest("scene_list", test_prepare_computations_function)
 
 
 const end = performance.now()

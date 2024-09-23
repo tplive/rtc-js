@@ -1,0 +1,72 @@
+{
+  {
+    decimal: 128176,
+    hex: 1F4B0,
+    category: "money",
+    name: "Money bag",
+    keywords: ["money", "bag", "dollar"]
+  },
+  {
+    decimal: 128177,
+    hex: 1F4B1,
+    category: "money",
+    name: "Currency exchange",
+    keywords: ["currency", "exchange"]
+  },
+  {
+    decimal: 128178,
+    hex: 1F4B2,
+    category: "money",
+    name: "Dollar sign",
+    keywords: ["dollar", "sign", "$"]
+  },
+  {
+    decimal: 128179,
+    hex: 1F4B3,
+    category: "money",
+    name: "Credit card",
+    keywords: ["credit", "card", "cc", "master", "visa"]
+  },
+  {
+    decimal: 128180,
+    hex: 1F4B4,
+    category: "money",
+    name: "Banknote yen",
+    keywords: ["bank", "note", "yen"]
+  },
+  {
+    decimal: 128181,
+    hex: 1F4B5,
+    category: "money",
+    name: "Banknote dollar",
+    keywords: ["bank", "note", "dollar", "$"]
+  },
+  {
+    decimal: 128182,
+    hex: 1F4B6,
+    category: "money",
+    name: "Banknote euro",
+    keywords: ["bank", "note", "euro", "€"]
+  },
+  {
+    decimal: 128183,
+    hex: 1F4B7,
+    category: "money",
+    name: "Banknote pound",
+    keywords: ["bank", "note", "pound", "£"]
+  },
+  {
+    decimal: 128184,
+    hex: 1F4B8,
+    category: "money",
+    name: "Money with wings",
+    keywords: ["money", "wings"]
+  },
+  {
+    decimal: 128185,
+    hex: 1F4B9,
+    category: "money",
+    name: "Upward trend yen",
+    keywords: ["money", "upward", "trend", "yen", "positive", "chart"]
+  },
+}

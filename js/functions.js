@@ -904,7 +904,7 @@ class Sphere {
   get transform() { return this._transform }
   get material() { return this._material }
   get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
-  
+    
   set transform(value) {
     if (value.d != undefined) {
       this._transform = multiply_matrices(this._transform, value)
@@ -916,6 +916,8 @@ class Sphere {
       this._material = mat
     }
   }
+  
+  equals(obj) { return this._transform.equals(obj.transform) && this._material.equals(obj.material)}
 }
 
 function intersect(s, ra) {
@@ -1076,6 +1078,14 @@ class Material {
   set diffuse(dif) { this._diffuse = dif }
   set specular(spe) { this._specular = spe }
   set shininess(shi) { this._shininess = shi }
+  
+  equals(mat) {
+    return mat.color.equals(this._color) 
+        && mat.ambient === this._ambient 
+        && mat.diffuse === this._diffuse
+        && mat.specular === this._specular 
+        && mat.shininess === this._shininess
+  }
 
 }
 
@@ -1089,7 +1099,7 @@ function lighting(material, light, point, eyev, normalv) {
   // The lighting function computes shading for pixels
   
   // Combine surface color with the light's color/intensity
-  const effective_color = multiply_colors(light.intensity, material.color)
+  const effective_color = multiply_colors(material.color, light.intensity)
   //log("error", "effective_color: " + effective_color)
   
   // Find the direction to the light source
@@ -1117,6 +1127,8 @@ function lighting(material, light, point, eyev, normalv) {
     
     // reflect_dot_eye represents the cosine of the angle between the reflection vector
     // and the eye vector. A negative number means the light reflects away from the eye.
+    // According to the book, it should be -lightv. But I saw no specular highlight while that was the case.
+    // When I (by chance) changed it to lightv, the highlight is there!
     const reflectv = reflect(lightv, normalv)
     //log("error", "reflectv: " + reflectv)
     
@@ -1132,10 +1144,128 @@ function lighting(material, light, point, eyev, normalv) {
       specular = multiply_color(material.specular * factor, light.intensity)
       //log("error", "light.intensity: " + light.intensity)
       //log("error", "material.specular: " + material.specular)
-      //if (specular.red >= 0.1) {log("error", "specular.red: " + specular.red)}
+      //if (specular.red >= 0.01) {log("error", "specular.red: " + specular.red)}
     }
   }
   // Add the three contributions together to get the final shading
   //log("error", `ambient + diffuse + specular = " ${ambient} + ${diffuse} + ${specular} = ${add_colors(ambient, add_colors(diffuse, specular))}`)
   return add_colors(ambient, add_colors(diffuse, specular))
+}
+
+// *** SCENE FUNCTIONS
+
+class World {
+  // The World object holds all the objects for the scene
+  
+  constructor() {
+    this._objects = []
+    this._lights = []
+  }
+  
+  get objects() { return this._objects }
+  get lights() { return this._lights }
+  
+  addLight(light_object) { this._lights.push(light_object) }
+  addObject(world_object) { this._objects.push(world_object) }
+  
+  has(object) {
+    // Check if the world contains an object matching the input
+    if (object.position != undefined && object.intensity != undefined) {
+      // Input is a light object
+      return this._lights.filter(e => e.position.equals(object.position) && e.intensity.equals(object.intensity))
+    } else {
+      // Input is a world object
+      return this._objects.filter(e => e.transform.equals(object.transform) && e.material.equals(object.material) )
+    }
+  }
+}
+
+function world() {
+  // Creates World-objects
+  return new World()
+}
+
+function default_world() {
+  // Creates a default world
+  
+  // Create world object
+  const w = new World()
+  
+  // Create a default light object
+  const light = point_light(point(-10, 10, -10), color(1, 1, 1))
+  
+  // Create a sphere
+  const s1 = new Sphere()
+  
+  // Create a new material
+  const mat = material()
+  
+  // Set material properties
+  mat.color = color(0.8, 1.0, 0.6)
+  mat.diffuse = 0.7
+  mat.specular = 0.2
+  
+  // Apply material to sphere
+  s1.material = mat
+  
+  // Create a new sphere
+  const s2 = new Sphere()
+  
+  // Add a transform to the sphere
+  s2.transform = scaling(0.5, 0.5, 0.5)
+  
+  // Add objects to the world
+  w.addLight(light)
+  w.addObject(s1)
+  w.addObject(s2)
+  
+  return w
+}
+
+function intersect_world(w, r) {
+  // Iterate over the world w and log all object intersections with ray r
+  
+  const _intersections = []
+  
+  if (w.objects === undefined || w.objects.length === 0) {
+    throw(`Trying to iterate over an empty world`)
+  }
+  
+  for (e in w.objects) {
+    
+    const f = intersect(w.objects[e], r)
+    
+    for (g in f) {
+      //log("error", "Intersection: " + f[g].t)
+
+      _intersections.push(f[g])
+    } 
+  }
+  
+  // Sort the array of intersections by their t-values
+  return _intersections.sort( function(a, b) {
+    return a.t - b.t
+  })
+}
+
+function prepare_computations(i, r) {
+  // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
+    
+    const _t = i.t
+    const _o = i.object
+    const _p = position(r, _t)
+    const _e = r.direction.negate()
+    const _n = normal_at(_o, _p)
+    
+    //log("error", _t)
+    
+    
+    
+  return Object.freeze({
+    t: _t,
+    object: _o,
+    point: _p,
+    eyev: _e,
+    normalv: _n,
+  })
 }

@@ -45,6 +45,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#127763; Testing Shading functions</h2>
 <ul id="shading_list"></ul>
 
+<h2>&#9978; Testing Scene functions</h2>
+<ul id="scene_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -955,7 +958,7 @@ class Sphere {
   get transform() { return this._transform }
   get material() { return this._material }
   get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
-  
+    
   set transform(value) {
     if (value.d != undefined) {
       this._transform = multiply_matrices(this._transform, value)
@@ -967,6 +970,8 @@ class Sphere {
       this._material = mat
     }
   }
+  
+  equals(obj) { return this._transform.equals(obj.transform) && this._material.equals(obj.material)}
 }
 
 function intersect(s, ra) {
@@ -1127,6 +1132,14 @@ class Material {
   set diffuse(dif) { this._diffuse = dif }
   set specular(spe) { this._specular = spe }
   set shininess(shi) { this._shininess = shi }
+  
+  equals(mat) {
+    return mat.color.equals(this._color) 
+        && mat.ambient === this._ambient 
+        && mat.diffuse === this._diffuse
+        && mat.specular === this._specular 
+        && mat.shininess === this._shininess
+  }
 
 }
 
@@ -1191,6 +1204,124 @@ function lighting(material, light, point, eyev, normalv) {
   // Add the three contributions together to get the final shading
   //log("error", `ambient + diffuse + specular = " ${ambient} + ${diffuse} + ${specular} = ${add_colors(ambient, add_colors(diffuse, specular))}`)
   return add_colors(ambient, add_colors(diffuse, specular))
+}
+
+// *** SCENE FUNCTIONS
+
+class World {
+  // The World object holds all the objects for the scene
+  
+  constructor() {
+    this._objects = []
+    this._lights = []
+  }
+  
+  get objects() { return this._objects }
+  get lights() { return this._lights }
+  
+  addLight(light_object) { this._lights.push(light_object) }
+  addObject(world_object) { this._objects.push(world_object) }
+  
+  has(object) {
+    // Check if the world contains an object matching the input
+    if (object.position != undefined && object.intensity != undefined) {
+      // Input is a light object
+      return this._lights.filter(e => e.position.equals(object.position) && e.intensity.equals(object.intensity))
+    } else {
+      // Input is a world object
+      return this._objects.filter(e => e.transform.equals(object.transform) && e.material.equals(object.material) )
+    }
+  }
+}
+
+function world() {
+  // Creates World-objects
+  return new World()
+}
+
+function default_world() {
+  // Creates a default world
+  
+  // Create world object
+  const w = new World()
+  
+  // Create a default light object
+  const light = point_light(point(-10, 10, -10), color(1, 1, 1))
+  
+  // Create a sphere
+  const s1 = new Sphere()
+  
+  // Create a new material
+  const mat = material()
+  
+  // Set material properties
+  mat.color = color(0.8, 1.0, 0.6)
+  mat.diffuse = 0.7
+  mat.specular = 0.2
+  
+  // Apply material to sphere
+  s1.material = mat
+  
+  // Create a new sphere
+  const s2 = new Sphere()
+  
+  // Add a transform to the sphere
+  s2.transform = scaling(0.5, 0.5, 0.5)
+  
+  // Add objects to the world
+  w.addLight(light)
+  w.addObject(s1)
+  w.addObject(s2)
+  
+  return w
+}
+
+function intersect_world(w, r) {
+  // Iterate over the world w and log all object intersections with ray r
+  
+  const _intersections = []
+  
+  if (w.objects === undefined || w.objects.length === 0) {
+    throw(`Trying to iterate over an empty world`)
+  }
+  
+  for (e in w.objects) {
+    
+    const f = intersect(w.objects[e], r)
+    
+    for (g in f) {
+      //log("error", "Intersection: " + f[g].t)
+
+      _intersections.push(f[g])
+    } 
+  }
+  
+  // Sort the array of intersections by their t-values
+  return _intersections.sort( function(a, b) {
+    return a.t - b.t
+  })
+}
+
+function prepare_computations(i, r) {
+  // Precomputes the state of an intersection, by means of the intersection (i) and a ray (r)
+    
+    const _t = i.t
+    const _o = i.object
+    const _p = position(r, _t)
+    const _e = r.direction.negate()
+    const _n = normal_at(_o, _p)
+    
+    //log("error", _t)
+    
+    
+    
+  return Object.freeze({
+    t: _t,
+    object: _o,
+    point: _p,
+    eyev: _e,
+    normalv: _n,
+  })
 }
 
 </script>
@@ -2602,6 +2733,8 @@ function test_transform_sphere() {
     && transformations_applied_to_sphere
 }
 
+// *** SHADING TESTS
+
 function test_normal_at_function() {
   // Compute the normal on a sphere at a point...
   
@@ -2771,6 +2904,79 @@ function test_lighting_function() {
       && r5.equals(color(0.1, 0.1, 0.1))
 }
 
+// *** SCENE TESTS
+
+function test_world_function() {
+  // Creating a world object
+  // A world that contains no objects.
+  
+  const w = world()
+  
+  return w.objects.length === 0 && w.lights.length === 0
+}
+
+function test_create_default_world_function() {
+  // A default world contains to concentric spheres, where the outermost is a unit sphere and the innermost has a radius of 0.5.
+  // Both lie at the origin.
+  
+  const light = point_light(point(-10, 10, -10), color(1, 1, 1))
+  const s1 = new Sphere()
+  const m1 = material()
+  m1.color = color(0.8, 1.0, 0.6)
+  m1.diffuse = 0.7
+  m1.specular = 0.2
+  
+  const s2 = new Sphere()
+  s2.transform = scaling(0.5, 0.5, 0.5)
+  
+  const w = default_world()
+  
+  return w.has(light)
+      && w.has(s1)
+      && w.has(s2)
+}
+
+function test_intersect_world_function() {
+  // Test intersecting a world with a ray
+  
+  const w = default_world()
+  const r = ray(point(0, 0, -5), vector(0, 0, 1))
+  const xs = intersect_world(w, r)
+  
+  //log("error", xs.length)
+  //log("error", xs[0].t)
+  //log("error", xs[1].t)
+  //log("error", xs[2].t)
+  //log("error", xs[3].t)
+  
+  return xs.length === 4 
+      && xs[0].t === 4 
+      && xs[1].t === 4.5 
+      && xs[2].t === 5.5 
+      && xs[3].t === 6
+}
+
+function test_prepare_computations_function() {
+  // Test precomputing the state of an intersection
+  
+  const r = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s = new Sphere()
+  const i = intersection(4, s)
+  
+  const comps = prepare_computations(i, r)
+  
+  //log("error", comps.t)
+  //log("error", comps.object.transform.d)
+  //log("error", comps.point)
+  //log("error", comps.eyev)
+  //log("error", comps.normalv)
+  
+  return comps.t === i.t
+      && comps.object.equals(i.object)
+      && comps.point.equals(point(0, 0, -1))
+      && comps.eyev.equals(vector(0, 0, -1))
+      && comps.normalv.equals(vector(0, 0, -1))
+}
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -2883,6 +3089,13 @@ runTest("shading_list", test_point_light_function)
 runTest("shading_list", test_material_function)
 runTest("shading_list", test_sphere_has_material)
 runTest("shading_list", test_lighting_function)
+
+runTest("scene_list", test_world_function)
+runTest("scene_list", test_create_default_world_function)
+runTest("scene_list", test_intersect_world_function)
+runTest("scene_list", test_prepare_computations_function)
+
+
 
 
 const end = performance.now()

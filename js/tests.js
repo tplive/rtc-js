@@ -1405,6 +1405,8 @@ function test_transform_sphere() {
     && transformations_applied_to_sphere
 }
 
+// *** SHADING TESTS
+
 function test_normal_at_function() {
   // Compute the normal on a sphere at a point...
   
@@ -1572,4 +1574,78 @@ function test_lighting_function() {
       && r3.equals(color(0.7364, 0.7364, 0.7364))
       && r4.equals(color(1.6364, 1.6364, 1.6364)) // Should be 1.6364, 1.6364, 1.6364, is red: 0.73639, 0.73639, 0.73639
       && r5.equals(color(0.1, 0.1, 0.1))
+}
+
+// *** SCENE TESTS
+
+function test_world_function() {
+  // Creating a world object
+  // A world that contains no objects.
+  
+  const w = world()
+  
+  return w.objects.length === 0 && w.lights.length === 0
+}
+
+function test_create_default_world_function() {
+  // A default world contains to concentric spheres, where the outermost is a unit sphere and the innermost has a radius of 0.5.
+  // Both lie at the origin.
+  
+  const light = point_light(point(-10, 10, -10), color(1, 1, 1))
+  const s1 = new Sphere()
+  const m1 = material()
+  m1.color = color(0.8, 1.0, 0.6)
+  m1.diffuse = 0.7
+  m1.specular = 0.2
+  
+  const s2 = new Sphere()
+  s2.transform = scaling(0.5, 0.5, 0.5)
+  
+  const w = default_world()
+  
+  return w.has(light)
+      && w.has(s1)
+      && w.has(s2)
+}
+
+function test_intersect_world_function() {
+  // Test intersecting a world with a ray
+  
+  const w = default_world()
+  const r = ray(point(0, 0, -5), vector(0, 0, 1))
+  const xs = intersect_world(w, r)
+  
+  //log("error", xs.length)
+  //log("error", xs[0].t)
+  //log("error", xs[1].t)
+  //log("error", xs[2].t)
+  //log("error", xs[3].t)
+  
+  return xs.length === 4 
+      && xs[0].t === 4 
+      && xs[1].t === 4.5 
+      && xs[2].t === 5.5 
+      && xs[3].t === 6
+}
+
+function test_prepare_computations_function() {
+  // Test precomputing the state of an intersection
+  
+  const r = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s = new Sphere()
+  const i = intersection(4, s)
+  
+  const comps = prepare_computations(i, r)
+  
+  //log("error", comps.t)
+  //log("error", comps.object.transform.d)
+  //log("error", comps.point)
+  //log("error", comps.eyev)
+  //log("error", comps.normalv)
+  
+  return comps.t === i.t
+      && comps.object.equals(i.object)
+      && comps.point.equals(point(0, 0, -1))
+      && comps.eyev.equals(vector(0, 0, -1))
+      && comps.normalv.equals(vector(0, 0, -1))
 }
