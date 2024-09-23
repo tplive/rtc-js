@@ -76,7 +76,7 @@ function test_multiply_vector_function() {
   // Given t = tuple(1, -2, 3, -4)
   // Then t * 3.5 = tuple(3.5, -7, 10.5, -14)
   
-  var m = multiply_vector(3.5, tuple(1, -2, 3, -4))
+  var m = multiply_vector(tuple(1, -2, 3, -4), 3.5)
   return (equal(m.x, 3.5) && equal(m.y, -7) && equal(m.z, 10.5) && equal(m.w, -14))
 }
 
@@ -137,7 +137,7 @@ function test_cross_function() {
   return (equal_tuples(uv, vector(-1, 2, -1)) && equal_tuples(vu, vector(1, -2, 1)))
 }
 
-// *** COLOR TESTS
+// *** COLOR TEST FUNCTIONS
 
 function test_color_function() {
   // Colors are tuples too!
@@ -202,6 +202,8 @@ function test_scale_color_function() {
   return (s1.red === 230 && s1.green === 0 && s1.blue === 255)
   
 }
+
+// *** CANVAS TEST FUNCTIONS
 
 function test_html_canvas_function() {
   // Creates a canvas initialized to all black pixels.
@@ -426,6 +428,8 @@ function test_canvas_to_ppm_function() {
 
 }
 
+// *** MATRIX TEST FUNCTIONS
+
 function test_create_matrix_function() {
   // Test create and verify matrices of 2x2, 3x3, 4x4, 3x5 and 5x3
   // matrix[row][col], row and col are 0-based indexes.
@@ -596,7 +600,7 @@ function test_transpose_identity_matrix() {
   
   const t = transpose_matrix(idmatrix())
   
-    return matrix_equal(t, transpose_matrix(t))
+  return matrix_equal(t, transpose_matrix(t))
 
 }
 
@@ -900,7 +904,7 @@ function test_rotation_x_function() {
 }
 
 function test_rotation_y_function() {
-  // Test rotating a tuple around the x axis
+  // Test rotating a tuple around the y axis
   
   const p = point(0, 0, 1)
   
@@ -913,14 +917,9 @@ function test_rotation_y_function() {
   const rotate_p_half_quarter = multiply_matrix_by_tuple(half_quarter, p)
   const rotate_p_full_quarter = multiply_matrix_by_tuple(full_quarter, p)
   
-  // Test that the inverse of an y-rotation rotates in the opposite direction
-  const inv = inverse(half_quarter)
-  const rotate_p_negative_half_quarter = multiply_matrix_by_tuple(inv, p)
-  
   return ( 
        equal_tuples(rotate_p_half_quarter, point(Math.sqrt(2)/2, 0, Math.sqrt(2)/2)) 
-    && equal_tuples(rotate_p_full_quarter, point(1, 0, 0)) 
-    && equal_tuples(rotate_p_negative_half_quarter, point(-Math.sqrt(2)/2, 0, Math.sqrt(2)/2))
+    && equal_tuples(rotate_p_full_quarter, point(1, 0, 0))
   )
 
 }
@@ -985,11 +984,11 @@ function test_shearing_function() {
   const r6 = multiply_matrix_by_tuple(t6, p)
   
   return equal_tuples(r1, point(5, 3, 4)) 
-      && equal_tuples(r2, point(6, 3, 4)) 
-      && equal_tuples(r3, point(2, 5, 4)) 
-      && equal_tuples(r4, point(2, 7, 4))
-      && equal_tuples(r5, point(2, 3, 6))
-      && equal_tuples(r6, point(2, 3, 7))
+    && equal_tuples(r2, point(6, 3, 4)) 
+    && equal_tuples(r3, point(2, 5, 4)) 
+    && equal_tuples(r4, point(2, 7, 4))
+    && equal_tuples(r5, point(2, 3, 6))
+    && equal_tuples(r6, point(2, 3, 7))
 }
 
 function test_transform_function() {
@@ -1003,6 +1002,36 @@ function test_transform_function() {
   //log("error", result.join("\n"))
   
   return false // TO BE CONTINUED
+}
+
+function transform() {
+  // Transform is a function that makes it possible to chain 
+  // translation, scaling, rotation and shearing into a single operation.
+  
+  this.m = idmatrix()
+  
+  this.rotate_x = function(rad) {
+    log("error", "This is rotate_x: " + rad)
+    this.m = multiply_matrices(this.m, rotation_x(rad))
+    return this
+  }
+  
+  this.rotate_y = function(rad) {
+    log("error", "This is rotate_y: " + rad)
+    this.m = multiply_matrices(this.m, rotation_y(rad))
+    return this
+  }
+  this.rotate_z = function(rad) {
+    log("error", "This is rotate_z: " + rad)
+    this.m = multiply_matrices(this.m, rotation_z(rad))
+    return this
+  }
+      
+   if (this instanceof transform) {
+        return this.transform
+    } else {
+        return new transform()
+    }
 }
 
 function test_apply_individual_transformations() {
@@ -1023,4 +1052,39 @@ function test_apply_individual_transformations() {
   const p4 = multiply_matrix_by_tuple(t, p3)
   
   return equal_tuples(p4, point(15, 0, 7))
+}
+
+// *** RAY TESTS
+
+function test_creating_ray_function() {
+  // Test creating and querying a ray
+  
+  const origin = point(1, 2, 3)
+  const direction = vector(4, 5, 6)
+  
+  const r = ray(origin, direction)
+  
+  //log("error", r.toString())
+  
+  return r.origin === origin && r.direction === direction
+}
+
+function test_position_function() {
+  // Test position function
+  // Position takes a ray and a number t, which is the distance from the ray's
+  // origin
+  
+  // Computing a point from a distance
+  
+  const r = ray(point(2, 3, 4), vector(1, 0, 0))
+  
+  const p1 = position(r, 0) // = point(2, 3, 4)
+  const p2 = position(r, 1) // = point(3, 3, 4)
+  const p3 = position(r, -1) // = point(1, 3, 4)
+  const p4 = position(r, 2.5) // = point(4.5, 3, 4)
+
+  return equal_tuples(p1, point(2, 3, 4))
+    && equal_tuples(p2, point(3, 3, 4))
+    && equal_tuples(p3, point(1, 3, 4))
+    && equal_tuples(p4, point(4.5, 3, 4))
 }

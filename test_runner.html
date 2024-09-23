@@ -39,6 +39,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#129518; Testing Matrix functions</h2>
 <ul id="matrix_list"></ul>
 
+<h2>&#127775; Testing Ray functions</h2>
+<ul id="ray_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -134,14 +137,22 @@ runTest("matrix_list", test_shearing_function)
 runTest("matrix_list", test_transform_function)
 runTest("matrix_list", test_apply_individual_transformations)
 
+runTest("ray_list", test_creating_ray_function)
+runTest("ray_list", test_position_function)
+
+
+
 const end = performance.now()
 const elapsed = end - start
+const cumulated_id = "test_running_time"
+const numberOfRuns_id = "runs"
 
-const cumulated = localStorage.getItem("test_running_time")
-const runs = localStorage.getItem("runs")
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
 
 localStorage.setItem("runs", Number(runs) + 1)
-localStorage.setItem("test_running_time", Number(cumulated) + elapsed)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+
 
 log("perf", "Tests running time: " + Math.round(elapsed) + " ms.")
 log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")

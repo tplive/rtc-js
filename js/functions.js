@@ -62,9 +62,9 @@ function negate_tuple(t) {
   return tuple(t.x * -1, t.y * -1, t.z * -1, t.w * -1)
 }
 
-function multiply_vector(s, t) {
+function multiply_vector(v, s) {
   // Multiply each component of the tuple t by the scalar value s
-  return tuple(t.x * s, t.y * s, t.z * s, t.w * s)
+  return tuple(v.x * s, v.y * s, v.z * s, v.w * s)
 }
 
 function divide_vector(s, t) {
@@ -387,12 +387,11 @@ function determinant(m) {
   
   let det = 0
   
-  let mc = structuredClone(m)
-  
   if (m.length == 2) {
     det = (m[0][0] * m[1][1] - m[0][1] * m[1][0])
   } else {
-    for (let i =0; i <= m[0].length -1;i++) {
+    let mc = structuredClone(m)
+    for (let i = 0; i <= m[0].length - 1;i++) {
       det = det + m[0][i] * cofactor(mc, 0, i)
     }
   }
@@ -487,6 +486,7 @@ function inverse(ma) {
   //log("error", "m2\n" + m2.join("\n"))
   
   // DO NOT use (for x in y) as x and y will be strings.
+  // DO remember to do "length -1".
   for (let r = 0; r <= m.length-1; r++) {
     //log("error", m[r])
     for (let c = 0; c <= m.length-1; c++) {
@@ -614,32 +614,25 @@ function shearing(xy, xz, yx, yz, zx, zy) {
   
 }
 
-function transform() {
-  // Transform is a function that makes it possible to chain 
-  // translation, scaling, rotation and shearing into a single operation.
+// *** RAY FUNCTIONS
+
+function ray(o, d) {
+  // Return a "ray", consisting of a point called origin and a vector called direction.
   
-  this.m = idmatrix()
-  
-  this.rotate_x = function(rad) {
-    log("error", "This is rotate_x: " + rad)
-    this.m = multiply_matrices(this.m, rotation_x(rad))
-    return this
+  // Check that o is a point and d is a vector, by checking the w value of each
+  if (!(o.w === 1 && d.w === 0) ) {
+    throw "Origin must be a point, and Direction must be a vector"
   }
   
-  this.rotate_y = function(rad) {
-    log("error", "This is rotate_y: " + rad)
-    this.m = multiply_matrices(this.m, rotation_y(rad))
-    return this
-  }
-  this.rotate_z = function(rad) {
-    log("error", "This is rotate_z: " + rad)
-    this.m = multiply_matrices(this.m, rotation_z(rad))
-    return this
-  }
-      
-   if (this instanceof transform) {
-        return this.transform
-    } else {
-        return new transform()
-    }
+  return Object.freeze({
+    origin:o,
+    direction:d,
+    toString: function() { return `origin: point(${this.origin}) direction: vector(${this.direction})`}
+  })
+  
+}
+
+function position(ray, t) {
+  // Compute a ray's direction by t to find the total distance traveled
+  return add_tuples(multiply_vector(ray.direction, t), ray.origin)
 }

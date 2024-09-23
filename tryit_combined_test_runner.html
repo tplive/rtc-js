@@ -39,6 +39,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#129518; Testing Matrix functions</h2>
 <ul id="matrix_list"></ul>
 
+<h2>&#127775; Testing Ray functions</h2>
+<ul id="ray_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -107,9 +110,9 @@ function negate_tuple(t) {
   return tuple(t.x * -1, t.y * -1, t.z * -1, t.w * -1)
 }
 
-function multiply_vector(s, t) {
+function multiply_vector(v, s) {
   // Multiply each component of the tuple t by the scalar value s
-  return tuple(t.x * s, t.y * s, t.z * s, t.w * s)
+  return tuple(v.x * s, v.y * s, v.z * s, v.w * s)
 }
 
 function divide_vector(s, t) {
@@ -659,6 +662,29 @@ function shearing(xy, xz, yx, yz, zx, zy) {
   
 }
 
+// *** RAY FUNCTIONS
+
+function ray(o, d) {
+  // Return a "ray", consisting of a point called origin and a vector called direction.
+  
+  // Check that o is a point and d is a vector, by checking the w value of each
+  if (!(o.w === 1 && d.w === 0) ) {
+    throw "Origin must be a point, and Direction must be a vector"
+  }
+  
+  return Object.freeze({
+    origin:o,
+    direction:d,
+    toString: function() { return `origin: point(${this.origin}) direction: vector(${this.direction})`}
+  })
+  
+}
+
+function position(ray, t) {
+  // Compute a ray's direction by t to find the total distance traveled
+  return add_tuples(multiply_vector(ray.direction, t), ray.origin)
+}
+
 </script>
 <script>
 // *** TESTS
@@ -739,7 +765,7 @@ function test_multiply_vector_function() {
   // Given t = tuple(1, -2, 3, -4)
   // Then t * 3.5 = tuple(3.5, -7, 10.5, -14)
   
-  var m = multiply_vector(3.5, tuple(1, -2, 3, -4))
+  var m = multiply_vector(tuple(1, -2, 3, -4), 3.5)
   return (equal(m.x, 3.5) && equal(m.y, -7) && equal(m.z, 10.5) && equal(m.w, -14))
 }
 
@@ -800,7 +826,7 @@ function test_cross_function() {
   return (equal_tuples(uv, vector(-1, 2, -1)) && equal_tuples(vu, vector(1, -2, 1)))
 }
 
-// *** COLOR TESTS
+// *** COLOR TEST FUNCTIONS
 
 function test_color_function() {
   // Colors are tuples too!
@@ -865,6 +891,8 @@ function test_scale_color_function() {
   return (s1.red === 230 && s1.green === 0 && s1.blue === 255)
   
 }
+
+// *** CANVAS TEST FUNCTIONS
 
 function test_html_canvas_function() {
   // Creates a canvas initialized to all black pixels.
@@ -1088,6 +1116,8 @@ function test_canvas_to_ppm_function() {
   return (ppm === `P3\n4 4\n255\n1 1 1 2 2 2 0 0 0 0 0 0 3 3 3 4 4\n4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n0 0 0 0 0 0 0 0 0 0 0 0 0 0\n\n\n\n`)
 
 }
+
+// *** MATRIX TEST FUNCTIONS
 
 function test_create_matrix_function() {
   // Test create and verify matrices of 2x2, 3x3, 4x4, 3x5 and 5x3
@@ -1713,12 +1743,51 @@ function test_apply_individual_transformations() {
   return equal_tuples(p4, point(15, 0, 7))
 }
 
+// *** RAY TESTS
+
+function test_creating_ray_function() {
+  // Test creating and querying a ray
+  
+  const origin = point(1, 2, 3)
+  const direction = vector(4, 5, 6)
+  
+  const r = ray(origin, direction)
+  
+  //log("error", r.toString())
+  
+  return r.origin === origin && r.direction === direction
+}
+
+function test_position_function() {
+  // Test position function
+  // Position takes a ray and a number t, which is the distance from the ray's
+  // origin
+  
+  // Computing a point from a distance
+  
+  const r = ray(point(2, 3, 4), vector(1, 0, 0))
+  
+  const p1 = position(r, 0) // = point(2, 3, 4)
+  const p2 = position(r, 1) // = point(3, 3, 4)
+  const p3 = position(r, -1) // = point(1, 3, 4)
+  const p4 = position(r, 2.5) // = point(4.5, 3, 4)
+
+  return equal_tuples(p1, point(2, 3, 4))
+    && equal_tuples(p2, point(3, 3, 4))
+    && equal_tuples(p3, point(1, 3, 4))
+    && equal_tuples(p4, point(4.5, 3, 4))
+}
+
+function test_sphere_function() {
+  // The sphere() function should return a unique value for every invocation, as the sphere's id.
+  
+}
+
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
 
 const start = performance.now()
-
 
 function runTest(domId, callback) {
   
@@ -1804,16 +1873,21 @@ runTest("matrix_list", test_shearing_function)
 runTest("matrix_list", test_transform_function)
 runTest("matrix_list", test_apply_individual_transformations)
 
+runTest("ray_list", test_creating_ray_function)
+runTest("ray_list", test_position_function)
+runTest("ray_list", test_sphere_function)
 
 
 const end = performance.now()
 const elapsed = end - start
+const cumulated_id = "test_running_time"
+const numberOfRuns_id = "runs"
 
-const cumulated = localStorage.getItem("test_running_time")
-const runs = localStorage.getItem("runs")
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
 
 localStorage.setItem("runs", Number(runs) + 1)
-localStorage.setItem("test_running_time", Number(cumulated) + elapsed)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
 
 log("perf", "Tests running time: " + Math.round(elapsed) + " ms.")
 log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
