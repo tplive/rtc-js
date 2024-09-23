@@ -703,3 +703,22 @@ function intersection(t_value, sphere) {
     object:sphere
   })
 }
+function intersections() {
+  // This method takes an arbitrary number of intersection objects as input and
+  // aggregates them in an array
+  let arr = []
+  for (let i=0; i < arguments.length;i++) {
+    arr.push(arguments[i])
+  }
+  return arr
+}
+
+function hit(list_of_intersections) {
+  // This function returns the intersection with the lowest non-negative number from a list of intersections
+  
+  if (!Array.isArray(list_of_intersections)) {return } // There are no intersections, return undefined
+    
+  list_of_intersections = list_of_intersections.filter( item => { if (item.t > 0) {return item}} )
+  
+  return list_of_intersections.sort().reverse()[0]
+}

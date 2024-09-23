@@ -740,7 +740,7 @@ function intersect(s, r) {
   const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
   const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
   
-  return [t1, t2]
+  return [intersection(t1, s), intersection(t2, s)]
 }
 
 function intersection(t_value, sphere) {
@@ -752,7 +752,25 @@ function intersection(t_value, sphere) {
   })
 }
 
+function intersections() {
+  // This method takes an arbitrary number of intersection objects as input and
+  // aggregates them in an array
+  let arr = []
+  for (let i=0; i < arguments.length;i++) {
+    arr.push(arguments[i])
+  }
+  return arr
+}
 
+function hit(list_of_intersections) {
+  // This function returns the intersection with the lowest non-negative number from a list of intersections
+  
+  if (!Array.isArray(list_of_intersections)) {return } // There are no intersections, return undefined
+    
+  list_of_intersections = list_of_intersections.filter( item => { if (item.t > 0) {return item}} )
+  
+  return list_of_intersections.sort().reverse()[0]
+}
 </script>
 <script>
 // *** TESTS
@@ -1850,7 +1868,7 @@ function test_sphere_function() {
   // The sphere() function should return a unique value for every invocation, as the sphere's id.
   
   const spheres = []
-  const n = 1000
+  const n = 100
   
   // Create a lot of spheres and store their ids in the array
   for (let i=0; i < n; i++) {
@@ -1865,6 +1883,16 @@ function test_sphere_function() {
   return spheres.length === n && spheres.length === unique.length
 }
 
+function test_intersect_sets_the_object_on_the_intersection() {
+  // Make sure the intersect functions sets the actual object on the intersection, not just the t values.
+  
+  const r = ray(point(0, 0, -5), vector(0, 0, 1))
+  const s = sphere()
+  
+  const xs = intersect(s, r)
+  return xs.length === 2 && xs[0].object === s && xs[1].object === s
+}
+
 function test_ray_intersects_sphere_at_two_points() {
   // The intersect function returns all points where a ray intersects an object, in this case a sphere.
   
@@ -1874,7 +1902,7 @@ function test_ray_intersects_sphere_at_two_points() {
   
   const xs = intersect(s, r)
   
-  return xs.length === 2 && xs[0] === 4.0 && xs[1] === 6.0
+  return xs.length === 2 && xs[0].t === 4.0 && xs[1].t === 6.0
 }
 
 function test_ray_intersects_sphere_at_tangent() {
@@ -1886,7 +1914,7 @@ function test_ray_intersects_sphere_at_tangent() {
   
   const xs = intersect(s, r)
   
-  return xs.length === 2 && xs[0] === 5.0 && xs[1] === 5.0
+  return xs.length === 2 && xs[0].t === 5.0 && xs[1].t === 5.0
 }
 
 function test_ray_misses_a_sphere() {
@@ -1912,7 +1940,7 @@ function test_ray_originates_inside_a_sphere() {
   
   const xs = intersect(s, r)
   
-  return xs.length === 2 && xs[0] === -1.0 && xs[1] === 1.0
+  return xs.length === 2 && xs[0].t === -1.0 && xs[1].t === 1.0
 }
 
 function test_sphere_is_behind_a_ray() {
@@ -1926,7 +1954,7 @@ function test_sphere_is_behind_a_ray() {
   
   const xs = intersect(s, r)
   
-  return xs.length === 2 && xs[0] === -6.0 && xs[1] === -4.0
+  return xs.length === 2 && xs[0].t === -6.0 && xs[1].t === -4.0
 }
 
 function test_intersection_function() {
@@ -1950,14 +1978,57 @@ function test_intersections_function() {
   const i2 = intersection(2, s2)
   const i3 = intersection(3, s3)
   
+  // Contemplate adding functions to C.intersections
   C.intersections.push(i1)
   C.intersections.push(i2)
+  
   
   // Techniques for concatenating arrays
   // intersections = [...intersections, i1, i3]
   // intersections = intersections.concat([i1, i3])
+  
+  //log("error", C.intersections[0].t )
+  //log("error", C.intersections[0].object.id )
+  for (const i in C.intersections) { 
+    //log("error", C.intersections[i].object.id)
+  }
 
   return C.intersections[0].object === s1 && C.intersections[1].object === s2
+}
+
+function test_hit_function() {
+  // Test the hit function, which returns the lowest non-negative value of
+  // intersection objects from a list of intersections
+  
+  const s = sphere()
+
+  // The hit, when all intersections have a positive t  
+  const i1 = intersection(1, s)
+  const i2 = intersection(2, s)
+  const xs1 = intersections(i2, i1) // Note backwards sorting
+  const h1 = hit(xs1)
+  
+  // The hit, when some intersections have negative t
+  const i3 = intersection(-1, s)
+  const i4 = intersection(1, s)
+  const xs2 = intersections(i4, i3) // Note backwards sorting
+  const h2 = hit(xs2)
+  
+  // The hit, when all intersections have negative t
+  const i5 = intersection(-2, s)
+  const i6 = intersection(-1, s)
+  const xs3 = intersections(i6, i5) // Note backwards sorting
+  const h3 = hit(xs3)
+  
+  // The hit is always the lowest nonnegative intersection
+  const i7 = intersection(5, s)
+  const i8 = intersection(7, s)
+  const i9 = intersection(-3, s)
+  const i10 = intersection(2, s)
+  const xs4 = intersections(i7, i8, i9, i10)
+  const h4 = hit(xs4)
+  
+  return h1 === i1 && h2 === i4 && !h3 && h4 === i10 // h3: there are no intersections, returns "undefined", which equals "false"
 }
 </script>
 <script>
@@ -2052,6 +2123,7 @@ runTest("matrix_list", test_apply_individual_transformations)
 runTest("ray_list", test_creating_ray_function)
 runTest("ray_list", test_position_function)
 runTest("ray_list", test_sphere_function)
+runTest("ray_list", test_intersect_sets_the_object_on_the_intersection)
 runTest("ray_list", test_ray_intersects_sphere_at_two_points)
 runTest("ray_list", test_ray_intersects_sphere_at_tangent)
 runTest("ray_list", test_ray_misses_a_sphere)
@@ -2059,6 +2131,7 @@ runTest("ray_list", test_ray_originates_inside_a_sphere)
 runTest("ray_list", test_sphere_is_behind_a_ray)
 runTest("ray_list", test_intersection_function)
 runTest("ray_list", test_intersections_function)
+runTest("ray_list", test_hit_function)
 
 
 

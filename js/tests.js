@@ -1193,12 +1193,55 @@ function test_intersections_function() {
   const i2 = intersection(2, s2)
   const i3 = intersection(3, s3)
   
+  // Contemplate adding functions to C.intersections
   C.intersections.push(i1)
   C.intersections.push(i2)
+  
   
   // Techniques for concatenating arrays
   // intersections = [...intersections, i1, i3]
   // intersections = intersections.concat([i1, i3])
+  
+  //log("error", C.intersections[0].t )
+  //log("error", C.intersections[0].object.id )
+  for (const i in C.intersections) { 
+    //log("error", C.intersections[i].object.id)
+  }
 
   return C.intersections[0].object === s1 && C.intersections[1].object === s2
+}
+
+function test_hit_function() {
+  // Test the hit function, which returns the lowest non-negative value of
+  // intersection objects from a list of intersections
+  
+  const s = sphere()
+
+  // The hit, when all intersections have a positive t  
+  const i1 = intersection(1, s)
+  const i2 = intersection(2, s)
+  const xs1 = intersections(i2, i1) // Note backwards sorting
+  const h1 = hit(xs1)
+  
+  // The hit, when some intersections have negative t
+  const i3 = intersection(-1, s)
+  const i4 = intersection(1, s)
+  const xs2 = intersections(i4, i3) // Note backwards sorting
+  const h2 = hit(xs2)
+  
+  // The hit, when all intersections have negative t
+  const i5 = intersection(-2, s)
+  const i6 = intersection(-1, s)
+  const xs3 = intersections(i6, i5) // Note backwards sorting
+  const h3 = hit(xs3)
+  
+  // The hit is always the lowest nonnegative intersection
+  const i7 = intersection(5, s)
+  const i8 = intersection(7, s)
+  const i9 = intersection(-3, s)
+  const i10 = intersection(2, s)
+  const xs4 = intersections(i7, i8, i9, i10)
+  const h4 = hit(xs4)
+  
+  return h1 === i1 && h2 === i4 && !h3 && h4 === i10 // h3: there are no intersections, returns "undefined", which equals "false"
 }

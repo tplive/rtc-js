@@ -51,282 +51,6 @@ footer {
 <h1>&#128302; The Ray Tracer Challenge &#128302;</h1>
 <p>"En strålesporingsutfording".</p>
 <div class="shadow floatleft"><img width="250" src="rtc.jpg"/></div>
-<p>Dette er en øvelse i minimalisme. Jeg er vant til å ha full tilgang til Internett, til nedlasting av programvare; utallige artikler og videoer om alle tenkelige emner, rik programvare med tusenvis av hjelpemidler som gjør mye av jobben for meg. Jeg skal utdype disse begrensningene og hva jeg gjør for å komme rundt dem.</p>
-
-<h2>&#128170; Utfordringen</h2>
-<p>Utfordringen kommer i form av en bok, "The Ray Tracer Challenge" av Jamis Buck, utgitt 2019 på The Pragmatic Programmers. Denne boken tar leseren gjennom alle stegene for å lage en "3D Renderer", en programvare som lager bilder av 3D-modeller, ved beregne hvordan lys reflekteres og brytes når det treffer de ulike 3D objektene som utgjør modellen. Dette skal man lage selv – boken har ingen ferdig kode, kun "pseudokode" som beskriver omtrentlig hva de ulike funksjonene skal gjøre, og så er det opp til leseren å implementere dette i sitt valgte programmeringsspråk. I tillegg er fremgangsmåten TDD (Test-Driven Development), som jeg skal redegjøre for lenger ned i dette dokumentet.</p>
-
-<h2>&#128644; Miljøet</h2>
-
-<p>Gitt begrensningene har jeg kun funnet èn mulig tilnærming til denne utfordringen, og det er med HTML, CSS og JS i nettleser. Ingen webserver, ingen API, ingenting annet enn lokale filer som kjører i Google Chrome. </p>
-
-<p>Jeg har tilgang til nettsiden w3schools.com hvor de har en begrenset kode-editor som jeg vil bruke til å teste noe av koden.</p>
-
-<p>I tillegg til referansene hos w3schools.com har jeg tilgang til stackoverflow.com som gir svar på det meste jeg kan tenkes å lure på.</p>
-
-<p>DFS er et ekstra nedlåst Citrix-miljø. Det er ingen tilgang til å installere egen programvare, så jeg kan ikke bruke noen biblioteker. Det er ingen tilgang til Chrome’s Developer Mode eller konsoll-logg, så jeg får ikke se en eneste feilmelding. Det er heller ingen kommandolinje eller versjonskontroll (git), så jeg må huske å ta manuelle daterte kopier med jevne mellomrom. "Kode-editoren" er notepad, med noe bedre funksjonalitet i w3schools nettbaserte editor, men der kan jeg ikke referere eksterne filer, så alt må legges inn i samme vindu.</p>
-
-<p>Filstrukturen som etter hvert har dukket opp er en rot-katalog (<code>/html</code>) som inneholder alle html-filer, og underkataloger for js-filer (<code>/js</code>) og etter hvert for css (<code>/css</code>). I tillegg ligger dette dokumentet under en dokumentasjonskatalog (<code>/docs</code>), der jeg også vil lagre skjermbilder etc. Strukturen blir til mens vi går.</p>
-
-<p>Backup tas ved å kopiere hele <code>/html</code> strukturen til et eget område (<code>/Backup/ÅÅÅÅMMDD/</code>) for hver dag. Dette er på ingen måte sammenlignbart med versjonskontroll, men der det beste jeg kan komme på.</p>
-
-<h2>&#128163; Test-drevet utvikling</h2>
-<p>Boken baserer seg som nevnt på TDD, som jeg lenge har hatt lyst til å praktisere. Metoden er som følger:
-<ol>
-  <li>For hver ny funksjon man skal lage, lager man først en test som verifiserer at funksjonen gjør det den skal. </li>
-  <li>Så kjører man testen, som forventet vil feile, siden man ikke enda har implementert funksjonen som testes.</li>
-  <li>Så skriver man funksjonen og kjører testen til den verifiseres korrekt.</li> 
-</ol>
-Et "litt ikke-trivielt" eksempel: Jeg trenger en funksjon som, gitt to sider av en trekant, representert ved tallene a og b, returnerer lengden på hypotenusen, altså <var><span>&#8730;</span><span  style="border-top: 1px solid black">a<sup>2</sup> + b<sup>2</sup></span></var>.
-</p>
-
-<p>Først lager jeg en test som kjører denne ikke-eksisterende funksjonen, gir den to kjente tall u og v og sjekker hva funksjonen svarer, mot det forventede resultat som jeg har sjekket på kalkulatoren min <var><span>&#8730;</span><span  style="border-top: 1px solid black">5<sup>2</sup> + 3<sup>2</sup></span> = 5,830951895</var> og returnerer <var>true</var> eller <var>false</var> avhengig av resultatet av testen:</p>
-
-<pre>
-function test_hypotenuse_function() {
-  var u = 5
-  var v = 3
-  return (hypotenuse(u, v) == 5.830951895)
-}
-</pre>
-
-<p>Siden funksjonen ikke finnes, vil testen feile. Så lager jeg funksjonen, men uten å gjøre den ferdig:</p>
-
-<pre>function hypotenuse(a, b) {
-  return 0
-}
-</pre>
-
-<p>Kjører testen på nytt, den feiler igjen. Jeg implementerer funksjonen ferdig:</p>
-
-<pre>function hypotenuse(a, b) {
-  return Math.sqrt(a**2 + b**2)
-}
-</pre>
-
-<p>Og kjører testen igjen. Denne gang skal den vel returnere true? Eller?</p>
-
-<p>Det er her elegansen i test-drevet utvikling kommer til syne: På grunn av forskjell i "flyt-talls-presisjonen" mellom JS og min kalkulator vil testen fortsatt feile. JS gir svaret <var>5.830951894845301</var>. En test som feiler betyr at "noe" er galt, og vi må se nærmere på årsaken. Hvis jeg nå endrer testen så den istedet sammenligner resultatet av funksjonen mot det mer nøyaktige <var><span>&#8730;</span><span  style="border-top: 1px solid black">34</span></var>, så passerer testen som den skal.</p>
-
-<p>Dette kan ved første øyekast virke tungrodd og masse ekstra kode for å teste EN kodelinje; hva er vitsen med å sammenligne <code>1 == 1</code>??? Når kompleksiteten øker og man begynner å kjøre tester på større operasjoner, vil testene kunne avdekke slike subtile feil som avrunding etc. Feil som ellers kunne gått ubemerket hen i lang tid og dukket opp i form av obskure problemer helt andre steder i koden.</p>
-
-<p>Når jeg senere gjør endringer i eksisterende kode (feks refaktorerer eller legger til / trekker fra funksjonalitet) som får tester til å feile som tidligere har fungert fint, blir feilene oppdaget tidlig og kan fikses mens man har endringen friskt i minne. Verdien av test-drevet utvikling øker eksponensielt med antall utviklere som jobber i og endrer kodebasen. Grundige tester fungerer som et sikkerhetsnett.</p>
-
-<p>13.04.2024: Finner <a href="https://stackoverflow.com/questions/14481381/how-to-catch-all-javascript-warnings-and-errors-to-an-output-div#33321914">en funksjon som kan vise feilkoder i HTML her</a>… &#128512;</p>
-
-<h2>&#128221; Prosjektet</h2>
-<p>Jeg starter i begynnelsen av April 2024 med dette prosjektet. Jeg leser noen kapitler og tester litt miljøet jeg kan programmere i. Det er ikke vits å starte på noe dersom jeg for eksempel ikke kan kjøre JS i eksterne filer, eller ikke kan bruke HTML canvas elementet. Heldigvis ser det ikke ut til at det ikke er restriksjoner her.</p>
-
-<p>Rammeverket for testing blir sakte til mens jeg går. Jeg starter med manipulering av "hardkodede" HTML-elementer, men kommer fort på bedre tanker og lar hver test kjøre som en egen funksjon <code>runTest()</code> som både kjører testen og viser navnet på test-funksjonen og resultatet av testen i rød eller grønn tekst. Foreløpig holder dette.</p>
-
-<p><code>test_runner.html</code> laster JS-skriptene <code>js/functions.js</code> og <code>js/tests.js</code> som inneholder hhv funksjonene som skal testes og testene som benyttes.</p>
-
-<h3>&#128640; Kapittel 1, Tuples, Points and Vectors</h3>
-<p>Det første kapitlet handler om de mest grunnleggende byggesteinene i dette systemet. En <code>tuple</code> er en datatype med x, y og z koordinater, samt en verdi w som forteller om dette er en vektor (w=0) eller et punkt (w=1). I første implementasjon er en vektor bare en tuple med w=0 og et punkt er bare en tuple med w=1. Det er ingen restriksjoner mellom de ulike datatypene. Dette kan det bli nødvendig å endre senere, men inntil videre er distinksjonen kun for egen klarhet.</p>
-
-<p>Jeg lager en funksjon <code>equal(a, b)</code> for å sammenligne to flyttall med "slingringsmonn", siden man ellers vil få problemer grunnet avrunding. Dette er et generelt problem i programmering, siden flyttall ikke kan gjengis helt nøyaktig. Denne brukes også i funksjonen <code>equal_tuples()</code> som sammenligner om to tupler er like. </p>
-
-<p>Videre oppretter jeg en konstant <code>PRECISION = 5</code> som brukes til å angi presisjonen i avrundingsoperasjoner med <code>.toFixed(PRECISION)</code> der det blir nødvendig i koden, og til å angi konstanten <code>EPSILON = 1.0*10**(-PRECISION)</code> som er sammenligningsverdien som brukes i <code>equal()</code>-funksjonen. Dersom <var>a - b &gt; EPSILON</var> er tallene ansett som like. Når <var>PRECISION = 5</var> er <var>EPSILON = 1*10<sup>-5</sup></var>. Dette må jeg sannsynligvis justere senere, dersom det skaper problemer.</p>
-
-<p>Funksjoner for å legge samme og trekke vektorer fra hverandre er neste. Her kommer w-verdien til sin rett, for hvis man legger sammen et punkt (w=1) og en vektor (w=0) får man et nytt punkt (w=1). Og dersom man legger sammen to punkt får man w=2, som ikke er verken punkt eller vektor. Dersom man legger samme to vektorer får man fortsatt w=0, som er en ny vektor. Helt riktig! &#128513;</p>
-
-<p>13.04.2024: Jeg jobber med å legge sammen og trekke fra tupler, og så sammenligne resultatene etterpå. Dette må fungere bra, ellers blir det trøbbel down the line. Men det er ikke så enkelt! &#128517;</p>
-
-<blockquote>På et tidspunkt virker det som at <code>tests.js</code> ikke lenger blir importert – funksjonen <code>test_tuple_function()</code> er ikke definert. Men i Tryit editor fungerer det (tilsynelatende). Her blir det en del feilsøking før jeg lærer to viktige ting: 
-a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bindestrek (–) i navnet.</blockquote>
-
-<h4>Putting it together</h4>
-<p>Jeg fortsetter å implementere tuple-funksjoner og –tester til jeg er gjennom kapittel 1. På slutten av kapitlet er det en liten øvelse for å teste ting, der man skal lage en virtuell "kanon", og skyte prosjektiler. Prosjektilet har en posisjon og en hastighetsvektor. Miljøet har gravitasjon (vektor) og vind (vektor) som skal regnes med.</p>
-
-<p>Her går jeg for første gang på en Out Of Memory krasj, på grunn av en evig loop. Jeg får funksjonen til å regne posisjoner helt fint, og lagrer forsøket i <a href="../projectile_chapter1.html"><code>./projectile.html</code>.</a></p>
-
-<h3>&#128640; Kapittel 2, Drawing on a Canvas</h3>
-<p>Her starter vi med litt farge-teori, og noterer at fargenes r,g,b verdier til forveksling ligner på tuples! &#129321; Jeg ser at boka vil at vi skal lage PPM filer, som er et tekstbasert grafikk-format. De anbefaler at man bruker GIMP til å se disse på Windows, og jeg får sjekket at GIMP er installert på maskinen. Yey!</p>
-
-<p>Jeg starter kodingen med å implementere (test av , og) <code>color(r, g, b)</code> datatypen, og funksjoner for å legge sammen og multiplisere farge med skalarverdi og to farger med hverandre.</p>
-
-<del><p>Deretter en metode som lager et spesifisert canvas-objekt og tester at det blir laget korrekt, og deretter skrive en fargeverdi til en spesifisert pixel og lese den ut.</p>
-
-<p>Jeg undersøker hvilke metoder vi har tilgjengelig; kan jeg for eksempel lese ut <var>width</var> og <var>height</var> fra det canvas-elementet jeg nettopp har laget?  Finner ikke ut av det, og nøyer meg med å teste at det finnes et element med spesifisert id. (Senere ser jeg at canvas-elementet HAR disse verdiene, men jeg prøvde å finne dem på tilhørende context-objekt.</p>
-
-<p>For å skrive til canvas, henter man ut konteksten med <code>canvas.getContext(2d)</code> og skriver til den. (Ja, det skal være 2d, for raytraceren skal bare kalkulere fargeverdier på pixler.)</p>
-
-<blockquote>Kan jeg så lese ut fargeverdien til en gitt pixel? Ja, med <code>getImageData()</code>. </blockquote>
-
-<p><code>fillrect(x, y, w, h)</code> skriver et rektangel på posisjon <code>(x, y)</code> og størrelse <code>(w, h)</code>.</p>
-<p>Dette fungerer. Canvasen ser slik ut:</p>
-<p><img style="border: 1px solid black;" src="canvas_element.png"/></p>
-</del>
-
-<p>Dette canvas opplegget ble bare tull. Jeg finner ut at det slett ikke er nødvendig med noen HTML-canvas. I boka er canvas bare en abstraksjon for et lerret som har bredde og høyde, og en fargeverdi for hver pixel. Jeg krangler mye før jeg skjønner hva som må til: Et canvas har w * h og et array med verdier for hver pixel. That's it. &#128513;</p>
-
-<p>Indexverdien for et x,y koordinat på canvas med størrelse (w * h) og antall bytes pr farge-komponent b er gitt ved: <var>(w * y + x) * b</var>. Nå brukes 3 byte pr farge, men dersom jeg senere skal benytte transparens (alpha), kan det utvides.</p>
-
-<p>Det blir litt jobb før koden gjør som den skal. Ser stor nytte av test-dreven metode, og jeg lærer jeg masse JS.</p>
-
-<p>I stedet for å lage en egen funksjon <code>write_pixel(can, x, y, color)</code> legger jeg den til som en metode på canvas-objektet. Refererer til canvas-objektets data med <code>this</code>, feks. <code>this.w</code> for bredden.</p>
-
-<p>Boka sier at x og y forventes å har 0-basert index. Greit.</p>
-
-<p>Så skal data over til et filformat, her benyttes tekstbasert PPM-fil. Jeg skriver tester for å lage header og formattere pixeldata. Mye jobb, men det må gjøres ordentlig.. &#129308;&#129307; Resultatet er en fint formattert PPM-fil.</p>
-
-<h4>Putting it together</h4>
-<p>Neste steg er å gjøre det samme eksperimentet som i slutten av kapittel 1, men faktisk plotte på canvas og vise. Jeg har tenkt en stund på at det vil være lurt å bruke HTML canvas til dette, siden jeg kan (?) plotte pixel for pixel på skjerm mens det rendrer... tror jeg? &#129320;</p>
-
-<p>Dette er et av de aller første synlige resultatene...</p>
-
-<p><img src="./projectile_plot1.png"/></p>
-
-<p>Jeg forsøker å hente data fra html_canvas til mitt canvas-objekt:</p>
-<p><img src="imagedata_fail.png"/></p>
-<p>...ehh? Joda, imagedata har jo alpha-verdien med, så da blir det sånn! Men så begynner jeg å tenke litt. Jeg skriver en og en pixel til imagedata, så hvorfor kan jeg ikke gjøre det samme med canvas-data? Det blir to strukturer i minnet, men det må gå greit. Inntil videre i hvert fall.. &#128517;</p>
-<p>Men, med litt tweaking ser det da etter hvert omtrent ut som i boka:</p>
-<p><img src="projectile_plot2.png"/></p>
-
-<p>Og med litt "applied magic" så har jeg en link som lar meg lagre PPM fila med å klikke på en link. Nice. &#128170;</p>
-
-<p>Koden ligger her <a href="../projectile_chapter2.html"><code>./projectile_chapter2.html</code>.</a></p>
-
-<h3>&#128055; Kapittel 3, Matrices</h3>
-
-<p>Matriser. Hva er en matrise i denne sammenhengen? Det er et objekt med tall, lagt ut i rader og kolonner på en slik måte at de kan håndteres som en enhet. For eksempel en matrise med 3x5 tall:</p>
-<pre>
-| 3 4 3 8 2 |
-| 2 1 2 1 2 |
-| 7 0 9 9 9 |
-</pre>
-<p>I denne utfordringen skal vi primært håndtere matriser på 4x4, men for sikkerhets skyld må koden håndtere andre formater. Dette er relativt enkel håndtering, jeg lager matrisene med <code>matrix(4, 4)</code> som så lager et array på 4 rader, hver med et array på 4 tall inni. Da kan vi aksessere hvert enkelt element slik:</p>
-<pre>
-const m = matrix(4, 4)
-m[2][3] = 1.3424
-const m23 = m[2][3]
-</pre>
-<p>(Note to self: Jeg tror array med subarray er ganske optimalt oppsett her, men det finner vi ikke ut før vi begynner å rendre...)</p>
-
-<p>Så følger det en spesifikasjon for å sammenligne matriser, her velger jeg å først sjekke at de er like store <var>(4x4=16)</var>, og at de har samme dimensjoner (<var>3x5 &#8800; 5x3</var>) før vi bryter løs på å sammenligne element for element. Dette for å avdekke åpenbare forskjeller først, og spare "masse tungregning" i tilfelle de er strukturelt ulike matriser. Jeg benytter <code>equal(a, b)</code> som utviklet tidligere, for å ta høyde for flyttall som er "nært" <var>(&#916; &lt; &plusmn; EPSILON)</var> men likevel forskjellig.</p>
-
-<p>Multiplisering av matriser. Puh. Her er det så klart ikke bare A*B, det er skalarproduktet. Prikkproduktet. Dot product. Som for tupler. Definisjon iht boka:</p>
-<blockquote>"Matrix multiplication computes the dot product of every row-column combination in the matrix.</blockquote>
-
-<p>Heldigvis ser det ut for at jeg kan bruke noe av den samme koden som for sammenligning av matrisene. Støter på et pussig problem. Jeg har to matriser, laget med <code>matrix(4, 4)</code>. Når jeg multipliserer dem, blir resultatet i hver celle korrekt, men resultat-matrisen blir en gjentakelse av den siste matrisen, omtrent sånn:</p>
-<pre>[[12,34,45,56],[12,34,45,56],[12,34,45,56],[12,34,45,56]]</pre>
-<p>Hvis jeg endrer èn av verdiene, endres den i alle radene, slik:</p>
-<pre>
-ma = [[12,34,45,56],[12,34,45,56],[12,34,45,56],[12,34,45,56]]
-ma[0][2] = 99
-[[12,34,99,56],[12,34,99,56],[12,34,99,56],[12,34,99,56]]</pre>
-<p>Ser ut som hver eneste rad peker til samme posisjoner i minnet. Jeg vet ikke hvordan jeg lager et array med rader som peker til unike minneposisjoner, og jeg er redd dette kan komme tilbake og bite meg senere... Men for now dokumenterer jeg det her, og oppretter arrayet helt manuelt, slik:</p>
-<pre>const m = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]</pre>
-<p>Neste dag (22.april 2024): Joda, det kom og beit meg... &#128514;</p>
-<p>For å bøte på problemet, fikser jeg matrix() så den looper og lager array element for element. Blir nok bra det også. Hvem f..n vil egentlig ha array som peker hit og dit og her og der!? JS assa.. &#128527;</p>
-<p>Det gjør det så at jeg <del>enkelt</del> enklere får til <code>determinant()</code> og <code>submatrix()</code>-funksjonene, og disse verktøyene trengs for å jobbe seg videre mot inverteringsfunksjonen som tydeligvis blir mye mer komplisert for 3x3 og 4x4 matriser.</p>
-
-<p>23. april 2024: Array-føljetongen ruller videre. Jeg har igjen kommet borti problemer med referanser i arrays. Finner ut at man kan "fullklone" (aka "deep clone") et array med <code>structuredClone(array)</code> og det må jeg huske å gjøre når jeg gjør matrise-operasjoner som fjerner rad eller kolonne "in-place", dvs endrer på et array, og så senere bruker det samme arrayet på en annen operasjon som antar at det har opprinnelig "fasong". I de tilfellene må jeg returnere en full kopi av arrayet, og ikke det opprinnelige.</p>
-
-<p> For øvrig har jeg "pyntet litt" både her i dokumentasjonen og i test_runner, så nå syns jeg det ser litt proffere ut: &#128513;
-  <ul>
-    <li>Lagt til emojis på alle overskrifter, fresher opp litt og gir mening.  &#128513;</li>
-    <li>Lagt til emojis på hver test, så det står <span style="color: green;">Test Passed! &#127774;</span> og <span style="color: red;">Test Failed! &#128165;</span></li>
-    <li>Lagt til en perf-test på Test runner, som timer hvor lang tid det tar å kjøre testene. Ligger pr nå på 4-5 ms, så koden er ikke så tung... enda... &#128517;</li>
-    <li>Forbedret perf-testen så den lagrer resultat i <code>localStorage()</code> i browseren, og gir en bedre snitt-beregning, over tid.</li>
-    <li>Lagt til margins for å forbedre lesbarheten til dokumentasjonen. Samme for test_runner.</li>
-    <li>Lagt inn bilde av coveret på boka.</li>
-    <li>Lagt til <code>font-family: sans-serif;</code> på body.</li>
-  </ul>
-</p>
-
-<p>25. april 2024. Det har gått et par dager med til testing og tweaking av funksjonene for håndtering av matriser. Masse prøving og feiling. Men, jeg har lært hvor jeg bør bruke <code>structuredClone()</code> til å klone arrays - det gjør vi i funksjoner, ikke i tester, og bare når vi trenger det.</p>
-
-<p> Har også lært litt om for-løkker. For-løkke med <code>for (let r in m)</code> bruker vi fordi de er enklere og vi unngår OBOB-feil når vi skal iterere over alle elementer i arrayet. Vi bruker den IKKE når vi skal kalkulere noe fra indeks-verdiene - de er nemlig <code>typeof string</code> viser det seg! &#128580;</p>
-
-<h4>Putting it together</h4>
-<p>I slutten av hvert kapittel skal vi "put it together". I kapittel 3 er det bare noen spørsmål for eksperimentering. Jeg vil kort besvare dem her.</p>
-<p><i>1. What happens when you invert the identity matrix?</i> Svar: <code>inverse(id_matrix) === id_matrix</code>. Totally called it, btw.. &#128527;</p>
-<p><i>2. What do you get when you multiply a matrix by its inverse?</i> Svar: Jeg testet det med <code>multiply_matrices(ma, inverse(ma))</code> og fikk noe som ved første øyekast så rart ut, men så oppdaget jeg at verdiene på [0,0], [0,1], [1,0], [1,1] er ~ 1! Noe av <code>id_matrix</code>?</p>
-<pre>
-1,-5.551115123125783e-17,-5.551115123125783e-17,-1.1102230246251565e-16
--1.1102230246251565e-16,1,2.220446049250313e-16,-2.220446049250313e-16
-2.7755575615628914e-17,-2.7755575615628914e-17,0.9999999999999998,1.457167719820518e-16
-8.326672684688674e-17,0,-5.551115123125783e-17,1.0000000000000002
-</pre>
-
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-
-
-<footer><center>Copyright (c) 2024 Thomas &#129395;</center>
-
-</footer>
-</body>
-</html>
-
-
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-body {
-  margin-left: 5rem;
-  margin-right: 3rem;
-  font-family: sans-serif;
-}
-code {
-  background-color: rgb(200,225,225);
-  font-weight: bold;
-}
-
-.shadow {
-  margin: 1rem;
-  box-shadow: 10px 10px 5px lightgrey;
-  border: 1px dotted lightgrey;
-}
-
-.floatleft {
-  float: left;
-}
-
-pre {
-    background: #f4f4f4;
-    border: 1px solid #ddd;
-    border-left: 3px solid #f36d33;
-    color: #666;
-    page-break-inside: avoid;
-    font-family: monospace;
-    font-size: 15px;
-    line-height: 1.6;
-    margin-bottom: 1.6em;
-    max-width: 100%;
-    overflow: auto;
-    padding: 1em 1.5em;
-    display: block;
-    word-wrap: break-word;
-}
-
-footer {
-  margin: 3rem;
-}
-
-</style>
-<title>Dokumentasjon</title>
-</head>
-<body>
-
-<h1>&#128302; The Ray Tracer Challenge &#128302;</h1>
-<p>"En strålesporingsutfording".</p>
-<div class="shadow floatleft"><img width="250" src="rtc.jpg"/></div>
 <p>Dette er en øvelse i minimalisme. Og tålmodighet. Og nøyaktighet. Jeg er vant til å ha full tilgang til Internett, til nedlasting av programvare; utallige artikler og videoer om alle tenkelige emner, rik programvare med tusenvis av hjelpemidler som gjør mye av jobben for meg. Nå må jeg klare meg med DFS, nesten uten Internett-tilgang, helt uten mulighet for installasjon av programvare og med minimalt av hjelpemidler. Jeg skal utdype disse begrensningene og hva jeg gjør for å komme rundt dem.</p>
 
 <h2>&#128170; Utfordringen</h2>
@@ -590,10 +314,31 @@ Jeg legger til litt perf-testing og pynter med litt CSS og vòila! Resultatet se
 <p>Jeg oppdager også at lagring til PPM-fil alldeles ikke fungerer som det skal. Men jeg er litt irritert på de greiene der, PPM er et idiotisk format uansett, 300x300 px blir jo over 500kB! Må da gå an å gjøre en bedre jobb enn som så... </p>
 <p>Jeg ser også at rendring av urskiven tar sånn circa 150 ms i snitt, ved 300x300 piksler. Det er 12 * 2 transformasjoner, og 12 write_pixel kall og 12 fillRect. Når jeg kommenterer ut håndtering av PPM, kjører vi på 1 ms. Bare sånn for senere referanse.</p>
 <p>1. mai 2024: I dag har jeg implementert tester for å lage <code>sphere()</code> objekter med en id som er unik for hvert objekt, og jeg har laget <code>intersect()</code> funksjonen som sjekker om en stråle (ray) treffer en sphere() eller ikke. Kjente igjen andregradsligning og abc-formelen der &#129299;, selv om jeg ikke har satt meg inn i hva denne funksjonen egentlig gjør.</p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
+<p>Det er litt forvirrende forklart i boka - det ser ut som jeg skal beholde alle intersections i en global liste? Det ansporer meg til en liten refaktorering - jeg er ukomfortabel med å ha så mye global konfigurasjon strødd rundt overalt. Så jeg tar på meg å implementere noe som ligner på et "Configuration"-objekt. Her i form av en selv-eksekverende funksjon, som kjører ved oppstart og holder på ting som konstanter, globale lister og tellere. Funksjonen ser i første iterasjon slik ut:</p>
+<pre id="config-object">
+const C = function() {
+  // The configuration object holds all "global" objects, arrays and configuration values in one place.
+  // Should be initialized on startup.
+  const _precision = 5
+  const _epsilon = 1.0*10**(-_precision)
+  var _counter = 0  
+  var _intersections = []
+
+  return {
+    PRECISION:_precision,
+    EPSILON:_epsilon,
+    intersections:_intersections,
+    unique_id: function unique_id() {return _counter++}
+  }
+}();
+</pre>
+
+<p>Jeg endrer koden sånn at <code>PRECISION</code> og <code>EPSILON</code> refereres som <code>C.PRECISION</code> og <code>C.EPSILON</code>, og sånn at telleren som gir unik id til objektene blir <code>C.unique_id()</code>. Dette er mer ryddig enn å strø om seg i koden med globale arrays og konstanter hist og her.</p>
+<p>Men etter hvert mister jeg trua på at forfatteren mener at intersections skal være en global liste, så jeg skriver om funksjonen og genererer en liste med intersections i hver test, som så sjekkes av <code>hit()</code> funksjonen for hvilken intersection som er gjeldende. Det er alltid den intersection med laveste positive verdi som er gjeldende. De med negativ verdi er "bak kamera" og de med høyere positiv verdi skjules av den første. This will all make sense at some point. &#128514;</p>
+<p></p><p></p>
+<p></p><p></p>
+<p></p><p></p>
+<p></p><p></p>
 <p></p>
 <p>TODO:
 <ul>
@@ -601,6 +346,7 @@ Jeg legger til litt perf-testing og pynter med litt CSS og vòila! Resultatet se
   <li>Fikse PPM lagring til fil. Mistenker at piksel-verdier må avrundes til heltall.</li>
   <li>Siste "Putting it together" oppgaven fra kapittel 3</li>
   <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og utgangshastighet.</li>
+  <li>Kan jeg hente koden til en funksjon inn i dokumentasjonen direkte med JS? Istedet for å klippe og lime?</li>
 </ul>
 </p>
 
