@@ -375,6 +375,19 @@ import { doStuff } from "./js/functions.js"
 
 <p>Men det jeg kan gjøre, er jo å jobbe videre på DFS, uten bakgrunnsrendering, med ny funksjonalitet. Det er da ikke sånn at jeg mangler utfordringer...&#128565; Så jeg tenker vi sier at vi kommer tilbake til dette på et senere tidspunkt, feks når jeg har mer normal tilgang til PC og Internett.</p>
 
+<h3>Optimaliseringsdigresjonen</h3>
+<p>Jeg får litt dilla på å prøve å optimalisere koden... Så da sporer vi av igjen, men dette skal vise seg å bli en meget god digresjon.</p>
+<p>Jeg leser litt om Typed Arrays i JS, som ikke er Arrays i det hele tatt, men optimaliserte bitstrømmer som kun vil ta èn eneste dataype, og dermed også kun er 1-dimensjonale. Jeg finner referansen <a href="https://www.w3schools.com/Jsref/jsref_obj_typed_array.asp">JS Typed Array</a> som beskriver hva det er. Jeg ser fort at Uint8ClampedArray og Float32Array skal gi meg det jeg trenger, hhv for pixel-data og for flyttall.</p>
+<p>Men, for å komme dit, må jeg ha noe tilsvarende de kjekke Array-funksjonene jeg bruker mye av, og så må jo alt indekseres på nye måter. Før kunne jeg finne en verdi i en matrise på formen <code>arr[x][y]</code> men nå må jeg regne ut x og y ut i fra indeksverdien, men det har jeg gjort før, så det skal jo være enkelt! Jeg sliter med å skjønne at når man sier "row, col" er det egentlig "y, x" og når man sier "x, y" så mener man "x, y". Tenke seg til... &#128514;</p>
+<p>Jeg jobber med refaktorering av matriser i to dager, men resultatet er helt vanvittig!</p>
+<p><img src="chapter5_raycast_before_optimization.png" alt="Før"/><img src="chapter5_raycast_after_optimization.png" alt="Etter"/></p>
+<p>Fra 149 sekunder til 13 sekunder, på nøyaktig samme bilde! Totally worth it! &#128640;</p>
+<p>I prosessen har jeg flyttet <code>submatrix()</code> funksjonen så den er en metode på <code>matrix()</code>. Det kan jeg med fordel også gjøre med <code>minor()</code>, <code>determinant()</code> og <code>cofactor()</code>, og sikkert flere. Det blir en senere jobb.</p>
+<p>Jeg skriver om all matrise-håndtering slik at vi faktisk lager <code>matrix()</code> objekter og ikke jukser med manuelle arrays. <code>matrix()</code> får en constructor og metoder for <code>put(row, col, value)</code>, <code>putAll([])</code>, <code>get(row, col)</code> og som nevnt <code>submatrix(row, col)</code>.</p>
+<p></p>
+<p></p>
+
+
 <h3>&#127767; Chapter 6, Light and Shading</h3>
 <p></p>
 <p></p>
@@ -390,8 +403,7 @@ import { doStuff } from "./js/functions.js"
 <p>TODO:
 <ul>
   <li>Fikse det som er galt med transformations() når jeg legger på en rotation.</li>
-  <li>Kjøre raytracing som <a href="https://www.w3schools.com/js/js_api_web_workers.asp">bakgrunnsprosess</a>.</li>
-  <li>Bytte til <a href="https://stackoverflow.com/a/22004858/83148">typed arrays</a> i alle array-funksjoner. Vurdere også 1D arrays istedet for 2D.</li>
+  <li>WIP: Kjøre raytracing som <a href="https://www.w3schools.com/js/js_api_web_workers.asp">bakgrunnsprosess</a>.</li>
   <li>Bytte navn på funksjonen scale() til scaling().</li>
   <li>Fikse DownloadToPPM funksjonen så den også genererer PPM data fra canvas "on-the-fly"</li>
   <li>Legg til knapper på chapter2 projectile plot så man kan endre verdiene for gravitasjon og vind og utgangshastighet.</li>
@@ -400,7 +412,9 @@ import { doStuff } from "./js/functions.js"
   <ul>
     <li>Refaktorere canvas til class</li>
   </ul>
-<li>Done! <del>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny transform funksjon side 68.)</del></li>
+  <li>Refaktorere minor(), determinant() og cofactor() som metoder på matrix() funksjonen.
+<li>Done! <del>Bytte til <a href="https://stackoverflow.com/a/22004858/83148">typed arrays</a> i alle array-funksjoner. Vurdere også 1D arrays istedet for 2D.<d/el></li>
+  <li>Done! <del>Fikse chaining transform function (midlertidig renamet til transformation for å unngå konflikt med ny transform funksjon side 68.)</del></li>
   <li>Done! <del>Siste "Putting it together" oppgaven fra kapittel 3</del></li>
   <li>Done! Ja, det stemte.. &#128514; <del>Fikse PPM lagring til fil. Mistenker at piksel-verdier må avrundes til heltall.</del></li>
 </ul>

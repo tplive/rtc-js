@@ -65,7 +65,7 @@ function equal(a, b) {
 function equal_tuples(a, b) {
   // Compare x, y, z coordinates of a tuple. JS does not distinguish these types of objects
   // so a tuple == vector == point at this time.
-  return (equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z) && equal(a.w, b.w))
+  return equal(a.x, b.x) && equal(a.y, b.y) && equal(a.z, b.z) && equal(a.w, b.w)
 }
 
 function add_tuples(a, b) {
@@ -124,7 +124,11 @@ function tuple(a, b, c, d) {
     y:b,
     z:c,
     w:d,
-    toString: function() { return `x:${this.x} y:${this.y} z:${this.z} w:${this.w}`}
+    equals: function(t) { return equal(a, t.x) && equal(b, t.y) && equal(c, t.z) && equal(d, t.w) },
+    minus: function(t) { return tuple(a - t.x, b - t.y, c - t.z, d - t.w) },
+    plus: function(t) { return tuple(a + t.x, b + t.y, c + t.z, d + t.w) },
+    negate: function() { return tuple(a * -1, b * -1, c * -1, d * -1) },
+    toString: function() { return `x:${a} y:${b} z:${c} w:${d}` },
   })
     
 }
@@ -400,49 +404,45 @@ function matrix_equal(ma, mb) {
   // Test equality. A === B if Arows === Brows and Acols === Bcols
   //log("error", `matrix_equal(): Running`)
   
-  // Ensure structural equality first.
-  if ( ma.rows === mb.rows && ma.cols === mb.cols ) {
-    
+  const structural_equality = ma.rows === mb.rows && ma.cols === mb.cols 
+  const elements_equal = []
+  if (structural_equality) {
+   
     for (let i=0;i<ma.d.length;i++) {
     
       if ( !equal(ma.d[i], mb.d[i]) ) {
         //log("error", `These fuckers aren't equal: ${ma.d[i]} and ${mb.d[i]}`)
-        return false
+        elements_equal.push(false)
+      } else {
+        elements_equal.push(true)
       }
     }
   }
-  return true
+  //log("error", elements_equal)
+  return structural_equality 
+    && !elements_equal.includes(false)
 }
 
 function multiply_matrices(a, b) {
   // Multiply matrices.
   // Only supports 4x4 matrices.
-  //log("error", a.rows)
-  
+    
   if (a.rows * a.cols != 16 || b.rows * b.cols != 16) {
     throw `Only supports multiplying 4x4 matrices. a = ${a.rows}, b = ${b.cols}`
   }
   const m = matrix(4, 4)
   
   for (let r=0;r<m.rows;r++) {
-    //log("error", "r: " + r)
     for (let c=0;c<m.cols;c++) {
-     //log("error", "    c: " + c)
-     m.put(r,c, 
-       a.get(r,0) * b.get(0,c) + 
-       a.get(r,1) * b.get(1,c) + 
-       a.get(r,2) * b.get(2,c) + 
-       a.get(r,3) * b.get(3,c)
-     )
-     
-     
+      m.put(r,c,
+        a.get(r,0) * b.get(0,c) + 
+        a.get(r,1) * b.get(1,c) + 
+        a.get(r,2) * b.get(2,c) + 
+        a.get(r,3) * b.get(3,c)
+      )
      //log("error", `m.get(${r},${c}) = ${m.get(r,c)}`)
     }
   }
-  
-  //log("error", a.join("\n"))
-  //log("error", b.join("\n"))
-  //log("error", m.join("\n"))
   
   return m
 }
@@ -460,9 +460,6 @@ function multiply_matrix_by_tuple(ma, t) {
      ma.get(r,3) * t.w
   }
   
-  //log("error", ma.join("\n"))
-  //log("error", t)
-  //log("error", result)
   return tuple(result[0], result[1], result[2], result[3])
 }
 
@@ -475,7 +472,6 @@ function idmatrix() {
   m.put(3,3,1)
   
   return m
-  
 }
 
 function transpose_matrix(m) {
@@ -598,6 +594,10 @@ function translation(x, y, z) {
 }
 
 function scale(x, y, z) {
+  throw `scale(x, y, z) has been deprecated. Use scaling(x, y, z) instead.`
+}
+
+function scaling(x, y, z) {
   //Returns a 4x4 translation matrix applying the x, y and z coordinates for scaling.
   
   // Could have used an idmatrix here, but we save a few cycles by avoiding to set then overwrite coords.
@@ -693,21 +693,37 @@ function transformations(trans) {
   // Transformations given as parameters will be applied in the reverse order
   // We can apply translation, scaling, rotation and shearing into a single operation.
   
-  let m = idmatrix()
-  //log("error", "Start: " + m)
-
+  const m = idmatrix()
   
-  for (let i=0;i < arguments.length;i++) {
-    
-    // Unless argument is a point or vector, multiply by m
-    if (!(arguments[i].w === 1 || arguments[i].w === 0)) {
-      //log("error", `Applying ${i}: ${arguments[i]}`)
-      m = multiply_matrices(arguments[i], m)
-      //log("error", "Result: " + m)
+  let t = []
+  
+  for (let i=0;i<arguments.length;i++) {
+    if (arguments[i].d != undefined ) {
+      t.push(arguments[i])
     }
   }
+  t = t.reverse()
   
+  for (e in t) {
+    m.putAll(multiply_matrices(m, t[e]))
+    //log("error", `transformations(): ${e} ${t[e].d}`)
+  }
+  //log("error", m.d)
   return m
+}
+
+function recursive_transformations(arr) {
+  //log("error", "recursive_transformations()" )
+  const m = idmatrix()
+  const i = arr.pop()
+  if (arr.length === 0) {
+    //log("error", "recursive_transformations(): " + "array.length=0")
+    return multiply_matrices(m, i )
+  } else {
+    //log("error", "recursive_transformations(): " + "arr.length!=0")
+    m.putAll(recursive_transformations(arr ) )
+  }
+  return m //ultiply_matrices(m, i )
 }
 
 // *** RAY FUNCTIONS
@@ -753,11 +769,13 @@ class Sphere {
   }
   
   get toString() {
-    return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform}`
+    return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}`
   }
   
   set transform(value) {
-    this._transform = multiply_matrices(this._transform, value) 
+    if (value.d != undefined) {
+      this._transform = multiply_matrices(this._transform, value)
+    }
   }
 }
 
@@ -822,3 +840,9 @@ function transform(r, matr) {
   return ray(multiply_matrix_by_tuple(matr, r.origin), multiply_matrix_by_tuple(matr, r.direction))
 }
 
+// *** SHADING FUNCTIONS
+
+function normal_at(obj, p) {
+  // This function takes an object and a point and returns the point's normal (perpendicular) vector.
+  return normalize(subtract_tuples(p, point(0, 0, 0)))
+}

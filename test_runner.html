@@ -42,6 +42,9 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#127775; Testing Ray functions</h2>
 <ul id="ray_list"></ul>
 
+<h2>&#127763; Testing Shading functions</h2>
+<ul id="shading_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
@@ -152,7 +155,7 @@ runTest("ray_list", test_hit_function)
 runTest("ray_list", test_transform_function)
 runTest("ray_list", test_transform_sphere)
 
-
+runTest("shading_list", test_normal_function)
 
 const end = performance.now()
 const elapsed = end - start

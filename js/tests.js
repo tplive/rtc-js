@@ -4,7 +4,7 @@ function test_tuple_function() {
 
   var t = tuple(1, 2, 3, 1)
 
-  return (t.x == 1 && t.y == 2 && t.z == 3 && t.w == 1)
+  return t.x == 1 && t.y == 2 && t.z == 3 && t.w == 1
 }
 
 function test_vector_function() {
@@ -13,7 +13,7 @@ function test_vector_function() {
   var v = vector(-3.5, 2.211, 0.001)
   
 
-  return (v.x == -3.5 && v.y == 2.211 && v.z == 0.001 && v.w == 0)
+  return v.x == -3.5 && v.y == 2.211 && v.z == 0.001 && v.w == 0
 }
 
 function test_point_function() {
@@ -22,7 +22,7 @@ function test_point_function() {
   var v = point(143.556, -900.88, 555.555)
   
 
-  return (v.x == 143.556 && v.y == -900.88 && v.z == 555.555 && v.w == 1)
+  return v.x == 143.556 && v.y == -900.88 && v.z == 555.555 && v.w == 1
 }
 
 function test_equal_function() {
@@ -30,7 +30,7 @@ function test_equal_function() {
   // The function equal(a, b) will subtract a from b and compare the result to a small constant EPSILON.
   // and if the difference is smaller, we will call them equal.
 
-  return (equal(1.0, 1.0) && !(equal(12.009, 12.008)) && equal(123456.2345, 123456.234501))
+  return equal(1.0, 1.0) && !(equal(12.009, 12.008)) && equal(123456.2345, 123456.234501)
 }
 
 function test_equal_tuples_function() {
@@ -42,8 +42,8 @@ function test_equal_tuples_function() {
   var v2 = vector(111.000001, -23.11, 2.0)
   var p1 = point(110.9990000002, -23.11, 2.00000001)
   var p2 = point(110.9990000001, -23.11, 1.99999999)
-
-  return equal_tuples(t1, t2) && equal_tuples(v1, v2) && equal_tuples(p1, p2)
+  
+  return t1.equals(t2) && v1.equals(v2) && p1.equals(p2) && !p2.equals.v1
 }
 
 function test_add_tuples_function() {
@@ -52,9 +52,7 @@ function test_add_tuples_function() {
   var v = vector(1.999, 23.11, 22.001)
   var p = point(110.9990000001, -23.11, 2.00000001)
   
-  var result_tv = tuple(112.998, 0.0, 24.001, 0)
-
-  return equal_tuples(add_tuples(t, v), result_tv)
+  return t.plus(v).equals(tuple(112.998, 0.0, 24.001, 0))
 }
 
 function test_subtract_tuples_function() {
@@ -62,15 +60,15 @@ function test_subtract_tuples_function() {
   var t = tuple(-44.555, 345.123, 1.0, 0)
   var v = vector(-33.44, 123.345, 0.0)
 
-  var subtracted_tv = subtract_tuples(t, v)
+  var subtracted_tv = t.minus(v)
   
-  return (equal_tuples(subtracted_tv, tuple(t.x - v.x, t.y - v.y, t.z - v.z, t.w - v.w)))
+  return subtracted_tv.equals(tuple(t.x - v.x, t.y - v.y, t.z - v.z, t.w - v.w))
 }
 
 function test_negate_tuple_function() {
   // Test that negate_tuple() returns a tuple with x=-x, y=-y, z=-z coordinates
   
-  var n = negate_tuple(tuple(1, -2, 3, -4))
+  var n = tuple(1, -2, 3, -4).negate()
   return (n.x == -1, n.y == 2, n.z == -3, n.w == 4 )
 }
 
@@ -115,7 +113,7 @@ function test_normalize_function() {
   var a = normalize(vector(4, 0, 0))
   var b = normalize(vector(1, 2, 3))
   
-  return (equal_tuples(a, vector(1, 0, 0)) && equal_tuples(b, vector(1/Math.sqrt(14), 2/Math.sqrt(14), 3/Math.sqrt(14))))
+  return a.equals(vector(1, 0, 0)) && b.equals(vector(1/Math.sqrt(14), 2/Math.sqrt(14), 3/Math.sqrt(14)))
   
 }
 
@@ -137,7 +135,7 @@ function test_cross_function() {
   var uv = cross(u, v)
   var vu = cross(v, u)
   
-  return (equal_tuples(uv, vector(-1, 2, -1)) && equal_tuples(vu, vector(1, -2, 1)))
+  return uv.equals(vector(-1, 2, -1)) && vu.equals(vector(1, -2, 1))
 }
 
 // *** COLOR TEST FUNCTIONS
@@ -511,7 +509,7 @@ function test_multiply_matrices_function() {
   //log("error", ma.d)
   //log("error", multiply_matrices(ma, mb).join("\n"))
   
-  return (matrix_equal(mc, multiply_matrices(ma, mb)))
+  return matrix_equal(mc, multiply_matrices(ma, mb))
 }
 
 function test_multiply_matrix_by_tuple_function() {
@@ -530,7 +528,7 @@ function test_multiply_matrix_by_tuple_function() {
   
   const r = tuple(18,24,33,1)
   
-  return (equal_tuples(r, multiply_matrix_by_tuple(ma, t)))
+  return r.equals(multiply_matrix_by_tuple(ma, t))
   
 }
 
@@ -564,7 +562,7 @@ function test_multiply_by_identity_matrix_function() {
   // This is the multiplicative identity for matrices:
   const id_matrix = idmatrix()
   
-  return (equal_tuples(t, multiply_matrix_by_tuple(id_matrix, t)) && matrix_equal(ma, multiply_matrices(ma, id_matrix)))
+  return t.equals(multiply_matrix_by_tuple(id_matrix, t)) && matrix_equal(ma, multiply_matrices(ma, id_matrix))
   
 }
 
@@ -638,7 +636,9 @@ function test_submatrix_function() {
     const m4c = matrix(3, 3)
     m4c.putAll([-6,1,6,-8,8,6,-7,-1,1])
 
-    const sm3 = m4.submatrix(2,1) // From m4, remove row 2 and column 1
+    const sm3 = matrix(3, 3)
+    sm3.putAll(m4.submatrix(2,1)) // From m4, remove row 2 and column 1
+
 
     sm3_equals_m4c = matrix_equal(sm3, m4c)
     
@@ -650,9 +650,11 @@ function test_submatrix_function() {
     const m3c = matrix(2, 2)
     m3c.putAll([-3,2,0,6])
 
-    const sm2 = m3.submatrix(0, 2)
+    const sm2 = matrix(2, 2)
+    sm2.putAll(m3.submatrix(0, 2))
     sm2_equals_m3c = matrix_equal(sm2, m3c)
-    
+    //log("error", sm2.d)
+    //log("error", m3c.d)
   } catch (error) {
     log("error", "Catch: " + error)
   }
@@ -871,14 +873,14 @@ function test_translation_function() {
   //log("error", result2.toString())
   //log("error", result3.toString())
   
-  return (equal_tuples(result1, point(2, 1, 7)) && equal_tuples(result2, point(-8, 7, 3)) && equal_tuples(result3, vector(-3, 4, 5)))
+  return result1.equals(point(2, 1, 7)) && result2.equals(point(-8, 7, 3)) && result3.equals(vector(-3, 4, 5))
   
 }
 
 function test_scaling_function() {
-  // Test scale(x, y, z) function
+  // Test scaling(x, y, z) function
   
-  const t = scale(2, 3, 4)
+  const t = scaling(2, 3, 4)
   const v = vector(-4, 6, 8)
   
   // 1. A scaling matrix applied to a point
@@ -893,11 +895,14 @@ function test_scaling_function() {
   const r3 = multiply_matrix_by_tuple(inv3, v)
   
   // 4. Reflection is scaling by a negative value
-  const t4 = scale(-1, 1, 1)
+  const t4 = scaling(-1, 1, 1)
   const p4 = point(2, 3, 4)
   const r4 = multiply_matrix_by_tuple(t4, p4)
   
-  return ( equal_tuples(r1, point(-8, 18, 32)) && equal_tuples(r2, vector(-8, 18, 32)) && equal_tuples(r3, vector(-2, 2, 2)) && equal_tuples(r4, point(-2, 3, 4)) )
+  return r1.equals(point(-8, 18, 32))
+      && r2.equals(vector(-8, 18, 32))
+      && r3.equals(vector(-2, 2, 2))
+      && r4.equals(point(-2, 3, 4))
 }
 
 function test_angle_function() {
@@ -925,12 +930,9 @@ function test_rotation_x_function() {
   const inv = inverse(half_quarter)
   const rotate_p_negative_half_quarter = multiply_matrix_by_tuple(inv, p)
   
-  return ( 
-       equal_tuples(rotate_p_half_quarter, point(0, Math.sqrt(2)/2, Math.sqrt(2)/2)) 
-    && equal_tuples(rotate_p_full_quarter, point(0, 0, 1)) 
-    && equal_tuples(rotate_p_negative_half_quarter, point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
-  )
-
+  return rotate_p_half_quarter.equals(point(0, Math.sqrt(2)/2, Math.sqrt(2)/2))
+      && rotate_p_full_quarter.equals(point(0, 0, 1))
+      && rotate_p_negative_half_quarter.equals(point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
 }
 
 function test_rotation_y_function() {
@@ -947,11 +949,8 @@ function test_rotation_y_function() {
   const rotate_p_half_quarter = multiply_matrix_by_tuple(half_quarter, p)
   const rotate_p_full_quarter = multiply_matrix_by_tuple(full_quarter, p)
   
-  return ( 
-       equal_tuples(rotate_p_half_quarter, point(Math.sqrt(2)/2, 0, Math.sqrt(2)/2)) 
-    && equal_tuples(rotate_p_full_quarter, point(1, 0, 0))
-  )
-
+  return rotate_p_half_quarter.equals(point(Math.sqrt(2)/2, 0, Math.sqrt(2)/2))
+      && rotate_p_full_quarter.equals(point(1, 0, 0))
 }
 
 function test_rotation_z_function() {
@@ -968,11 +967,8 @@ function test_rotation_z_function() {
   const rotate_p_half_quarter = multiply_matrix_by_tuple(half_quarter, p)
   const rotate_p_full_quarter = multiply_matrix_by_tuple(full_quarter, p)
   
-  return ( 
-       equal_tuples(rotate_p_half_quarter, point( -Math.sqrt(2)/2, Math.sqrt(2)/2, 0)) 
-    && equal_tuples(rotate_p_full_quarter, point(-1, 0, 0))
-  )
-
+  return rotate_p_half_quarter.equals(point( -Math.sqrt(2)/2, Math.sqrt(2)/2, 0))
+      && rotate_p_full_quarter.equals(point(-1, 0, 0))
 }
 
 function test_shearing_function() {
@@ -1013,52 +1009,47 @@ function test_shearing_function() {
   const t6 = shearing(0, 0, 0, 0, 0, 1)
   const r6 = multiply_matrix_by_tuple(t6, p)
   
-  return equal_tuples(r1, point(5, 3, 4)) 
-    && equal_tuples(r2, point(6, 3, 4)) 
-    && equal_tuples(r3, point(2, 5, 4)) 
-    && equal_tuples(r4, point(2, 7, 4))
-    && equal_tuples(r5, point(2, 3, 6))
-    && equal_tuples(r6, point(2, 3, 7))
+  return r1.equals(point(5, 3, 4))
+      && r2.equals(point(6, 3, 4))
+      && r3.equals(point(2, 5, 4))
+      && r4.equals(point(2, 7, 4))
+      && r5.equals(point(2, 3, 6))
+      && r6.equals(point(2, 3, 7))
 }
 
 function test_transformations_function() {
   // Test chaining multiple transformations
   
   let p = point(1, 0, 1)
-  let s = new Sphere()
+    
+  const rx = rotation_x(Math.PI / 2)
+  const sc = scaling(5, 5, 5)
+  const tr = translation(10, 5, 7)
   
-  const result1 = transformations(
-    rotation_x(Math.PI / 2),
-    scale(5, 5, 5),
-    translation(10, 5, 7)
-  )
+  const rec = recursive_transformations([tr, sc, rx])
   
-  const result2 = transformations(
-    scale(5, 5, 5),
-    rotation_x(Math.PI / 2),
-    translation(10, 5, 7)
-  )
+  //log("error", "test_transformations_function(): " + rec.d)
   
-  const result3 = transformations(
-    scale(5, 5, 5),
-    translation(10, 5, 7),
-    rotation_x(Math.PI / 2)
-  )
+  // These transformations should be applied in reverse order; tr, sc, rx
+  const result1 = transformations(tr, sc, rx)
   
-  //log("error", result1)
-  //log("error", result2)
-  //log("error", result3)
+  const result2 = multiply_matrices(idmatrix(), multiply_matrices(rx, multiply_matrices(sc, tr)))
+  //log("error", "manual " + result2.d)
+  //log("error", "tr rx sc " + transformations(tr, sc, rx).d)
+  //log("error", "sc tr rx " + transformations(sc, tr, rx).d)
   
   p2 = multiply_matrix_by_tuple(result1, p)
-  s.transform = result3
+  
   
   //log("error", p2)
-  //log("error", s.transform)
   
+  const expected = matrix(4, 4)
+  expected.putAll([5,0,0,10,0,3.0616169991140216e-16,-5,-7,0,5,3.0616169991140216e-16,5,0,0,0,1])
   
-  return 
-  //equal_tuples(p2, point(15, 0, 7)) 
-    matrix_equal(s.transform, [[5,0,0,10],[0,3.061616997868383e-16,-5,5],[0,5,3.061616997868383e-16,7],[0,0,0,1]])
+  //log("error", p2)
+    
+  return p2.equals(point(15, 0, 7))
+    //&& matrix_equal(s.transform, expected)
 }
 
 function test_apply_individual_transformations() {
@@ -1066,20 +1057,22 @@ function test_apply_individual_transformations() {
   
   const p1 = point(1, 0, 1)
   const rx = rotation_x(Math.PI / 2)
-  const s = scale(5, 5, 5)
+  const s = scaling(5, 5, 5)
   const t = translation(10, 5, 7)
   
   // Apply rotation first
   const p2 = multiply_matrix_by_tuple(rx, p1)
+  const r1 = p2.equals(point(1, -1, 0))
   //log("error", `Rotated matrix: ${p2}`)
   // Then apply scaling
   const p3 = multiply_matrix_by_tuple(s, p2)
+  const r2 = p3.equals(point(5, -5, 0))
   //log("error", `Rotated and scaled: ${p3}`)
   // Then apply translation
   const p4 = multiply_matrix_by_tuple(t, p3)
   //log("error", `Rotated and scaled and translated: ${p4}`)
   
-  return equal_tuples(p4, point(15, 0, 7))
+  return r1 && r2 && p4.equals(point(15, 0, 7))
 }
 
 // *** RAY TESTS
@@ -1091,10 +1084,8 @@ function test_creating_ray_function() {
   const direction = vector(4, 5, 6)
   
   const r = ray(origin, direction)
-  
-  //log("error", r.toString())
-  
-  return r.origin === origin && r.direction === direction
+    
+  return r.origin.equals(origin) && r.direction.equals(direction)
 }
 
 function test_position_function() {
@@ -1111,10 +1102,10 @@ function test_position_function() {
   const p3 = position(r, -1) // = point(1, 3, 4)
   const p4 = position(r, 2.5) // = point(4.5, 3, 4)
 
-  return equal_tuples(p1, point(2, 3, 4))
-    && equal_tuples(p2, point(3, 3, 4))
-    && equal_tuples(p3, point(1, 3, 4))
-    && equal_tuples(p4, point(4.5, 3, 4))
+  return p1.equals(point(2, 3, 4))
+      && p2.equals(point(3, 3, 4))
+      && p3.equals(point(1, 3, 4))
+      && p4.equals(point(4.5, 3, 4))
 }
 
 function test_sphere_function() {
@@ -1132,7 +1123,6 @@ function test_sphere_function() {
   
   // Create a new Set of values from sphere ids. A Set can only contain unique values
   let unique = [...new Set(spheres)]
-
   return spheres.length === n && spheres.length === unique.length
 }
 
@@ -1295,12 +1285,13 @@ function test_transform_function() {
   
   // Scaling a ray
   const r3 = ray(point(1, 2, 3), vector(0, 1, 0))
-  const m2 = scale(2, 3, 4)
+  const m2 = scaling(2, 3, 4)
   const r4 = transform(r3, m2)
   
-  return equal_tuples(r2.origin, point(4, 6, 8))  && equal_tuples(r2.direction, vector(0, 1, 0))
-      && equal_tuples(r4.origin, point(2, 6, 12)) && equal_tuples(r4.direction, vector(0, 3, 0))
-
+  return r2.origin.equals(point(4, 6, 8)) 
+      && r2.direction.equals(vector(0, 1, 0))
+      && r4.origin.equals(point(2, 6, 12)) 
+      && r4.direction.equals(vector(0, 3, 0))
 }
 
 function test_transform_sphere() {
@@ -1309,28 +1300,43 @@ function test_transform_sphere() {
   //   * that the sphere has a default transformation
   //   * that its transformation can be assigned
   
-  // A sphere's default transformation
   const s = new Sphere()
+  const s2 = new Sphere()
+  
+  // Transformations to apply
+  const tr = translation(2, 3, 4)
+  const sc = scaling(2, 2, 2)
+  const rz = rotation_z(Math.pi / 2)
+  
+  // A sphere's default transformation
   const default_transform_equals_idmatrix = matrix_equal(s.transform, idmatrix())
   
   // Changing a sphere's transformation
-  s.transform = translation(2, 3, 4)
-  const new_transform_is_set = matrix_equal(s.transform, translation(2, 3, 4))
+  //log("error", s.transform.d)
+  //log("error", tr.d)
+  s.transform.putAll(tr.d)
+  //log("error", s.transform.d)
+  const new_transform_is_set = matrix_equal(s.transform, tr)
+  //log("error", new_transform_is_set)
   //log("error", s.toString)
-  
+    
   // Intersecting a scaled sphere with a ray
   const r = ray(point(0, 0, -5), vector(0, 0, 1))
-  const s2 = new Sphere()
-  s2.transform = scale(2, 2, 2)
+  
+  s2.transform = sc.d
+  
   const xs = intersect(s2, r)
   const test_intersecting_scaled_sphere_with_ray = xs.length === 2 && xs[0].t === 3 && xs[1].t === 7
   
-  //log("error", s2.toString)
+  //log("error", s2.transform.d)
   
   // Test transformations function on a sphere
-  s2.transform = translation(2, 3, 4)
+  s2.transform.putAll(tr.d)
   const s3 = new Sphere()
-  s3.transform = transformations(scale(2, 2, 2), translation(2, 3, 4), rotation_z(Math.pi / 2))
+  s3.transform.putAll(transformations(sc, tr, rz))
+
+  //log("error", s3.transform.d)
+  
   const transformations_applied_to_sphere = matrix_equal(s2.transform, s3.transform)
   //log("error", s3.toString)
   //log("error", transformations_applied_to_sphere)
@@ -1339,4 +1345,32 @@ function test_transform_sphere() {
     && new_transform_is_set 
     && test_intersecting_scaled_sphere_with_ray 
     && transformations_applied_to_sphere
+}
+
+function test_normal_function() {
+  // Compute the normal on a sphere at a point
+  
+  const s = new Sphere()
+  const sq3 = Math.sqrt(3)
+  
+  // on the x axis
+  const nx = normal_at(s, point(1, 0, 0))
+  const rx = nx.equals(vector(1, 0, 0))
+  
+  // on the y axis
+  const ny = normal_at(s, point(0, 1, 0))
+  const ry = ny.equals(vector(0, 1, 0))
+  
+  // on the z axis
+  const nz = normal_at(s, point(0, 0, 1))
+  const rz = nz.equals(vector(0, 0, 1))
+  
+  // on a nonaxial point
+  const nn = normal_at(s, point(sq3/3, sq3/3, sq3/3))
+  const rn = nn.equals(vector(sq3/3, sq3/3, sq3/3))
+  
+  // Test that the normal is a normalized vector
+  const rm = nn.equals(normalize(nn))
+  
+  return rx && ry && rz && rn && rm
 }
