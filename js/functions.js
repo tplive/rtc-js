@@ -502,3 +502,92 @@ function inverse(ma) {
   
 }
 
+function idmatrix() {
+  // Return an id_matrix
+  const m = matrix(4, 4)
+  m[0][0] = 1
+  m[1][1] = 1
+  m[2][2] = 1
+  m[3][3] = 1
+  
+  return m
+  
+}
+
+function translation(x, y, z) {
+  // Returns a 4x4 translation matrix applying the x, y and z coordinates for translation.
+  
+  const t = idmatrix()
+  t[0][3] = x
+  t[1][3] = y
+  t[2][3] = z
+  
+  return t
+}
+
+function scale(x, y, z) {
+  //Returns a 4x4 translation matrix applying the x, y and z coordinates for scaling.
+  
+  // Could have used an idmatrix here, but we save a few cycles by avoiding to set then overwrite coords.
+  const t = matrix(4, 4)
+  t[0][0] = x
+  t[1][1] = y
+  t[2][2] = z
+  t[3][3] = 1
+  
+  return t
+}
+
+function angle(v) {
+  // The angle function converts between degrees and radians and vice versa.
+  
+  return Object.freeze({
+    rad: function() { return (v * (Math.PI/180))},
+    deg: function() { return (v * (180/Math.PI))}
+  })
+}
+
+function rotation_x(rad) {
+  // Takes an angle in radians and returns a rotation matrix for the x-axis
+  
+  const cr = Math.cos(rad)
+  const sr = Math.sin(rad)
+  const t = idmatrix()
+
+  t[1][1] = cr
+  t[1][2] = -sr
+  t[2][1] = sr
+  t[2][2] = cr
+  
+  return t
+}
+
+function rotation_y(rad) {
+  // Takes an angle in radians and returns a rotation matrix for the y-axis
+  
+  const cr = Math.cos(rad)
+  const sr = Math.sin(rad)
+  const t = idmatrix()
+
+  t[0][0] = cr
+  t[0][2] = sr
+  t[2][0] = -sr
+  t[2][2] = cr
+  
+  return t
+}
+
+function rotation_z(rad) {
+  // Takes an angle in radians and returns a rotation matrix for the z-axis
+  
+  const cr = Math.cos(rad)
+  const sr = Math.sin(rad)
+  const t = idmatrix()
+
+  t[0][0] = cr
+  t[0][1] = -sr
+  t[1][0] = sr
+  t[1][1] = cr
+  
+  return t
+}

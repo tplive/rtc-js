@@ -135,9 +135,10 @@ function test_hypotenuse_function() {
 <blockquote>På et tidspunkt virker det som at <code>tests.js</code> ikke lenger blir importert – funksjonen <code>test_tuple_function()</code> er ikke definert. Men i Tryit editor fungerer det (tilsynelatende). Her blir det en del feilsøking før jeg lærer to viktige ting: 
 a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bindestrek (–) i navnet.</blockquote>
 
+<h4>Putting it together</h4>
 <p>Jeg fortsetter å implementere tuple-funksjoner og –tester til jeg er gjennom kapittel 1. På slutten av kapitlet er det en liten øvelse for å teste ting, der man skal lage en virtuell "kanon", og skyte prosjektiler. Prosjektilet har en posisjon og en hastighetsvektor. Miljøet har gravitasjon (vektor) og vind (vektor) som skal regnes med.</p>
 
-<p>Her går jeg for første gang på en Out Of Memory krasj, på grunn av en evig loop. Jeg får funksjonen til å regne posisjoner helt fint, og lagrer forsøket i <code>./projectile.html</code>.</p>
+<p>Her går jeg for første gang på en Out Of Memory krasj, på grunn av en evig loop. Jeg får funksjonen til å regne posisjoner helt fint, og lagrer forsøket i <a href="../projectile_chapter1.html"><code>./projectile.html</code>.</a></p>
 
 <h3>&#128640; Kapittel 2, Drawing on a Canvas</h3>
 <p>Her starter vi med litt farge-teori, og noterer at fargenes r,g,b verdier til forveksling ligner på tuples! &#129321; Jeg ser at boka vil at vi skal lage PPM filer, som er et tekstbasert grafikk-format. De anbefaler at man bruker GIMP til å se disse på Windows, og jeg får sjekket at GIMP er installert på maskinen. Yey!</p>
@@ -169,6 +170,7 @@ a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bi
 
 <p>Så skal data over til et filformat, her benyttes tekstbasert PPM-fil. Jeg skriver tester for å lage header og formattere pixeldata. Mye jobb, men det må gjøres ordentlig.. &#129308;&#129307; Resultatet er en fint formattert PPM-fil.</p>
 
+<h4>Putting it together</h4>
 <p>Neste steg er å gjøre det samme eksperimentet som i slutten av kapittel 1, men faktisk plotte på canvas og vise. Jeg har tenkt en stund på at det vil være lurt å bruke HTML canvas til dette, siden jeg kan (?) plotte pixel for pixel på skjerm mens det rendrer... tror jeg? &#129320;</p>
 
 <p>Dette er et av de aller første synlige resultatene...</p>
@@ -182,6 +184,8 @@ a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bi
 <p><img src="projectile_plot2.png"/></p>
 
 <p>Og med litt "applied magic" så har jeg en link som lar meg lagre PPM fila med å klikke på en link. Nice. &#128170;</p>
+
+<p>Koden ligger her <a href="../projectile_chapter2.html"><code>./projectile_chapter2.html</code>.</a></p>
 
 <h3>&#128055; Kapittel 3, Matrices</h3>
 
@@ -331,6 +335,12 @@ footer {
 <h2>&#128644; Miljøet</h2>
 
 <p>Gitt begrensningene har jeg kun funnet èn mulig tilnærming til denne utfordringen, og det er med HTML, CSS og JS i nettleser. Ingen webserver, ingen API, ingenting annet enn lokale filer som kjører i Google Chrome. </p>
+
+<p>Jeg har tilgang til nettsiden w3schools.com hvor de har en begrenset kode-editor som jeg vil bruke til å teste noe av koden.</p>
+
+<p>I tillegg til referansene hos w3schools.com har jeg tilgang til stackoverflow.com som gir svar på det meste jeg kan tenkes å lure på.</p>
+
+<p>DFS er et ekstra nedlåst Citrix-miljø. Det er ingen tilgang til å installere egen programvare, så jeg kan ikke bruke noen biblioteker. Det er ingen tilgang til Chrome’s Developer Mode eller konsoll-logg, så jeg får ikke se en eneste feilmelding. Det er heller ingen kommandolinje eller versjonskontroll (git), så jeg må huske å ta manuelle daterte kopier med jevne mellomrom. "Kode-editoren" er notepad, med noe bedre funksjonalitet i w3schools nettbaserte editor, men der kan jeg ikke referere eksterne filer, så alt må legges inn i samme vindu.</p>
 
 <p>Filstrukturen som etter hvert har dukket opp er en rot-katalog (<code>/html</code>) som inneholder alle html-filer, og underkataloger for js-filer (<code>/js</code>) og etter hvert for css (<code>/css</code>). I tillegg ligger dette dokumentet under en dokumentasjonskatalog (<code>/docs</code>), der jeg også vil lagre skjermbilder etc. Strukturen blir til mens vi går.</p>
 
@@ -520,8 +530,18 @@ const inverse_trans = transpose_matrix(inverse(structuredClone(ma)))
 log("error", matrix_equal(trans_inverse, inverse_trans)) // true
 </pre>
 <p><i>4. Remember ho multiplying the identity matrix by a tuple gives you the tuple, unchanged? Now, try changing any single element of the identity matrix to a different number, and then multiplying it by a tuple. What happens to the tuple?</i> Svar: Det må vi se på i morgen. Klokka er 21.18 nå. </p>
-<p></p>
-<p></p>
+
+<h3>&#128177; Kapittel 4, Matrix Transformations</h3>
+
+<p>Dette kapitlet tar for seg operasjoner for å 
+<ul>
+<li>Translere (fra engelsk; translate, ikke i betydningen "oversette". Vettu hva - heretter kaller jeg det <strong>flytte</strong>. Saksøk meg. &#128516;) punkter og vektorer</li>
+<li>Skalere, altså vokse og krympe punkter og vektorer</li>
+<li>Rotere punkter rundt x, y og z aksene</li>
+<li>Forskyve (shear, skew) punkter så rette linjer blir skrå</li>
+</ul>
+</p>
+<p>Implementeringen er relativt enkel, det er dog noe magi i matrisehåndteringene som jeg ikke skjønner noe av så klart. Hvorfor blir det sånn og sånn når man setter inn tall dit og der i matrisen, og så multipliserer matrise med et punkt?? Aner ikke. Men det trenger jeg heller ikke, instruksjonene er greie nok de, og jeg får både koden for til å virke og testene til å verifisere resultatet. Her er det stort potensiale for å refaktorere kode senere - men man skal jo som kjent ikke bedrive "prematur optimalisering" (<a href="https://en.wikipedia.org/wiki/Program_optimization">det er iflg Donald Knuth "the root of all evil"</a>), så da lar vi det være... &#128513;</p>
 <p></p>
 <p></p>
 <p></p>

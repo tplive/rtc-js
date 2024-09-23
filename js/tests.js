@@ -550,6 +550,19 @@ function test_multiply_matrix_by_tuple_function() {
   
 }
 
+function test_idmatrix_function() {
+  // The idmatrix() function returns the id matrix
+  // 1 0 0 0
+  // 0 1 0 0
+  // 0 0 1 0
+  // 0 0 0 1
+  
+  const m = idmatrix()
+  const i = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+  
+  return matrix_equal(m, i)
+}
+
 function test_multiply_by_identity_matrix_function() {
   // Multiplying any number by 1 gives the same number back. The number 1 is for this reason called the
   // "multiplicative identity". There also exists an "identity matrix", and this test
@@ -560,7 +573,7 @@ function test_multiply_by_identity_matrix_function() {
   const t = tuple(7, 6, 5, 4)
   
   // This is the multiplicative identity for matrices:
-  const id_matrix = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]]
+  const id_matrix = idmatrix()
   
   return (equal_tuples(t, multiply_matrix_by_tuple(id_matrix, t)) && matrix_equal(ma, multiply_matrices(ma, id_matrix)))
   
@@ -581,7 +594,7 @@ function test_transpose_matrix_function() {
 function test_transpose_identity_matrix() {
   //Transposing identity matrix should return identity matrix.
   
-  const t = transpose_matrix([[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]])
+  const t = transpose_matrix(idmatrix())
   
     return matrix_equal(t, transpose_matrix(t))
 
@@ -798,4 +811,137 @@ function test_multiply_by_inverse() {
   const mc = multiply_matrices(ma, mb)
   
   return (matrix_equal(multiply_matrices(mc, inverse(mb)), ma))
+}
+
+function test_translation_function() {
+  //Test translation(x, y, z) workhorse.
+  
+  const t = translation(5, -3, 2)
+  
+  // Test 1: Multiplying by a translation matrix
+  const p1 = point(-3, 4, 5)
+  const result1 = multiply_matrix_by_tuple(t, p1) // = tuple(2, 1, 7, 1)
+  
+  
+  // Test 2: Multiplying by the inverse of a translation matrix
+  const inv2 = inverse(t)
+  const p2 = point(-3, 4, 5)
+  const result2 = multiply_matrix_by_tuple(inv2, p2) // = tuple()
+
+  // Translation does not affect vectors
+  const v3 = vector(-3, 4, 5)
+  const result3 = multiply_matrix_by_tuple(t, v3)
+  
+
+  //log("error", result1.toString())
+  //log("error", result2.toString())
+  //log("error", result3.toString())
+  
+  return (equal_tuples(result1, point(2, 1, 7)) && equal_tuples(result2, point(-8, 7, 3)) && equal_tuples(result3, vector(-3, 4, 5)))
+  
+}
+
+function test_scaling_function() {
+  // Test scale(x, y, z) function
+  
+  const t = scale(2, 3, 4)
+  const v = vector(-4, 6, 8)
+  
+  // 1. A scaling matrix applied to a point
+  const p1 = point(-4, 6, 8)
+  const r1 = multiply_matrix_by_tuple(t, p1)
+  
+  // 2. A scaling matrix applied to a vector
+  const r2 = multiply_matrix_by_tuple(t, v)
+  
+  // 3. Multiplying by the inverse of a scaling matrix
+  const inv3 = inverse(t)
+  const r3 = multiply_matrix_by_tuple(inv3, v)
+  
+  // 4. Reflection is scaling by a negative value
+  const t4 = scale(-1, 1, 1)
+  const p4 = point(2, 3, 4)
+  const r4 = multiply_matrix_by_tuple(t4, p4)
+  
+  return ( equal_tuples(r1, point(-8, 18, 32)) && equal_tuples(r2, vector(-8, 18, 32)) && equal_tuples(r3, vector(-2, 2, 2)) && equal_tuples(r4, point(-2, 3, 4)) )
+}
+
+function test_angle_function() {
+  // The angle function converts between degrees and radians and vice versa.
+  
+  //log("error", angle(Math.PI/2).deg())
+  return angle(360).rad() === 2 * Math.PI && angle(Math.PI/2).deg() === 90 
+}
+
+function test_rotation_x_function() {
+  // Test rotating a tuple around the x axis
+  
+  const p = point(0, 1, 0)
+  
+  // Rotate point a half quarter around the x-axis
+  const half_quarter = rotation_x( Math.PI / 4)
+  
+  // Rotate point a full quarter around the x-axis
+  const full_quarter = rotation_x( Math.PI / 2)
+  
+  const rotate_p_half_quarter = multiply_matrix_by_tuple(half_quarter, p)
+  const rotate_p_full_quarter = multiply_matrix_by_tuple(full_quarter, p)
+  
+  // Test that the inverse of an x-rotation rotates in the opposite direction
+  const inv = inverse(half_quarter)
+  const rotate_p_negative_half_quarter = multiply_matrix_by_tuple(inv, p)
+  
+  return ( 
+       equal_tuples(rotate_p_half_quarter, point(0, Math.sqrt(2)/2, Math.sqrt(2)/2)) 
+    && equal_tuples(rotate_p_full_quarter, point(0, 0, 1)) 
+    && equal_tuples(rotate_p_negative_half_quarter, point(0, Math.sqrt(2)/2, -Math.sqrt(2)/2))
+  )
+
+}
+
+function test_rotation_y_function() {
+  // Test rotating a tuple around the x axis
+  
+  const p = point(0, 0, 1)
+  
+  // Rotate point a half quarter around the y-axis
+  const half_quarter = rotation_y( Math.PI / 4)
+  
+  // Rotate point a full quarter around the y-axis
+  const full_quarter = rotation_y( Math.PI / 2)
+  
+  const rotate_p_half_quarter = multiply_matrix_by_tuple(half_quarter, p)
+  const rotate_p_full_quarter = multiply_matrix_by_tuple(full_quarter, p)
+  
+  // Test that the inverse of an y-rotation rotates in the opposite direction
+  const inv = inverse(half_quarter)
+  const rotate_p_negative_half_quarter = multiply_matrix_by_tuple(inv, p)
+  
+  return ( 
+       equal_tuples(rotate_p_half_quarter, point(Math.sqrt(2)/2, 0, Math.sqrt(2)/2)) 
+    && equal_tuples(rotate_p_full_quarter, point(1, 0, 0)) 
+    && equal_tuples(rotate_p_negative_half_quarter, point(-Math.sqrt(2)/2, 0, Math.sqrt(2)/2))
+  )
+
+}
+
+function test_rotation_z_function() {
+  // Test rotating a tuple around the z axis
+  
+  const p = point(0, 1, 0)
+  
+  // Rotate point a half quarter around the z-axis
+  const half_quarter = rotation_z( Math.PI / 4)
+  
+  // Rotate point a full quarter around the z-axis
+  const full_quarter = rotation_z( Math.PI / 2)
+  
+  const rotate_p_half_quarter = multiply_matrix_by_tuple(half_quarter, p)
+  const rotate_p_full_quarter = multiply_matrix_by_tuple(full_quarter, p)
+  
+  return ( 
+       equal_tuples(rotate_p_half_quarter, point( -Math.sqrt(2)/2, Math.sqrt(2)/2, 0)) 
+    && equal_tuples(rotate_p_full_quarter, point(-1, 0, 0))
+  )
+
 }
