@@ -53,10 +53,13 @@ window.onerror = function(errorMsg, url, lineNumber){
 <h2>&#9978; Testing Scene functions</h2>
 <ul id="scene_list"></ul>
 
+<h2>&#128747; Testing Shape functions</h2>
+<ul id="shape_list"></ul>
+
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
-
+<script src="./js/shapes.js"></script>
 <script src="./js/functions.js"></script>
 <script src="./js/tests.js"></script>
 
@@ -96,6 +99,7 @@ function runTest(domId, callback) {
 }
 
 runTest("test_list", test_tuple_function)
+
 runTest("test_list", test_vector_function)
 runTest("test_list", test_point_function)
 runTest("test_list", test_equal_function)
@@ -103,6 +107,7 @@ runTest("test_list", test_equal_tuples_function)
 runTest("test_list", test_add_tuples_function)
 runTest("test_list", test_subtract_tuples_function)
 runTest("test_list", test_negate_tuple_function)
+
 runTest("test_list", test_multiply_vector_function)
 runTest("test_list", test_divide_vector_function)
 runTest("test_list", test_magnitude_function)
@@ -119,6 +124,7 @@ runTest("colors_list", test_scale_color_function)
 
 runTest("canvas_list", test_canvas_function)
 runTest("canvas_list", test_html_canvas_function)
+runTest("canvas_list", test_html_get_pixel_color_function)
 runTest("canvas_list", test_write_pixel_function)
 runTest("canvas_list", test_constructing_ppm_header)
 runTest("canvas_list", test_ppm_pixel_data)
@@ -186,7 +192,10 @@ runTest("scene_list", test_view_transform_function)
 runTest("scene_list", test_camera_function)
 runTest("scene_list", test_ray_for_pixel_function)
 runTest("scene_list", test_render_function)
-//runTest("scene_list", test_is_shadowed_function)
+runTest("scene_list", test_is_shadowed_function)
+
+runTest("shape_list", test_test_shape_function)
+
 
 
 

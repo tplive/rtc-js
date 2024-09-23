@@ -12,21 +12,9 @@ const C = function() {
   
   var _counter = 0
   
-  var _intersections = []
-  var config = {
-    a:1,
-    b:2
-  }
-  function init(){
-  }
-  function scroll(){
-  }
-  function highlight(){
-  }
   return {
     PRECISION:_precision,
     EPSILON:_epsilon,
-    intersections:_intersections,
     unique_id: function unique_id() {return _counter++}
   }
 }();
@@ -70,12 +58,20 @@ function canvas_to_html_canvas(ctx, can) {
   for (let y = 0;y < can.height;y++) {
     for (let x = 0;x < can.width;x++) {
       const col = can.pixel_at(x, y)
-      const sc = scale_color(col)
+      const sc = col.scaled()
       ctx.fillStyle = `rgb(${sc.red}, ${sc.green}, ${sc.blue})`
       //log("error", `rgb(${sc.red}, ${sc.green}, ${sc.blue})`)
       ctx.fillRect(x, y, 1, 1)
     }
   }
+}
+
+function equal(a, b) {
+  // Comparing floating point numbers for equivalence may, due to rounding errors, fail.
+  // By subtract a from b and comparing the result to a small constant EPSILON, we
+  // can call them equal.
+  
+  return Math.abs(a - b) < C.EPSILON.toFixed(C.PRECISION)
 }
 
 // *** PROFILER GLOBAL MAP AND FUNCTION
@@ -116,17 +112,21 @@ class Tuple {
     } else if (this._w === 1) {
       return `vector(x:${this._x}, y:${this._y}, z:${this._z})`
     } else {
-      return `Tuple is neither point nor vector, w = ${this._w}!`
+      return `tuple(x:${this._x}, y:${this._y}, z:${this._z}, w:${this._w}`
     }
   }
+  
+  isPoint() { return this._w === 1 }
+  isVector() { return this._w === 0 }
+  
   equals(t)   { return equal(this._x, t.x) && equal(this._y, t.y) && equal(this._z, t.z) && this._w === t.w }
   minus(t)   { return new Tuple(this._x - t.x, this._y - t.y, this._z - t.z, this._w - t.w) }
   plus(t)    { return new Tuple(this._x + t.x, this._y + t.y, this._z + t.z, this._w + t.w) }
-  negate()   { return new Tuple(-this._x, -this._y, -this._z, this._w) }
+  negate()   { return new Tuple(-this._x, -this._y, -this._z, -this._w) }
   
   by_scalar(s) {
     if (this._w === 0) {
-        return new Tuple(this._x * s, this._y * s, this._z * s, this._w)
+        return new Tuple(this._x * s, this._y * s, this._z * s, this._w * s)
       } else {
         throw(`Only vectors can be multiplied by scalar value.`)
       }
@@ -134,7 +134,7 @@ class Tuple {
   
   divided_by(s) {
     if (this._w === 0) {
-      return new Tuple(this._x / s, this._y / s, this._z / s, this._w)
+      return new Tuple(this._x / s, this._y / s, this._z / s, this._w / s)
     } else {
       throw(`Only vectors can be multiplied by scalar value.`)
     }
@@ -142,7 +142,7 @@ class Tuple {
   
   dot(v) {
     if (this._w === 0 && v.w === 0) {
-      return (this._x * v.x) + (this._y * v.y) + (this._z * v.z)
+      return (this._x * v.x) + (this._y * v.y) + (this._z * v.z) + (this._w * v.w)
     } else {
       throw(`Can only calculate dot product of vectors.`)
     }
@@ -189,44 +189,77 @@ function point(x, y, z) {
   return new Tuple(x, y, z, 1)
 }
 
-
-function equal(a, b) {
-  // Comparing floating point numbers for equivalence may, due to rounding errors, fail.
-  // By subtract a from b and comparing the result to a small constant EPSILON, we
-  // can call them equal.
-  
-  return (Math.abs(a - b) < C.EPSILON.toFixed(C.PRECISION))
-}
-
 // *** COLOR FUNCTIONS
 
+class Color {
+  constructor(r, g, b) {
+    this._r = r
+    this._g = g
+    this._b = b
+  }
+  get red() { return this._r }
+  get green() { return this._g }
+  get blue() { return this._b }
+    
+  toString() { return `red: ${this._r}, green: ${this._g}, blue: ${this._b}` }
+  equals(c) { return equal(this._r, c.red) && equal(this._g, c.green) && equal(this._b, c.blue) }
+  
+  plus(c)  { return new Color(this._r + c.red, this._g + c.green, this._b + c.blue) }
+  minus(c) { return new Color(this._r - c.red, this._g - c.green, this._b - c.blue) }
+  times(c) { return new Color(this._r * c.red, this._g * c.green, this._b * c.blue) }
+  
+  by_scalar(s) { return new Color(this._r * s, this._g * s, this._b * s) }
+  
+  scaled() {
+    // Scale the value of a color between 0-255
+    // > 1.0 = 255
+    //   1.0 = 255
+    //   0.5 = 128
+    //   0.0 = 0
+    // < 0.0 = 0
+  
+    let red = 255 * this._r
+    red = red > 255 ? 255 : red && red < 0 ? 0 : red
+    
+    let grn = 255 * this._g
+    grn = grn > 255 ? 255 : grn && grn < 0 ? 0 : grn
+  
+    let blu = 255 * this._b
+    blu = blu > 255 ? 255 : grn && blu < 0 ? 0 : blu
+  
+    return new Color(Math.round(red), Math.round(grn), Math.round(blu))
+  }
+}
+
 function color(r, g, b) {
-  return Object.freeze({ 
-    red:r, 
-    green:g, 
-    blue:b,
-    toString: function() { return `red: ${this.red}, green: ${this.green}, blue: ${this.blue}`},
-    equals: function(t) { return equal(r, t.red) && equal(g, t.green) && equal(b, t.blue) },
-  })
+  // Factory function for color
+  return new Color(r, g, b)
 }
 
 function add_colors(c1, c2) {
   // Adding two colors by simple addition
+  throw(`add_colors(c1, c2) has been deprecated. Use c1.plus(c2) instead.`)
   return color(c1.red + c2.red, c1.green + c2.green, c1.blue + c2.blue)
 }
 
 function subtract_colors(c1, c2) {
   // Subtracting two colors by simple subtraction
+  throw(`subtract_colors(c1, c2) has been deprecated. Use c1.minus(c2) instead.`)
+
   return color(c1.red - c2.red, c1.green - c2.green, c1.blue - c2.blue)
 }
 
 function multiply_color(s, c1) {
   // Multiply scalar value by r, g, b components
+  throw(`multiply_color(s, c1) has been deprecated. Use c1.by_scalar(s) instead.`)
+
   return color(s * c1.red, s * c1.green, s * c1.blue)
 }
 
 function multiply_colors(c1, c2) {
   // Multiply r, g, b components of two colors by each other
+  throw(`multiply_colors(c1, c2) has been deprecated. Use c1.times(c2) instead.`)
+
   return color(c1.red * c2.red, c1.green * c2.green, c1.blue * c2.blue)
 }
 
@@ -237,7 +270,8 @@ function scale_color(c) {
   //   0.5 = 128
   //   0.0 = 0
   // < 0.0 = 0
-  
+  throw(`scale_color(c) has been deprecated. Use c.scaled() instead.`)
+
   let red = 255 * c.red
   red = red > 255 ? 255 : red && red < 0 ? 0 : red
   
@@ -482,6 +516,88 @@ class Matrix {
     return t
   }
   
+  minor(row, col) {
+    // Mansplained: The minor of an element at row i and column j is the determinant of the submatrix at (i, j).
+    // Inputs:
+    //   ma: 3x3 array to calculate minor on.
+    //   row: submatrix row
+    //   col: submatrix column
+    // Returns the determinant of the submatrix.
+    
+    const sm = matrix(this._r - 1, this._c - 1)
+    sm.putAll(this.submatrix(row, col))
+
+    return sm.determinant()
+  }
+  
+  cofactor(row, col) {
+    // Mansplained: 
+    // The cofactor is a possible negation of the minor, depending on which row/col its at.
+    // The following figure is helpful:
+    // | + - + |
+    // | - + - |
+    // | + - + |
+    // Also, doing a "negate if row + col is odd number" should work.
+    // Inputs:
+    //   ma: The matrix to calculate cofactor on
+    //   r: row to calculate cofactor on
+    //   c: col to calculate cofactor on
+    // Returns cofactor of matrix at row, col.
+  
+    const min = this.minor(row, col)
+  
+    // Determine if indexes at row+col (r + c) is an odd number and if so, return the negative value of min, else return min.
+        
+    return (row + col) % 2 == 0 ? min : -min
+  }
+  
+  determinant() {
+    // Mansplained: Calculate the determinant of a matrix.
+    // For a 2x2 matrix
+    //   matrix = [a,b,c,d]
+    // the calculation is ad - bc.
+    // For larger matrices, take the first row and multiply each element with its cofactor.
+    // Inputs:
+    // m: matrix to calculate determinant for
+    // Returns Determinant for matrix, as a number.
+  
+    let det = 0
+  
+    if (this._length === 4) {
+      //log("error", "2x2 determinant")
+      det = (this._n[0] * this._n[3] - this._n[1] * this._n[2])
+    } else {
+      //log("error", ">2x>2 determinant")
+      for (let i = 0; i < this._c; i++) {
+        det = det + this.get(0,i) * this.cofactor(0, i)
+      }
+    }
+  
+    return det
+  }
+  
+  inverse() {
+    // Mansplained: Calculate the inverse of a matrix
+    
+    const d = this.determinant()
+    
+    if (d === 0) {
+      throw "Matrix is not invertible, determinant is 0"
+    }
+  
+    const m2 = matrix(this._r, this._c)
+    m2.putAll(this._n)
+  
+    for (let r=0; r < this._r; r++) {
+      for (let c=0; c < this._c; c++) {
+        const cof = this.cofactor(r, c)
+        m2.put(c, r, cof / d)
+      }
+    }
+  
+    return m2
+  }
+  
   equals(m) {
     const structural_equality = this._r === m.rows && this._c === m.cols 
     const elements_equal = []
@@ -515,6 +631,7 @@ function multiply_matrices(a, b) {
   // Only supports 4x4 matrices.
   throw(`multiply_matrices() is deprecated. Use matrix.times_matrix(m) instead.`)
   
+  // Yes, I'm aware that a 2x8 matrix will also pass this test, but I can't be bothered... ;)
   if (a.rows * a.cols != 16 || b.rows * b.cols != 16) {
     throw `Only supports multiplying 4x4 matrices. a = ${a.rows}, b = ${b.cols}`
   }
@@ -573,7 +690,8 @@ function determinant(m) {
   // Inputs:
   // m: matrix to calculate determinant for
   // Returns Determinant for matrix, as a number.
-  
+  throw `determinant(m) has been deprecated. Use m.determinant() instead.`
+
   let det = 0
   
   if (m.d.length == 4) {
@@ -601,13 +719,13 @@ function minor(ma, row, col) {
   //   row: submatrix row
   //   col: submatrix column
   // Returns the determinant of the submatrix.
-  
+  throw `minor(ma, row, col) has been deprecated. Use ma.minor(row, col) instead.`
+
   //log("error", ma.join("\n"))
   const sm = matrix(ma.rows-1, ma.cols-1)
   sm.putAll(ma.submatrix(row, col))
-  const d = determinant(sm)
   
-  return d
+  return sm.determinant()
 }
 
 function cofactor(ma, r, c) {
@@ -623,7 +741,8 @@ function cofactor(ma, r, c) {
   //   r: row to calculate cofactor on
   //   c: col to calculate cofactor on
   // Returns cofactor of matrix at row, col.
-  
+  throw `cofactor(ma, r, c) has been deprecated. Use ma.cofactor(row, col) instead.`
+
   const min = minor(ma, r, c)
   
   // Determine if indexes at row+col (r + c) is an odd number and if so, return the negative value of min, else return min.
@@ -633,8 +752,9 @@ function cofactor(ma, r, c) {
 
 function inverse(m) {
   // Mansplained: Calculate the inverse of a matrix
-  
-  const d = determinant(m)
+  throw `inverse(m) has been deprecated. Use m.inverse() instead.`
+
+  const d = m.determinant()
 
   if (d === 0) {
     throw "Matrix is not invertible, determinant is 0"
@@ -645,7 +765,7 @@ function inverse(m) {
   
   for (let r=0;r<m.rows;r++) {
     for (let c=0;c<m.cols;c++) {
-      const cof = cofactor(m, r, c)
+      const cof = m.cofactor(r, c)
       //log("error", "Cofactor: " + cof + ", c: " + c + " r: " + r)
       m2.put(c, r, cof / d)
       //log("error", "New value: " + m2[c][r])
@@ -669,10 +789,6 @@ function translation(x, y, z) {
   } else {
     throw(`Input variable is not a number: x = ${x}, y = ${y}, z = ${z}`)
   }
-}
-
-function scale(x, y, z) {
-  throw `scale(x, y, z) has been deprecated. Use scaling(x, y, z) instead.`
 }
 
 function scaling(x, y, z) {
@@ -710,8 +826,6 @@ function rotation_x(rad) {
     throw(`Input variable is not a number: rad = ${rad}`)
   }
 }
-
-
 
 function rotation_y(rad) {
   // Takes an angle in radians and returns a rotation matrix for the y-axis
@@ -832,8 +946,34 @@ function recursive_transformations(arr) {
 }
 
 // *** RAY FUNCTIONS
+class Ray {
+  // Return a "ray", consisting of a point called origin and a vector called direction.
+  
+  constructor(origin, direction) {
+    if ( !origin.isPoint() || !direction.isVector() ) {
+      throw `ray(): Origin must be a point (was ${origin.toString()}), and Direction must be a vector (was ${direction.toString()})`
+    }
+    
+    this._o = origin // point
+    this._d = direction // vector
+    this._t = idmatrix()
+  }
+  
+  get origin() { return this._o }
+  get direction() { return this._d }
+  
+  transform(m) { return new Ray(m.times_tuple(this._o), m.times_tuple(this._d)) }
+  
+  toString() { return `origin: ${this.origin}, direction: ${this.direction}` }
+  
+}
 
 function ray(o, d) {
+  // Factory function for Ray
+  return new Ray(o, d)
+}
+
+function old_ray(o, d) {
   // Return a "ray", consisting of a point called origin and a vector called direction.
   
   // Check that o is a point and d is a vector, by checking the w value of each
@@ -860,76 +1000,44 @@ function position(ray, t) {
   return ray.direction.by_scalar(t).plus(ray.origin)
 }
 
-class Sphere {
-  // The Sphere class represents a sphere object with data. This is the new norm.
-  // Default values are set in the constructor and/or parameters.
-  // Using getters and setters allows direct assignment, such as sphere.transform = translation(1, 2, 3)
-  // Constructor fields are not really private.
-  
-  constructor() {
-    this._id = C.unique_id()
-    this._transform = idmatrix()
-    this._material = material()
-  }
-  
-  get id() { return this._id }
-  get transform() { return this._transform }
-  get material() { return this._material }
-  get toString() { return `Sphere(), ID: ${this._id}, Transformation matrix: ${this._transform.d}` }
-    
-  set transform(value) {
-    if (value.d != undefined) {
-      this._transform = this._transform.times_matrix(value)
-    }
-  }
-  
-  set material(mat) {
-    if (mat.ambient != undefined) {
-      this._material = mat
-    }
-  }
-  
-  equals(obj) { return this._transform.equals(obj.transform) && this._material.equals(obj.material)}
-}
-
 function sphere() {
   // Factory function for Sphere()
-
+  // class is defined in shapes.js
+  
   return new Sphere()
 }
 
 function intersect(s, ra) {
-  // Intersect returns an array of points where a given ray (ra) intersects a given sphere (s)
+  // Intersect returns an array of points where a given ray (ra) intersects a given shape (s)
   
-  // Vector from sphere's center to the ray origin
-  // Remember: The sphere is centered at the world origin (0, 0, 0)
+  // Vector from shape's center to the ray origin
+  // Remember: The shape is centered at the world origin (0, 0, 0)
   
-  const r = ra.transform(inverse(s.transform)) // Ray passed to intersect should be transformed by the inversed transformation matrix
-
-  const sphere_to_ray = r.origin.minus(point(0, 0, 0))
+  const r = ra.transform(s.transform.inverse()) // Ray passed to intersect should be transformed by the inversed transformation matrix
+  const shape_to_ray = r.origin.minus(point(0, 0, 0))
   const a = r.direction.dot(r.direction)
-  const b = 2 * r.direction.dot(sphere_to_ray)
-  const c = sphere_to_ray.dot(sphere_to_ray) - 1
+  const b = 2 * r.direction.dot(shape_to_ray)
+  const c = shape_to_ray.dot(shape_to_ray) - 1
   
   const discriminant = b**2 - 4*a*c
   
-  // The discriminant is the key - if it's negative, the ray misses the sphere
+  // The discriminant is the key - if it's negative, the ray misses the shape
   if (discriminant < 0 ) { return [] }
   
   // Otherwise, the equation has two solutions, which could be the same, if the
   // ray intersects at a perfect tangent
   const t1 = (-b - Math.sqrt(discriminant)) / ( 2 * a )
   const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
-  
+
   return [intersection(t1, s), intersection(t2, s)]
 }
 
-function intersection(t_value, sphere) {
+function intersection(t_value, shape) {
   // The intersection function encapsulates t value and object
   
   return Object.freeze({
     t:t_value,
-    object:sphere
+    object:shape
   })
 }
 
@@ -954,20 +1062,16 @@ function hit(list_of_intersections) {
   return list_of_intersections[0] 
 }
 
-function transform_old(r, matr) {
-  // Transform applies a transformation matrix to a ray
-  throw(`Function is deprecated. Use ray().transform(m) instead.`)
-}
-
 // *** SHADING FUNCTIONS
 
 function normal_at(obj, world_point) {
   // This function takes an object and a point and returns the point's normal (perpendicular) vector.
   // This is an upgraded version of normal_at(), and will replace that function when done.
   
-  const object_point = inverse(obj.transform).times_tuple(world_point)
+  const inv_obj_transform = obj.transform.inverse()
+  const object_point = inv_obj_transform.times_tuple(world_point)
   const object_normal = object_point.minus(point(0, 0, 0))
-  const world_normal = inverse(obj.transform).transpose().times_tuple(object_normal)
+  const world_normal = inv_obj_transform.transpose().times_tuple(object_normal)
   
   return vector(world_normal.x, world_normal.y, world_normal.z).normalize()
 }
@@ -1078,7 +1182,7 @@ function lighting(material, light, point, eyev, normalv, in_shadow) {
   // The lighting function computes shading for pixels
   
   // Combine surface color with the light's color/intensity
-  const effective_color = multiply_colors(material.color, light.intensity)
+  const effective_color = material.color.times(light.intensity)
   //log("error", "effective_color: " + effective_color)
   
   // Find the direction to the light source
@@ -1086,7 +1190,7 @@ function lighting(material, light, point, eyev, normalv, in_shadow) {
   //log("error", "lightv: " + lightv)
   
   // Compute ambient contribution
-  const ambient = multiply_color(material.ambient, effective_color)
+  const ambient = effective_color.by_scalar(material.ambient)
   //log("error", "ambient: " + ambient)
   
   let diffuse, specular
@@ -1101,7 +1205,7 @@ function lighting(material, light, point, eyev, normalv, in_shadow) {
     specular = color(0, 0, 0)
   } else {
     // Compute the diffuse contribution
-    diffuse = multiply_color(material.diffuse * light_dot_normal, effective_color)
+    diffuse = effective_color.by_scalar(material.diffuse * light_dot_normal)
     //log("error", "diffuse: " + diffuse)
     
     // reflect_dot_eye represents the cosine of the angle between the reflection vector
@@ -1120,7 +1224,7 @@ function lighting(material, light, point, eyev, normalv, in_shadow) {
       // Compute the specular contribution
       const factor = Math.pow(reflect_dot_eye, material.shininess)
       
-      specular = multiply_color(material.specular * factor, light.intensity)
+      specular = light.intensity.by_scalar(material.specular * factor)
       //log("error", "light.intensity: " + light.intensity)
       //log("error", "material.specular: " + material.specular)
       //if (specular.red >= 0.01) {log("error", "specular.red: " + specular.red)}
@@ -1128,7 +1232,8 @@ function lighting(material, light, point, eyev, normalv, in_shadow) {
   }
   // Add the three contributions together to get the final shading
   //log("error", `ambient + diffuse + specular = " ${ambient} + ${diffuse} + ${specular} = ${add_colors(ambient, add_colors(diffuse, specular))}`)
-  return add_colors(ambient, add_colors(diffuse, specular))
+  
+  return ambient.plus(diffuse.plus(specular))
 }
 
 // *** SCENE FUNCTIONS
@@ -1177,7 +1282,7 @@ function default_world() {
   const light = point_light(point(-10, 10, -10), color(1, 1, 1))
   
   // Create a sphere
-  const s1 = new Sphere()
+  const s1 = sphere()
   
   // Create a new material
   const mat = material()
@@ -1191,7 +1296,7 @@ function default_world() {
   s1.material = mat
   
   // Create a new sphere
-  const s2 = new Sphere()
+  const s2 = sphere()
   
   // Add a transform to the sphere
   s2.transform = scaling(0.5, 0.5, 0.5)
@@ -1397,9 +1502,11 @@ function ray_for_pixel(cam, px, py) {
   // Using the camera matrix, transform the canvas point and the origin,
   // and then compute the ray's direction vector
   // (remember that the canvas is at z=-1)
-  const pixel = inverse(cam.transform).times_tuple(point(worldx, worldy, -1))
+  const cam_inverse = cam.transform.inverse()
   
-  const origin = inverse(cam.transform).times_tuple(point(0, 0, 0))
+  const pixel = cam_inverse.times_tuple(point(worldx, worldy, -1))
+  
+  const origin = cam_inverse.times_tuple(point(0, 0, 0))
   const direction = pixel.minus(origin)
     
   return ray(origin, direction.normalize())
@@ -1446,4 +1553,11 @@ function is_shadowed(w, p) {
   const h = hit(xs)
   
   return (h != undefined && h.t < distance)
+}
+
+function test_shape() {
+  // Factory function for TestShape()
+  // class is defined in shapes.js
+  
+  return new TestShape()
 }
