@@ -12,6 +12,16 @@ code {
   font-weight: bold;
 }
 
+.shadow {
+  margin: 1rem;
+  box-shadow: 10px 10px 5px lightgrey;
+  border: 1px dotted lightgrey;
+}
+
+.floatleft {
+  float: left;
+}
+
 pre {
     background: #f4f4f4;
     border: 1px solid #ddd;
@@ -137,7 +147,7 @@ a) en JS-fil med feil i, blir ikke lastet inn, og b) JS-variabler kan ikke ha bi
 
 <p><code>fillrect(x, y, w, h)</code> skriver et rektangel på posisjon <code>(x, y)</code> og størrelse <code>(w, h)</code>.</p>
 <p>Dette fungerer. Canvasen ser slik ut:</p>
-<p><img src="canvas_element.png"/></p>
+<p><img style="border: 1px solid black;" src="canvas_element.png"/></p>
 </del>
 
 <p>Dette canvas opplegget ble bare tull. Jeg finner ut at det slett ikke er nødvendig med noen HTML-canvas. I boka er canvas bare en abstraksjon for et lerret som har bredde og høyde, og en fargeverdi for hver pixel. Jeg krangler mye før jeg skjønner hva som må til: Et canvas har w * h og et array med verdier for hver pixel. That's it. &#128513;</p>
@@ -196,12 +206,23 @@ ma[0][2] = 99
 [[12,34,99,56],[12,34,99,56],[12,34,99,56],[12,34,99,56]]</pre>
 <p>Ser ut som hver eneste rad peker til samme posisjoner i minnet. Jeg vet ikke hvordan jeg lager et array med rader som peker til unike minneposisjoner, og jeg er redd dette kan komme tilbake og bite meg senere... Men for now dokumenterer jeg det her, og oppretter arrayet helt manuelt, slik:</p>
 <pre>const m = [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]]</pre>
-<p>Neste dag (22.04.24): Joda, det kom og beit meg... &#128514;</p>
+<p>Neste dag (22.april 2024): Joda, det kom og beit meg... &#128514;</p>
 <p>For å bøte på problemet, fikser jeg matrix() så den looper og lager array element for element. Blir nok bra det også. Hvem f..n vil egentlig ha array som peker hit og dit og her og der!? JS assa.. &#128527;</p>
 <p>Det gjør det så at jeg <del>enkelt</del> enklere får til <code>determinant()</code> og <code>submatrix()</code>-funksjonene, og disse verktøyene trengs for å jobbe seg videre mot inverteringsfunksjonen som tydeligvis blir mye mer komplisert for 3x3 og 4x4 matriser.</p>
-<p></p>
-<p></p>
-<p></p>
+
+<p>23. april 2024: Array-føljetongen ruller videre. Jeg har igjen kommet borti problemer med referanser i arrays. Finner ut at man kan "fullklone" (aka "deep clone") et array med <code>structuredClone(array)</code> og det må jeg huske å gjøre når jeg gjør matrise-operasjoner som fjerner rad eller kolonne "in-place", dvs endrer på et array, og så senere bruker det samme arrayet på en annen operasjon som antar at det har opprinnelig "fasong". I de tilfellene må jeg returnere en full kopi av arrayet, og ikke det opprinnelige.</p>
+
+<p> For øvrig har jeg "pyntet litt" både her i dokumentasjonen og i test_runner, så nå syns jeg det ser litt proffere ut: &#128513;
+  <ul>
+    <li>Lagt til emojis på alle overskrifter, fresher opp litt og gir mening.  &#128513;</li>
+    <li>Lagt til emojis på hver test, så det står <span style="color: green;">Test Passed! &#127774;</span> og <span style="color: red;">Test Failed! &#128165;</span></li>
+    <li>Lagt til en perf-test på Test runner, som timer hvor lang tid det tar å kjøre testene. Ligger pr nå på 4-5 ms, så koden er ikke så tung... enda... &#128517;</li>
+    <li>Forbedret perf-testen så den lagrer resultat i <code>localStorage()</code> i browseren, og gir en bedre snitt-beregning, over tid.</li>
+    <li>Lagt til margins for å forbedre lesbarheten til dokumentasjonen. Samme for test_runner.</li>
+    <li>Lagt inn bilde av coveret på boka.</li>
+    <li>Lagt til <code>font-family: sans-serif;</code> på body.</li>
+  </ul>
+</p>
 <p></p>
 <p></p>
 <p></p>

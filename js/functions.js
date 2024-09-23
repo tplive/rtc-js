@@ -178,6 +178,8 @@ function html_canvas(parent, width, height) {
   return can
 }
 
+
+
 function canvas(w, h) {
   // Create a canvas abstraction object. It has a width and a height and a pixel array.
   // Each pixel is defined by three values, r, g, b.
@@ -269,14 +271,8 @@ ${split.join("")}
 
 function matrix(rows, cols) {
   
-  let a = []
-  
-  for (let r = 0; r <= rows; r++) {
-      a[r] = []
-    for (let c = 0; c <= cols; c++) {
-      a[r][c] = 0
-    }
-  }
+  let a = Array(rows).fill(null).map(()=>Array(cols).fill(0)) // Was: Array(rows).fill(Array(cols).fill(0))
+  //log("error", a.join("\n"))
 
   return a
 }
@@ -308,6 +304,9 @@ function multiply_matrices(a, b) {
   // Multiply matrices.
   // Only supports 4x4 matrices.
   
+  if (a.length != 4 || b.length != 4) {
+    throw `Only supports multiplying 4x4 matrices. a = ${a.length}, b = ${b.length}`
+  }
   const m = matrix(4, 4)
   
   for (let r = 0; r <= 3; r++) {
@@ -370,23 +369,40 @@ function transpose_matrix(m) {
 }
 
 function determinant(m) {
-  // Calculate the determinant of a 2x2 matrix.
-  // matrix = [[a,b],[c,d]]
-  // Calculation is ad - bc
+  // Mansplained: Calculate the determinant of a matrix.
+  // For a 2x2 matrix
+  //   matrix = [[a,b],[c,d]]
+  // the calculation is ad - bc.
+  // For larger matrices, take the first row and multiply each element with its cofactor.
+  // Inputs:
+  // m: matrix to calculate determinant for
+  // Returns Determinant for matrix, as a number.
   
-  return (m[0][0] * m[1][1] - m[0][1] * m[1][0])
+  let det = 0
+  
+  let mc = structuredClone(m)
+  
+  if (m.length == 2) {
+    det = (m[0][0] * m[1][1] - m[0][1] * m[1][0])
+  } else {
+    for (let i in m[0]) {
+      det = det + m[0][i] * cofactor(mc, 0, i)
+    }
+  }
+  
+  return det
+  
 }
 
-function submatrix(m, row, col) {
+function submatrix(mat, row, col) {
   // Inputs
   // m: matrix
   // row: row to remove
   // col: column to remove
   // Calculates and returns submatrix with row r and col c removed
   
-  const sml = m.length -1
-  
-  //let sm = matrix(sml, sml)
+  const sml = mat.length -1
+  const m = structuredClone(mat)
   
   //log("error", `Matrix is ${m.length} x ${m[0].length}`)
   //log("error", m.join("\n"))
@@ -442,5 +458,5 @@ function cofactor(ma, r, c) {
   const min = minor(ma, r, c)
   
   // Determine if indexes at row+col (r-1 + c-1) is an odd number and if so, return the negative value of min, else return min.
-  return r - 1 + c - 1 % 2 == 0 ? min * -1 : min
+  return (r + c) % 2 == 0 ? min : min * -1
 }

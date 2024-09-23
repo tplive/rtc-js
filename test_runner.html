@@ -4,6 +4,11 @@
 pre {
   background-color: lightgrey;
 }
+
+body {
+  font-family: sans-serif;
+  margin: 3rem;
+}
 </style>
 <body>
 <script>
@@ -19,23 +24,24 @@ window.onerror = function(errorMsg, url, lineNumber){
 }
 </script>
 
-<h1>Test Runner</h1>
+<h1>&#127939; Test Runner &#127939; </h1>
 
-<p id="perf"></p>
-<h2>Testing Tuple functions</h2>
+
+<h2>&#128295; Testing Tuple functions</h2>
 <ul id="test_list"></ul>
 
-<h2>Testing Color functions</h2>
+<h2>&#127752; Testing Color functions</h2>
 <ul id="colors_list"></ul>
 
-<h2>Testing Canvas functions</h2>
+<h2>&#128200; Testing Canvas functions</h2>
 <ul id="canvas_list"></ul>
 
-<h2>Testing Matrix functions</h2>
+<h2>&#129518; Testing Matrix functions</h2>
 <ul id="matrix_list"></ul>
 
 <pre><code id="error"></code></pre>
 
+<p id="perf"></p>
 <script src="js/functions.js"></script>
 <script src="js/tests.js"></script>
 <script>
@@ -64,7 +70,7 @@ function runTest(domId, callback) {
   
   const li_result = document.createElement("span")
   li.appendChild(li_result)
-  var text = (result) ? "Test Passed!":"Test Failed!"
+  var text = (result) ? "Test Passed! &#127774;":"Test Failed! &#128165;"
   var color = (result) ? "green":"red"
   li_result.innerHTML = text
   li_result.style.color = color
@@ -112,6 +118,7 @@ runTest("matrix_list", test_calculate_determinant_of_2x2_matrix)
 runTest("matrix_list", test_submatrix_function)
 runTest("matrix_list", test_minor_function)
 runTest("matrix_list", test_cofactor_function)
+runTest("matrix_list", test_calculate_determinant_of_3x3_matrix)
 
 
 const end = performance.now()
@@ -125,6 +132,8 @@ localStorage.setItem("test_running_time", Number(cumulated) + elapsed)
 
 log("perf", "Tests running time: " + Math.round(elapsed) + " ms.")
 log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+
+window.scrollTo(0,document.body.scrollHeight);
 </script>
 
 </body>

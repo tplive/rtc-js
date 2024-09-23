@@ -243,19 +243,6 @@ function test_html_get_pixel_color_function() {
   return (c1.red == c2.red && c1.green == c2.green && c1.blue == c2.blue)
 }
 
-function test_html_canvas_to_ppm_function() {
-  // Will convert canvas data to a valid ppm file header.
-  // Given a canvas of 80x40 pixels, the header should look like this:
-  // P3
-  // 80 40
-  // 255
-  
-  const can = html_canvas("body", 80, 40)
-  const ppm = html_canvas_to_ppm(can)
-  
-  return (ppm === `P3\n80 40\n255\n`)
-}
-
 function test_canvas_function() {
   // This is a test for a canvas function that is pure data, not the HTML element called canvas.
   // A canvas is an object with width, height and a data array for pixel values.
@@ -436,7 +423,7 @@ function test_canvas_to_ppm_function() {
   
   //log("error", ppm)
   return (ppm === `P3\n4 4\n255\n1 1 1 2 2 2 0 0 0 0 0 0 3 3 3 4 4\n4 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0\n0 0 0 0 0 0 0 0 0 0 0 0 0 0\n\n\n\n`)
-  
+
 }
 
 function test_create_matrix_function() {
@@ -478,25 +465,18 @@ function test_matrix_equal_function() {
   // Test the equality of two matrices.
   // Consider very similar floating point values, as with tuples.
   
-  const ma = matrix(4, 4)
-  const mb = matrix(4, 4)
+  let ma = matrix(4, 4)
   
-  ma[0] = [1,2,3,4]
-  ma[1] = [5,6,7,8]
-  ma[2] = [9,8,7,6]
-  ma[3] = [5,4,3,2]
+  ma = [[1,2,3,4],[5,6,7,8],[9,8,7,6],[5,4,3,2]]
   
-  mb[0] = [1,2,3,4]
-  mb[1] = [5,6,7,8]
-  mb[2] = [9,8,7,6]
-  mb[3] = [5,4,3,2]
+  mb = structuredClone(ma)
   
   const is_equal = matrix_equal(ma, mb)
   
   // Some values not equal but within the PRECISION threshold
   // Should still be equal
-  ma[0][1] = 1.999999999999
-  mb[1][0] = 5.000000000001
+  ma[0][1] = 1.999999
+  mb[1][0] = 5.00001
   
   const close_enough = matrix_equal(ma, mb)
     
@@ -530,8 +510,8 @@ function test_multiply_matrices_function() {
   mb = [
     [-2,1,2,3],
     [3,2,1,-1],
-    [4,3,6,5 ],
-    [1,2,7,8 ]
+    [4,3,6,5],
+    [1,2,7,8]
   ]
   
   mc = [
@@ -540,6 +520,8 @@ function test_multiply_matrices_function() {
     [40,58,110,102],
     [16,26,46,42]
   ]
+  
+  //log("error", multiply_matrices(ma, mb).join("\n"))
   
   return (matrix_equal(mc, multiply_matrices(ma, mb)))
 }
@@ -562,9 +544,6 @@ function test_multiply_matrix_by_tuple_function() {
   
   return (equal_tuples(r, multiply_matrix_by_tuple(ma, t)))
   
-  log("error", t)
-  
-  return false
 }
 
 function test_multiply_by_identity_matrix_function() {
@@ -593,7 +572,6 @@ function test_transpose_matrix_function() {
   return matrix_equal(mt, transpose_matrix(ma))
   
 }
-
 
 function test_transpose_identity_matrix() {
   //Transposing identity matrix should return identity matrix.
@@ -657,11 +635,11 @@ function test_minor_function() {
   
   m3 = [[3,5,0],[2,-1,-7],[6,-1,5]]
   
-  const m2 = submatrix(m3, 1, 0)
+  const m2 = submatrix(structuredClone(m3), 1, 0)
   
   const d = determinant([[5,0],[-1,5]])
   
-  const min = minor([[3,5,0],[2,-1,-7],[6,-1,5]], 1, 0)
+  const min = minor(structuredClone(m3), 1, 0)
   
   //log("error", `d: ${d}, minor: ${min}`)
   return (d === min)
@@ -678,13 +656,38 @@ function test_cofactor_function() {
   let m = matrix(3, 3)
   const m3 = [[3,5,0],[2,-1,-7],[6,-1,5]]
   
-  const min1 = minor([[3,5,0],[2,-1,-7],[6,-1,5]], 0, 0) // = -12
-  const cof1 = cofactor([[3,5,0],[2,-1,-7],[6,-1,5]], 0, 0) //= -12
+  const min1 = minor(structuredClone(m3), 0, 0) // = -12
+  const cof1 = cofactor(structuredClone(m3), 0, 0) //= -12
   
-  const min2 = minor([[3,5,0],[2,-1,-7],[6,-1,5]], 1, 0) // = 25
-  const cof2 = cofactor([[3,5,0],[2,-1,-7],[6,-1,5]], 1, 0) //= -25
+  const min2 = minor(structuredClone(m3), 1, 0) // = 25
+  const cof2 = cofactor(structuredClone(m3), 1, 0) //= -25
   
   //log("error", `${min1}, ${cof1}, ${min2}, ${cof2}`)
-  return (min1 === cof1 && min2 === cof2)
   
+  return (min1 === cof1 && min2 === -cof2)
+  
+}
+
+function test_calculate_determinant_of_3x3_matrix() {
+  // Determining determinants of larger matrices
+  // 
+  
+  const m = [[1,2,6],[-5,8,-4],[2,6,4]]
+  
+  cof1 = cofactor(structuredClone(m), 0, 0) // = 56
+  cof2 = cofactor(structuredClone(m), 0, 1) // = 12
+  cof3 = cofactor(structuredClone(m), 0, 2) // = -46
+  d1 = determinant(structuredClone(m)) // = -196
+  
+  //log("error", "cofactor (0,0) = " + cof1)
+  //log("error", "cofactor (0,1) = " + cof2)
+  //log("error", "cofactor (0,2) = " + cof3)
+  //log("error", "determinant of m = " + d1)
+  
+  return (
+       cofactor(structuredClone(m), 0, 0) === 56
+    && cofactor(structuredClone(m), 0, 1) === 12
+    && cofactor(structuredClone(m), 0, 2) === -46
+    && determinant(structuredClone(m)) === -196
+  )
 }
