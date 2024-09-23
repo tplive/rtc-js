@@ -1,10 +1,34 @@
 // *** FUNCTION DEFINITIONS
 
 
-// *** CONSTANTS
-
-const PRECISION = 5
-const EPSILON = 1.0*10**(-PRECISION)
+// *** CONFIGURATION OBJECT
+const C = function() {
+  // The configuration object holds all "global" objects, arrays and configuration values in one place.
+  // Should be initialized on startup.
+  
+  const _precision = 5
+  const _epsilon = 1.0*10**(-_precision)
+  
+  var _counter = 0
+  
+  var _intersections = []
+  var config = {
+    a:1,
+    b:2
+  }
+  function init(){
+  }
+  function scroll(){
+  }
+  function highlight(){
+  }
+  return {
+    PRECISION:_precision,
+    EPSILON:_epsilon,
+    intersections:_intersections,
+    unique_id: function unique_id() {return _counter++}
+  }
+}();
 
 // *** HELPER FUNCTIONS
 
@@ -35,7 +59,7 @@ function equal(a, b) {
   // By subtract a from b and comparing the result to a small constant EPSILON, we
   // can call them equal.
   
-  return (Math.abs(a - b) < EPSILON.toFixed(PRECISION))
+  return (Math.abs(a - b) < C.EPSILON.toFixed(C.PRECISION))
 }
 
 function equal_tuples(a, b) {
@@ -637,19 +661,10 @@ function position(ray, t) {
   return add_tuples(multiply_vector(ray.direction, t), ray.origin)
 }
 
-// THIS IS A GLOBAL VARIABLE, GIVES A NEW ID FOR EACH INVOCATION
-var unique_id = (() => {
-        var counter = 0
-
-        return function() {
-            return counter++
-        }
-    })()
-
 function sphere(id) {
   // Returns a new sphere object, each invocation has a unique id.
   
-  const _id = unique_id()
+  const _id = C.unique_id()
   
   return Object.freeze({
     id:_id
@@ -678,4 +693,13 @@ function intersect(s, r) {
   const t2 = (-b + Math.sqrt(discriminant)) / ( 2 * a )
   
   return [t1, t2]
+}
+
+function intersection(t_value, sphere) {
+  // The intersection function encapsulates t value and object
+  
+  return Object.freeze({
+    t:t_value,
+    object:sphere
+  })
 }

@@ -1093,17 +1093,19 @@ function test_sphere_function() {
   // The sphere() function should return a unique value for every invocation, as the sphere's id.
   
   const spheres = []
+  const n = 1000
   
   // Create a lot of spheres and store their ids in the array
-  for (let i=0; i < 1000; i++) {
+  for (let i=0; i < n; i++) {
     const s = sphere()
+    //log("error", s.id)
     spheres.push(s.id)
   }
   
   // Create a new Set of values from sphere ids. A Set can only contain unique values
   let unique = [...new Set(spheres)]
 
-  return spheres.length === unique.length
+  return spheres.length === n && spheres.length === unique.length
 }
 
 function test_ray_intersects_sphere_at_two_points() {
@@ -1168,4 +1170,35 @@ function test_sphere_is_behind_a_ray() {
   const xs = intersect(s, r)
   
   return xs.length === 2 && xs[0] === -6.0 && xs[1] === -4.0
+}
+
+function test_intersection_function() {
+  // Test the intersection function
+  // An intersection encapsulates t and object
+  
+  const s = sphere()
+  const i = intersection(3.5, s)
+  
+  return i.t === 3.5 && i.object.id === s.id
+
+}
+
+function test_intersections_function() {
+  // Test intersections function. Aggregates intersections
+  
+  const s1 = sphere()
+  const s2 = sphere()
+  const s3 = sphere()
+  const i1 = intersection(1, s1)
+  const i2 = intersection(2, s2)
+  const i3 = intersection(3, s3)
+  
+  C.intersections.push(i1)
+  C.intersections.push(i2)
+  
+  // Techniques for concatenating arrays
+  // intersections = [...intersections, i1, i3]
+  // intersections = intersections.concat([i1, i3])
+
+  return C.intersections[0].object === s1 && C.intersections[1].object === s2
 }

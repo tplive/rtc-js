@@ -45,13 +45,14 @@ window.onerror = function(errorMsg, url, lineNumber){
 <pre><code id="error"></code></pre>
 
 <p id="perf"></p>
-<script src="js/functions.js"></script>
-<script src="js/tests.js"></script>
+
+<script src="./js/functions.js"></script>
+<script src="./js/tests.js"></script>
+
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
 
 const start = performance.now()
-
 
 function runTest(domId, callback) {
   
@@ -145,6 +146,10 @@ runTest("ray_list", test_ray_intersects_sphere_at_tangent)
 runTest("ray_list", test_ray_misses_a_sphere)
 runTest("ray_list", test_ray_originates_inside_a_sphere)
 runTest("ray_list", test_sphere_is_behind_a_ray)
+runTest("ray_list", test_intersection_function)
+runTest("ray_list", test_intersections_function)
+
+
 
 
 const end = performance.now()
@@ -158,13 +163,10 @@ const runs = localStorage.getItem(numberOfRuns_id)
 localStorage.setItem("runs", Number(runs) + 1)
 localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
 
-
 log("perf", "Tests running time: " + Math.round(elapsed) + " ms.")
 log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
 
 window.scrollTo(0,document.body.scrollHeight);
 </script>
-
 </body>
-
 </html>
