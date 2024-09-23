@@ -251,6 +251,7 @@ class AbstractShape {
     this._transform = idmatrix()
     this._transform_inverse = idmatrix()
     this._material = material()
+    this._casts_shadow = true
     if (this.constructor == AbstractShape) { throw new TypeError("Cannot instantiate an abstract class.") }
   }
   
@@ -258,6 +259,7 @@ class AbstractShape {
   get transform() { return this._transform }
   get transform_inverse() { return this._transform_inverse }
   get material() { return this._material }
+  get casts_shadow() { return this._casts_shadow }
   get saved_ray() { return this._saved_ray }
   
   set transform(value) {
@@ -273,6 +275,8 @@ class AbstractShape {
       this._material = mat
     }
   }
+
+  set casts_shadow(tf) { this._casts_shadow = tf === true ? true : false }
   
   intersect(ray) {
     this._saved_ray = ray.transform(this._transform_inverse)
@@ -4619,6 +4623,20 @@ function test_shade_hit_with_reflective_transparent_material() {
   return c.equals(color(0.93391, 0.69643, 0.69243))
 }
 
+function test_object_can_omit_casting_shadow() {
+  // Test that an object can be set to cast no shadow.
+  // Object now has a new attribute: no_shadow: true|false
+  
+  const s = sphere()
+  const has_shadow = s.casts_shadow === true ? true : false // Shape should cast shadow by default
+  s.casts_shadow = false
+  const no_shadow = s.casts_shadow === false ? true : false // Can omit casting shadow
+  
+  // No shadow calculation is not done at this time. Must be implemented later.
+  
+  return has_shadow && no_shadow
+}
+
 </script>
 <script>
 // *** RUN TESTS, DISPLAY RESULTS
@@ -4783,6 +4801,7 @@ runTest("reflect_list", test_refracted_color_with_a_refracted_ray)
 runTest("reflect_list", test_shade_hit_handles_refraction)
 runTest("reflect_list", test_shlick_function)
 runTest("reflect_list", test_shade_hit_with_reflective_transparent_material)
+runTest("reflect_list", test_object_can_omit_casting_shadow)
 
 
 

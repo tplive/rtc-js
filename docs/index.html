@@ -1109,9 +1109,12 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
 <p>$$ {\sin \theta _i \over \sin \theta _t} = {n_2 \over n_1 } $$</p>
 
 <p>Vel, problemet mitt var ikke matematikken, men å forstå algoritmen. Algoritmen sier at vi nå skal bruke alle intersections til <code>prepare_computations()</code> og iterere over alle sammen, for å finne $n_1$ og $n_2$ i hver intersection. På grunn av en noe forenklet formulering i boka, trodde jeg at jeg alltid skulle sammenligne med "the hit", altså det <i>første</i> punktet strålen treffer. Jeg brukte flere dager på å jobbe meg inn i materien før det plutselig ble klart for meg hvordan det måtte være. Needless to say så var det et stort øyeblikk da testen omsider ble grønn, og jeg kunne rydde opp koden vel vitende om at jeg nå kan gå videre i kapitlet... Et sånt øyeblikk som gjør dette Sisyfos arbeidet verdt det... &#129315; Hmm... Kanskje et passende symbol på dette prosjektet er en Sisyfos som dytter en blank og fin, halvgjennomsiktig, refrakterende kule opp en bratt bakke? Legger den på TODO lista mi jeg.. </p>
-<p></p>
-<p></p>
-<p></p>
+
+<h4>Putting it together</h4>
+<p>Det blir en del morsom prøving og feiling. Prøver med en boks bestående av plan, og med flate sfærer, men kommer til slutt til at det fungerer best med en stor sfære (x100) rundt hele, og så et plan som "underlag". Rendrer refraksjon og refleksjon i samme bilde, ser da sånn ut:</p>
+<p><img src="./chapter11_refraction_sphere_world_14_glass_balls3.png" /></p>
+
+<p>..men nå begynner rendringen å ta alvorlig lang tid igjen. <a href="./chapter11_refraction_sphere_world_14_glass_balls_1920x1080.png">Dette bildet i 1920x1080</a> tok 8.5 minutter.. &#129397;</p>
 <p></p>
   <p></p>
   <p></p>
@@ -1123,6 +1126,7 @@ $$ color(p, c_a, c_b) = c_a + (c_b - c_a) * (p_x - floor(p_x)) $$
 
   <p>TODO:
   <ul>
+    <li>Implementere ferdig no_shadow() funksjonalitet på objektene, slik at feks en vannoverflate ikke legger alt "i vannet" i skygge.
     <li>Rendre Sisyfos som dytter en blank og fin, halvgjennomsiktig, refrakterende kule opp en bratt bakke...</li> 
     <li>Fikse bugs med plan som ikke rendrer korrekt når de transleres. Acne, "gjennomsiktighet" og skygge.</li>
     <li>Gå tilbake til kapittel 10 og lage et 2D sjakkmønster og/eller blend patterns.</li>

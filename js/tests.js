@@ -2667,3 +2667,17 @@ function test_shade_hit_with_reflective_transparent_material() {
   
   return c.equals(color(0.93391, 0.69643, 0.69243))
 }
+
+function test_object_can_omit_casting_shadow() {
+  // Test that an object can be set to cast no shadow.
+  // Object now has a new attribute: no_shadow: true|false
+  
+  const s = sphere()
+  const has_shadow = s.casts_shadow === true ? true : false // Shape should cast shadow by default
+  s.casts_shadow = false
+  const no_shadow = s.casts_shadow === false ? true : false // Can omit casting shadow
+  
+  // No shadow calculation is not done at this time. Must be implemented later.
+  
+  return has_shadow && no_shadow
+}
