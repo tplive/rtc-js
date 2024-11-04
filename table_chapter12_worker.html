@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width">
+<style>
+pre {
+  background-color: lightgrey;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 3rem;
+}
+</style>
+<title>The Raytracer Challenge - Chapter 12: Table</title>
+</head>
+<body>
+<script>
+window.onerror = function(errorMsg, url, lineNumber){
+    const error = document.getElementById("error")
+    error.innerHTML = "Error in " + url + " at " + lineNumber + ":\n" + errorMsg
+}
+</script>
+
+<h1>&#127750; TABLE</h1>
+<p>Her demonstreres bruk av web worker for rendering. På denne måten kjøres prosessen i bakgrunnen, og blokkerer ikke nettleseren. 
+  Funksjonen rapporterer tilbake fremdrift i prosent og sekunder, og oppdaterer på skjerm etter hvert som bildet trer fram.</p>
+  <p>For at man raskere skal se hva resultatet blir, genereres punktene tilfeldig.</p>
+<button id = "startBtn">&#128247; Start</button>
+<button id = "stopBtn">&#9209; Stopp</button>
+<p id="status">Status: <output id="out"></output></p>
+<p id="perf"></p>
+<div id="kansas"></div>
+<pre id="error"></pre>
+
+<script src="/js/shapes.js"></script>
+<script src="/js/patterns.js"></script>
+<script src="/js/functions.js"></script>
+
+<script type="module">
+
+  // Får ikke lov til å bare inkludere startRendering() metoden i functions.js, så da måtte den defineres separat...
+  import { startRendering } from "/js/rendering_chapter12.js"
+
+// *** RUN SCENE
+
+// Putting it together chapter 7. Scene from the book, page 106. 
+
+// Performance counter
+const start = performance.now()
+
+// *** DEFINE SCENE
+
+const vsize = 1080
+const hsize = 1920
+// SCENE TELEMETRY
+equal = profile(equal)
+sphere = profile(sphere)
+tuple = profile(tuple)
+vector = profile(vector)
+point = profile(point)
+
+
+// HTML canvas
+const html_can = html_canvas("kansas", hsize, vsize)
+var context = html_can.getContext("2d")
+context.fillStyle = "black"
+context.fillRect(0, 0, hsize, vsize)
+
+// Define a worker object
+let w
+
+// Define buttons onclick event handlers
+const startBtn = document.getElementById("startBtn").onclick = function() {
+
+  context.fillStyle = "black"
+  context.fillRect(0, 0, hsize, vsize)
+  
+  w = startRendering({ worker: w, context: context, vsize: vsize, hsize: hsize })
+} 
+
+const stopBtn = document.getElementById("stopBtn").onclick = function() {
+    
+  if (!(typeof(w) == "undefined")) {
+    w.terminate()
+    w = undefined
+  }
+}
+
+
+// Performance measurement
+const end = performance.now()
+const elapsed = end - start
+const counter_id = "scene"
+const cumulated_id = counter_id + "_running_time"
+const numberOfRuns_id = counter_id + "_runs"
+
+const cumulated = localStorage.getItem(cumulated_id)
+const runs = localStorage.getItem(numberOfRuns_id)
+
+localStorage.setItem(numberOfRuns_id, Number(runs) + 1)
+localStorage.setItem(cumulated_id, Number(cumulated) + elapsed)
+
+log("perf", "Calculation running time: " + Math.round(elapsed) + " ms.")
+log("perf", "Running time per pixel: " + Math.round(elapsed)/(vsize * hsize) + " ms.")
+log("perf", "Average running time: " + (cumulated / runs).toFixed(4) + " ms.")
+
+Object.keys(_calls).length > 0 ? log("perf", JSON.stringify(_calls,0,3)) : null
+</script>
+
+</body>
+
+</html>
