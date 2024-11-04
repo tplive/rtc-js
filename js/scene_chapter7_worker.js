@@ -1,3 +1,5 @@
+self.importScripts("shapes.js")
+self.importScripts("patterns.js")
 self.importScripts("functions.js")
 
 function render_worker() {
